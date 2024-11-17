@@ -39,9 +39,9 @@ function Header() {
                 }`}
               >
                 <Link
-                  href={`/${item.toLowerCase()}`} // Navigate to respective route
+                  href={item === "Home" ? "/" : `/${item.toLowerCase()}`}
                   passHref
-                  onClick={() => setActive(item)} // Set active menu item
+                  onClick={() => setActive(item)}
                 >
                   {item}
                 </Link>
@@ -56,20 +56,20 @@ function Header() {
         </div>
       </nav>
 
-        {/* Sidebar Menu (Mobile View) */}
-        <AnimatePresence>
+      {/* Sidebar Menu (Mobile View) */}
+      <AnimatePresence>
         {isMenuOpen && (
           <motion.div
             className="fixed top-0 left-0 w-3/4 h-full bg-[rgb(250,244,237)] shadow-lg md:hidden"
-            initial={{ x: "-100%" }} // Sidebar starts off-screen
-            animate={{ x: 0 }} // Sidebar moves to its normal position
-            exit={{ x: "-100%" }} // Sidebar moves off-screen again when closed
-            transition={{ type: "spring", stiffness: 300, damping: 30 }} // Animation properties
+            initial={{ x: "-100%" }}
+            animate={{ x: 0 }}
+            exit={{ x: "-100%" }}
+            transition={{ type: "spring", stiffness: 300, damping: 30 }}
           >
             <div className="flex justify-between p-5">
               <div>
                 <Image
-                  src="/logo.png" // Replace with your logo path
+                  src="/logo.png"
                   alt="Logo"
                   width={100}
                   height={100}
@@ -89,11 +89,11 @@ function Header() {
                   }`}
                 >
                   <Link
-                    href={`/${item.toLowerCase()}`} // Navigate to respective route
+                    href={item === "Home" ? "/" : `/${item.toLowerCase()}`}
                     passHref
                     onClick={() => {
                       setActive(item);
-                      setIsMenuOpen(false); // Close the menu when an item is clicked
+                      setIsMenuOpen(false);
                     }}
                   >
                     {item}
