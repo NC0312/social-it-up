@@ -8,9 +8,9 @@ function Header() {
 
     return (
         <div className="border-b border-[#575553]">
-            <nav className="flex items-center justify-between px-12 py-4">
+            <nav className="flex items-center justify-between px-12 py-3">
                 {/* Logo */}
-                <div className="pl-7">
+                <div className="pl-5">
                     <Image
                         src="/logo.png" // Replace with your logo path
                         alt="Logo"
