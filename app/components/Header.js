@@ -2,66 +2,100 @@
 
 import React, { useState } from "react";
 import Image from "next/image";
+import { FaBars, FaTimes } from "react-icons/fa";
+import Link from "next/link"; // Import Next.js Link component
 
 function Header() {
-    const [active, setActive] = useState("Home");
+  const [active, setActive] = useState("Home");
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-    return (
-        <div className="border-b border-[#575553]">
-            <nav className="flex items-center justify-between px-12 py-3">
-                {/* Logo */}
-                <div className="pl-5">
-                    <Image
-                        src="/logo.png" // Replace with your logo path
-                        alt="Logo"
-                        width={120} // Adjust size if needed
-                        height={120}
-                    />
-                </div>
+  const handleMenuToggle = () => {
+    setIsMenuOpen(!isMenuOpen);
+  };
 
-                <div className="pr-12">
-                    {/* Menu Items */}
-                    <ul className="flex space-x-16">
-                        <li
-                            className={`cursor-pointer text-[#575553] text-sm font-medium pb-0.25 ${active === "Home" ? "border-b border-[#575553]" : ""
-                                }`}
-                            onClick={() => setActive("Home")}
-                        >
-                            Home
-                        </li>
-                        <li
-                            className={`cursor-pointer text-[#575553] text-sm font-medium pb-0.25 ${active === "About" ? "border-b border-[#575553]" : ""
-                                }`}
-                            onClick={() => setActive("About")}
-                        >
-                            About
-                        </li>
-                        <li
-                            className={`cursor-pointer text-[#575553] text-sm font-medium pb-0.25 ${active === "Work" ? "border-b border-[#575553]" : ""
-                                }`}
-                            onClick={() => setActive("Work")}
-                        >
-                            Work
-                        </li>
-                        <li
-                            className={`cursor-pointer text-[#575553] text-sm font-medium pb-0.25 ${active === "Services" ? "border-b border-[#575553]" : ""
-                                }`}
-                            onClick={() => setActive("Services")}
-                        >
-                            Services
-                        </li>
-                        <li
-                            className={`cursor-pointer text-[#575553] text-sm font-medium pb-0.25 ${active === "Inquire" ? "border-b border-[#575553]" : ""
-                                }`}
-                            onClick={() => setActive("Inquire")}
-                        >
-                            Inquire
-                        </li>
-                    </ul>
-                </div>
-            </nav>
+  return (
+    <div className="border-b border-[#575553]">
+      <nav className="flex items-center justify-between px-12 py-3">
+        {/* Logo */}
+        <div className="pl-5">
+          <Image
+            src="/logo.png" // Replace with your logo path
+            alt="Logo"
+            width={120} // Adjust size if needed
+            height={120}
+          />
         </div>
-    );
+
+        {/* Menu Items (Desktop View) */}
+        <div className="hidden md:flex pr-12">
+          <ul className="flex space-x-16">
+            {["Home", "About", "Work", "Services", "Inquire"].map((item) => (
+              <li
+                key={item}
+                className={`cursor-pointer text-[#575553] text-sm font-medium pb-0.25 ${
+                  active === item ? "border-b border-[#575553]" : ""
+                }`}
+              >
+                <Link
+                  href={`/${item.toLowerCase()}`} // Navigate to respective route
+                  passHref
+                  onClick={() => setActive(item)} // Set active menu item
+                >
+                  {item}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        {/* Hamburger Icon (Mobile View) */}
+        <div className="md:hidden pr-5" onClick={handleMenuToggle}>
+          <FaBars className="text-[#575553] text-2xl" />
+        </div>
+      </nav>
+
+      {/* Sidebar Menu (Mobile View) */}
+      {isMenuOpen && (
+        <div className="fixed top-0 left-0 w-3/4 h-full bg-white shadow-lg md:hidden">
+          <div className="flex justify-between p-5">
+            <div>
+              <Image
+                src="/logo.png" // Replace with your logo path
+                alt="Logo"
+                width={100}
+                height={100}
+              />
+            </div>
+            <div onClick={handleMenuToggle}>
+              <FaTimes className="text-[#575553] text-2xl cursor-pointer" />
+            </div>
+          </div>
+
+          <ul className="flex flex-col items-center space-y-6 pt-10">
+            {["Home", "About", "Work", "Services", "Inquire"].map((item) => (
+              <li
+                key={item}
+                className={`cursor-pointer text-[#575553] text-lg font-medium pb-0.25 ${
+                  active === item ? "border-b border-[#575553]" : ""
+                }`}
+              >
+                <Link
+                  href={`/${item.toLowerCase()}`} // Navigate to respective route
+                  passHref
+                  onClick={() => {
+                    setActive(item);
+                    setIsMenuOpen(false); // Close the menu when an item is clicked
+                  }}
+                >
+                  {item}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
+  );
 }
 
 export default Header;
