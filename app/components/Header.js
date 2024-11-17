@@ -22,7 +22,7 @@ function Header() {
         {/* Menu Items */}
         <ul className="flex space-x-12">
           <li
-            className={`cursor-pointer text-[#575553] text-sm font-medium pb-1 ${
+            className={`cursor-pointer text-[#575553] text-sm font-medium pb-0.25 ${
               active === "Home" ? "border-b border-[#575553]" : ""
             }`}
             onClick={() => setActive("Home")}
@@ -30,7 +30,7 @@ function Header() {
             Home
           </li>
           <li
-            className={`cursor-pointer text-[#575553] text-sm font-medium pb-1 ${
+            className={`cursor-pointer text-[#575553] text-sm font-medium pb-0.25 ${
               active === "About" ? "border-b border-[#575553]" : ""
             }`}
             onClick={() => setActive("About")}
@@ -38,7 +38,7 @@ function Header() {
             About
           </li>
           <li
-            className={`cursor-pointer text-[#575553] text-sm font-medium pb-1 ${
+            className={`cursor-pointer text-[#575553] text-sm font-medium pb-0.25 ${
               active === "Work" ? "border-b border-[#575553]" : ""
             }`}
             onClick={() => setActive("Work")}
@@ -46,7 +46,7 @@ function Header() {
             Work
           </li>
           <li
-            className={`cursor-pointer text-[#575553] text-sm font-medium pb-1 ${
+            className={`cursor-pointer text-[#575553] text-sm font-medium pb-0.25 ${
               active === "Services" ? "border-b border-[#575553]" : ""
             }`}
             onClick={() => setActive("Services")}
@@ -54,7 +54,7 @@ function Header() {
             Services
           </li>
           <li
-            className={`cursor-pointer text-[#575553] text-sm font-medium pb-1 ${
+            className={`cursor-pointer text-[#575553] text-sm font-medium pb-0.25 ${
               active === "Inquire" ? "border-b border-[#575553]" : ""
             }`}
             onClick={() => setActive("Inquire")}
