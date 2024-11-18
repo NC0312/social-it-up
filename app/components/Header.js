@@ -34,7 +34,7 @@ function Header() {
             {["Home", "About", "Work", "Services", "Inquire"].map((item) => (
               <li
                 key={item}
-                className={`cursor-pointer text-[#575553] text-sm font-medium pb-0.25 ${
+                className={`cursor-pointer text-[#575553] text-md font-medium pb-0.25 ${
                   active === item ? "border-b border-[#575553]" : ""
                 }`}
               >
