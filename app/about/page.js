@@ -17,7 +17,7 @@ function About() {
         </div>
 
         {/* Right Section - Mobile: Below Heading, Desktop: Right Side */}
-        <div className="w-full md:w-2/3 text-base md:text-md leading-relaxed md:pl-48 md:pr-48 md:pt-16 md:pb-16 mt-4 md:mt-0 text-center md:text-left">
+        <div className="w-full md:w-2/3 text-base md:text-md leading-relaxed md:pl-48 md:pr-44 md:pt-16 md:pb-16 mt-4 md:mt-0 text-center md:text-left">
           <p>
             At Social It Up, we are a dynamic family-run creative agency dedicated to empowering brands to make bold, impactful statements. Our team comprises seasoned professionals with diverse expertise in marketing, branding, web design, and finance.
           </p>

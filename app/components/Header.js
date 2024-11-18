@@ -20,12 +20,15 @@ function Header() {
       <nav className="flex items-center justify-between px-12 py-3">
         {/* Logo */}
         <div className="pl-5">
-          <Image
-            src="/logo.png" // Replace with your logo path
-            alt="Logo"
-            width={120} // Adjust size if needed
-            height={120}
-          />
+        <Link href="/" passHref>
+            <Image
+              src="/logo.png" // Replace with your logo path
+              alt="Logo"
+              width={120} // Adjust size if needed
+              height={120}
+              className="cursor-pointer"
+            />
+          </Link>
         </div>
 
         {/* Menu Items (Desktop View) */}
