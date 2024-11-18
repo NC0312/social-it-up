@@ -9,7 +9,7 @@ function About() {
         {/* Left Section - Mobile: Top, Desktop: Left */}
         <div className="w-full md:w-1/3 mb-5 md:pt-5 md:pr-8 text-center md:text-left">
           <h1
-            className="text-4xl pl-12 pt-12 md:text-[60px] font-bold pb-6"
+            className="text-4xl  pt-12 md:text-[60px] font-bold pb-6 pl-8"
             style={{ fontFamily: "'Noto Serif Display', serif" }}
           >
             Who are we?
