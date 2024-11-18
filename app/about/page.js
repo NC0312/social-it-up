@@ -22,7 +22,7 @@ function About() {
             At Social It Up, we are a dynamic family-run creative agency dedicated to empowering brands to make bold, impactful statements. Our team comprises seasoned professionals with diverse expertise in marketing, branding, web design, and finance.
           </p>
           <p className="mt-4">
-            We blend our skills to offer innovative solutions tailored to each client's unique needs. With a passion for creativity and a commitment to excellence, we strive to cultivate lasting relationships with our clients, ensuring that their visions are not only realised but celebrated.
+          We blend our skills to offer innovative solutions tailored to each client&apos;s unique needs. With a passion for creativity and a commitment to excellence, we strive to cultivate lasting relationships with our clients, ensuring that their visions are not only realised but celebrated.
           </p>
         </div>
       </div>
