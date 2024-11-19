@@ -1,15 +1,29 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { FaBars, FaTimes } from "react-icons/fa";
-import Link from "next/link"; // Import Next.js Link component
-import { motion } from "framer-motion"; // Import Framer Motion
+import Link from "next/link";
+import { motion } from "framer-motion";
 import { AnimatePresence } from "framer-motion";
+import { usePathname } from "next/navigation"; // Import usePathname for route synchronization
 
 function Header() {
+  const pathname = usePathname(); // Get the current route
   const [active, setActive] = useState("Home");
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  useEffect(() => {
+    // Map the current pathname to the active menu item
+    const routeToActiveMap = {
+      "/": "Home",
+      "/about": "About",
+      "/work": "Work",
+      "/services": "Services",
+      "/inquire": "Inquire",
+    };
+    setActive(routeToActiveMap[pathname] || "Home");
+  }, [pathname]);
 
   const handleMenuToggle = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -20,11 +34,11 @@ function Header() {
       <nav className="flex items-center justify-between px-12 py-3">
         {/* Logo */}
         <div className="pl-5">
-        <Link href="/" passHref>
+          <Link href="/" passHref>
             <Image
               src="/logo.png" // Replace with your logo path
               alt="Logo"
-              width={120} // Adjust size if needed
+              width={120}
               height={120}
               className="cursor-pointer"
             />
