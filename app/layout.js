@@ -1,6 +1,7 @@
 import localFont from "next/font/local";
 import "./globals.css";
 import Header from "./components/Header";
+import DynamicTitle from "./components/DynamicTitle";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -16,9 +17,9 @@ const geistMono = localFont({
 export const metadata = {
   title: "www.socialitup.in",
   description: "Social it up -- A Marketing Agency",
-  icons:{
-    icon:'/logo.png'
-  }
+  icons: {
+    icon: "/logo.png",
+  },
 };
 
 export default function RootLayout({ children }) {
@@ -27,7 +28,8 @@ export default function RootLayout({ children }) {
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <Header/>
+        <DynamicTitle /> {/* Add the client component */}
+        <Header />
         {children}
       </body>
     </html>
