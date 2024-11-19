@@ -10,24 +10,24 @@ function AboutExt1() {
                 {/* Left Section - Heading and Description */}
                 <div className="w-full md:w-2/3 mb-5 text-center md:text-left">
                     <h1
-                        className="text-6xl lg:text-[70px] pt-40 pl-10 pb-12 font-bold"
+                        className="text-3xl md:text-[70px] lg:text-[70px] pt-40 pl-10 pb-12 font-bold"
                         style={{ fontFamily: "'Noto Serif Display', serif" }}
                     >
                         How we Started...
                     </h1>
-                    <p className="text-base md:text-md leading-relaxed mt-4 md:pr-72  pl-10">
+                    <p className="text-base md:text-md leading-relaxed mt-4 md:pr-72  md:pl-10">
                         Our journey began a few years ago when we—fueled by a shared passion
                         for creativity—decided to break free from the constraints of
                         traditional corporate life.
                     </p>
-                    <p className="text-base md:text-md leading-relaxed mt-4 md:pr-72 pl-10">
+                    <p className="text-base md:text-md leading-relaxed mt-4 md:pr-72 md:pl-10">
                         Coming from backgrounds in the creative industry, we recognized the
                         potential to create something special together. This realization
                         sparked the birth of Social It Up, a family business where our
                         collective expertise converges to create extraordinary marketing
                         strategies and branding experiences.
                     </p>
-                    <p className="text-base md:text-md leading-relaxed mt-4 md:pr-72 pl-10">
+                    <p className="text-base md:text-md leading-relaxed mt-4 md:pr-72 md:pl-10">
                         Our shared vision was simple: to create a space where creativity
                         thrives, and brands can express their true identity without
                         compromise.
