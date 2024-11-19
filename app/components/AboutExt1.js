@@ -2,6 +2,7 @@
 
 import React from "react";
 
+// How We Started Section for About
 function AboutExt1() {
     return (
         <section className="bg-[rgb(250,244,237)] text-[#36302A] py-12 px-6 md:px-16">
