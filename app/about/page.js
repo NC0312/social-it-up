@@ -1,10 +1,12 @@
 "use client";
 
 import React from "react";
+import AboutExt1 from "../components/AboutExt1";
 
 function About() {
   return (
-    <section className="bg-[#ECE4DA] text-[#36302A] py-12 px-6 md:px-16">
+    <>
+    <section className="bg-[#ECE4DA] text-[#36302A] py-24 px-6 md:px-16">
       <div className="container mx-auto flex flex-col md:flex-row items-center md:items-start">
         {/* Left Section - Mobile: Top, Desktop: Left */}
         <div className="w-full md:w-1/3 mb-5 md:pt-5 md:pr-8 text-center md:text-left">
@@ -27,6 +29,8 @@ function About() {
         </div>
       </div>
     </section>
+    <AboutExt1/>
+    </>
   );
 }
 
