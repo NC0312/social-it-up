@@ -89,7 +89,8 @@ function AboutExt1() {
         As we look to the future, our commitment to innovation and excellence remains unwavering. We are excited to continue evolving in the ever-changing landscape of marketing and design, embracing new technologies and trends to serve our clients better. Our goal is to not just build brands but to cultivate enduring partnerships that grow alongside them. 
         </p>
         <p className="text-base md:text-md leading-relaxed">
-        At Social It Up, we believe that every collaboration is an opportunity to create something unforgettable, and we can't wait to embark on this journey with you. Together, let’s create the extraordinary and redefine what’s possible!
+        At Social It Up, we believe that every collaboration is an opportunity to create something unforgettable, and we can&apos;t wait to embark on this journey with you. Together, let&apos;s create the extraordinary and redefine what&apos;s possible!
+                  
         </p>
     </div>
 </div>
