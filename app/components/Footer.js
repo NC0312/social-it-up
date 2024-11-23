@@ -71,7 +71,7 @@ const Footer = () => {
       </nav>
 
       {/* Instagram Icon */}
-      <Link href="https://instagram.com/socialitup" className="mb-8">
+      <Link href="https://instagram.com/socialitup" target='_blank' className="mb-8">
         <AiOutlineInstagram className="w-6 h-6 text-gray-800 hover:text-gray-600" />
       </Link>
 
