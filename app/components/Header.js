@@ -29,9 +29,16 @@ function Header() {
     setIsMenuOpen(!isMenuOpen);
   };
 
+  // Check if the environment is development
+  const isDevelopment = process.env.NEXT_PUBLIC_ENV === "development";
+
   return (
     <div className="border-b border-[#575553]">
-      <nav className="flex items-center justify-between px-12 py-3">
+      <nav
+        className={`flex items-center justify-between px-12 py-3 ${
+          isDevelopment ? "bg-[#6C92F0] " : ""
+        }`}
+      >
         {/* Logo */}
         <div className="pl-5">
           <Link href="/" passHref>
@@ -66,6 +73,13 @@ function Header() {
             ))}
           </ul>
         </div>
+
+        {/* Development Mode Text */}
+        {isDevelopment && (
+          <div className="absolute left-1/4 transform -translate-x-1/2 text-white font-semibold">
+            Development Mode ⌨
+          </div>
+        )}
 
         {/* Hamburger Icon (Mobile View) */}
         <div className="md:hidden pr-5" onClick={handleMenuToggle}>
