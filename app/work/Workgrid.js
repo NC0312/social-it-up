@@ -44,20 +44,6 @@ const WorkPageGrid = () => {
 
   return (
     <section className="bg-[#ECE4DA] min-h-screen py-16">
-        <div className="absolute bottom-72 md:top-96 left-0 w-full overflow-hidden">
-        <svg
-          className="w-full"
-          viewBox="0 0 1440 120"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-          preserveAspectRatio="none"
-        >
-          <path
-            d="M0 20C240 50 480 80 720 80C960 80 1200 50 1440 20V120H0V20Z"
-            fill="#ECE4DA"
-          />
-        </svg>
-      </div>
       <div className="container mx-auto px-4 md:px-6">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {works.map((work, index) => (
