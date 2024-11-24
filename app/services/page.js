@@ -25,7 +25,7 @@ const services = () => {
         <h1 className="text-5xl md:text-9xl lg:text-9xl font-light text-[#2e2e2e] font-serif mb-8 text-center">
           Every Brand has a Story
         </h1>
-        <p className="text-2xl pb-10 font-bold text-[#2e2e2e] mt-0 uppercase tracking-wider">
+        <p className="text-xl md:text-2xl pb-10 font-bold text-[#2e2e2e] mt-0 uppercase tracking-wider">
           MAKE IT STAND OUT.
         </p>
       </div>
