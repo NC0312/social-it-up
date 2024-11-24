@@ -6,15 +6,14 @@ import { FaBars, FaTimes } from "react-icons/fa";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { AnimatePresence } from "framer-motion";
-import { usePathname } from "next/navigation"; // Import usePathname for route synchronization
+import { usePathname } from "next/navigation";
 
 function Header() {
-  const pathname = usePathname(); // Get the current route
+  const pathname = usePathname();
   const [active, setActive] = useState("Home");
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   useEffect(() => {
-    // Map the current pathname to the active menu item
     const routeToActiveMap = {
       "/": "Home",
       "/about": "About",
@@ -25,17 +24,28 @@ function Header() {
     setActive(routeToActiveMap[pathname] || "Home");
   }, [pathname]);
 
+  useEffect(() => {
+    if (isMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isMenuOpen]);
+
   const handleMenuToggle = () => {
     setIsMenuOpen(!isMenuOpen);
   };
 
-  // Check if the environment is development
   const isDevelopment = process.env.NEXT_PUBLIC_ENV === "development";
 
   return (
-    <div className="border-b border-[#575553]">
+    <div className="border-b border-[#575553] relative">
       <nav
-        className={`flex items-center justify-between px-12 py-3 ${
+        className={`flex items-center justify-between px-12 py-3 relative z-20 ${
           isDevelopment ? "bg-[#6C92F0] " : ""
         }`}
       >
@@ -43,7 +53,7 @@ function Header() {
         <div className="pl-5">
           <Link href="/" passHref>
             <Image
-              src="/logo.png" // Replace with your logo path
+              src="/logo.png"
               alt="Logo"
               width={120}
               height={120}
@@ -82,22 +92,46 @@ function Header() {
         )}
 
         {/* Hamburger Icon (Mobile View) */}
-        <div className="md:hidden pr-5" onClick={handleMenuToggle}>
-          <FaBars className="text-[#575553] text-2xl" />
+        <div className="md:hidden pr-5 relative z-50">
+          <FaBars 
+            className="text-[#575553] text-2xl cursor-pointer" 
+            onClick={handleMenuToggle}
+          />
         </div>
       </nav>
+
+      {/* Dark Overlay */}
+      <AnimatePresence>
+        {isMenuOpen && (
+          <motion.div
+            className="fixed inset-0 bg-black/50 z-30 md:hidden"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={handleMenuToggle}
+          />
+        )}
+      </AnimatePresence>
 
       {/* Sidebar Menu (Mobile View) */}
       <AnimatePresence>
         {isMenuOpen && (
           <motion.div
-            className="fixed top-0 left-0 w-3/4 h-full bg-[rgb(250,244,237)] shadow-lg md:hidden"
+            className="fixed top-0 left-0 w-3/4 h-full bg-[rgb(250,244,237)] shadow-lg md:hidden z-40"
             initial={{ x: "-100%" }}
             animate={{ x: 0 }}
             exit={{ x: "-100%" }}
             transition={{ type: "spring", stiffness: 300, damping: 30 }}
           >
-            <div className="flex justify-between p-5">
+            {/* Close Button */}
+            <div className="absolute top-4 right-4">
+              <FaTimes 
+                className="text-[#575553] text-2xl cursor-pointer" 
+                onClick={handleMenuToggle}
+              />
+            </div>
+
+            <div className="p-5">
               <div>
                 <Image
                   src="/logo.png"
@@ -105,9 +139,6 @@ function Header() {
                   width={100}
                   height={100}
                 />
-              </div>
-              <div onClick={handleMenuToggle}>
-                <FaTimes className="text-[#575553] text-2xl cursor-pointer" />
               </div>
             </div>
 
