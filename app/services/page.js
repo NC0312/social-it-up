@@ -36,12 +36,12 @@ const services = () => {
 
       {/* Offerings Section */}
       <React.Fragment>
-        <div className="container mx-auto py-48 px-24">
+        <div className="container mx-auto py-48 px-16 md:px-24">
         <h2 className="text-3xl md:text-4xl lg:text-4xl font-semibold font-serif text-center text-[#2e2e2e] mb-16">
           Our Offerings
         </h2>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {/* Tile 1 */}
             <div className="p-4 md:p-14 bg-[#ECE4DA] text-center">
               <h3 className="text-xl font-light font-serif text-[#36302A] mb-4">
