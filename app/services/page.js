@@ -36,7 +36,7 @@ const services = () => {
 
       {/* Offerings Section */}
       <React.Fragment>
-        <div className="container mx-auto py-48 px-16 md:px-24">
+        <div className="container mx-auto py-48 px-12 md:px-24">
         <h2 className="text-3xl md:text-4xl lg:text-4xl font-semibold font-serif text-center text-[#2e2e2e] mb-16">
           Our Offerings
         </h2>
