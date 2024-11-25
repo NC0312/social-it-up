@@ -78,7 +78,7 @@ const services = () => {
               Finance Services
               </h3>
               <p className="text-[#36302A] text-sm">
-              At Social It Up, we understand that strong financial management is the backbone of any successful business. In the Indian market, navigating financial regulations and ensuring compliance can be a daunting task. That's why we offer a range of comprehensive financial services tailored to meet the needs of businesses of all sizes.
+              At Social It Up, we understand that strong financial management is the backbone of any successful business. In the Indian market, navigating financial regulations and ensuring compliance can be a daunting task. That&apos;s why we offer a range of comprehensive financial services tailored to meet the needs of businesses of all sizes.
               </p>
             </div>
           </div>
