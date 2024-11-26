@@ -7,9 +7,9 @@ module.exports = {
   ],
   theme: {
     extend: {
-      screens:{
-        'custom-md':"1540px",
-      },
+      // screens:{
+      //   'custom-md':"1440px",
+      // },
       colors: {
         background: "var(--background)",
         foreground: "var(--foreground)",
