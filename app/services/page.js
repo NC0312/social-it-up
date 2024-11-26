@@ -41,7 +41,7 @@ const services = () => {
           Our Offerings
         </h2>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 custom-md:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {/* Tile 1 */}
             <div className="p-4 md:p-14 bg-[#ECE4DA] text-center">
               <h3 className="text-xl font-light font-serif text-[#36302A] mb-4">
