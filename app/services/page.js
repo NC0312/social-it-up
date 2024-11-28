@@ -90,7 +90,7 @@ const services = () => {
         {/* Previous sections remain the same */}
 
         {/* Story Section */}
-        <div className="relative w-full h-[450px]">
+        <div className="relative w-full h-[500px]">
           <div
             className="absolute inset-0 bg-cover bg-center"
             style={{
@@ -100,13 +100,13 @@ const services = () => {
             <div
               className="absolute inset-0"
               style={{
-                backgroundColor: "#403C37",
+                backgroundColor: "#2E2A25 ",
                 opacity: 0.8,
               }}
             />
           </div>
 
-          <div className="relative z-10 h-full flex flex-col items-center justify-center px-4">
+          <div className="relative pt-5 z-10 h-full flex flex-col items-center justify-center px-4">
             <h2 className="text-4xl md:text-6xl lg:text-7xl text-white font-serif font-normal text-center max-w-6xl leading-tight mb-12 tracking-tight">
               Whatever it is, the way you tell your story online can make all the difference.
             </h2>
