@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import React from 'react';
 
 const services = () => {
@@ -84,6 +85,41 @@ const services = () => {
           </div>
         </div>
       </React.Fragment>
+
+      <div className="relative w-full h-auto overflow-x-hidden">
+        {/* Previous sections remain the same */}
+
+        {/* Story Section */}
+        <div className="relative w-full h-[450px]">
+          <div
+            className="absolute inset-0 bg-cover bg-center"
+            style={{
+              backgroundImage: "url('/service1.jpeg')",
+            }}
+          >
+            <div
+              className="absolute inset-0"
+              style={{
+                backgroundColor: "#403C37",
+                opacity: 0.8,
+              }}
+            />
+          </div>
+
+          <div className="relative z-10 h-full flex flex-col items-center justify-center px-4">
+            <h2 className="text-4xl md:text-6xl lg:text-7xl text-white font-serif font-normal text-center max-w-6xl leading-tight mb-12 tracking-tight">
+              Whatever it is, the way you tell your story online can make all the difference.
+            </h2>
+            <Link href="/inquire">
+            <button className="bg-[#B9A590] text-[#46423D] px-32 py-4 md:px-20 md:py-6 rounded-lg md:rounded-2xl text-md font-medium hover:opacity-90 transition-opacity duration-300">
+              Make It
+            </button>
+            </Link>
+          </div>
+
+        </div>
+      </div>
+
     </div>
   );
 };
