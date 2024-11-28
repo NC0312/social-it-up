@@ -25,7 +25,7 @@ const services = () => {
 
         {/* Content Container */}
         <div className="relative z-10 container mx-auto px-4 py-16 flex flex-col items-center justify-center h-full">
-          <h1 className="text-5xl md:text-8xl lg:text-8xl font-light text-[#2e2e2e] font-serif mb-8 text-center">
+          <h1 className="text-5xl md:text-9xl lg:text-9xl font-light text-[#2e2e2e] font-serif mb-8 text-center">
             Every Brand has a Story
           </h1>
           <p className="text-xl md:text-2xl pb-10 font-bold text-[#2e2e2e] mt-0 uppercase tracking-wider">
