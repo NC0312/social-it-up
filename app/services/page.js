@@ -44,7 +44,7 @@ const services = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Tile 1 */}
-            <div className="p-4 md:p-14 bg-[#ECE4DA] text-center hover:shadow-lg hover:scale-105 transition-transform duration-300 ease-out select-none">
+            <div className="p-4 md:p-14 bg-[#ECE4DA] text-center hover:shadow-lg hover:scale-105 transition-transform duration-1000 ease-out select-none">
               <h3 className="text-xl font-light font-serif text-[#36302A] mb-4">
                 Branding
               </h3>
@@ -54,7 +54,7 @@ const services = () => {
             </div>
 
             {/* Tile 2 */}
-            <div className="p-4 md:p-14 bg-[#ECE4DA] text-center hover:shadow-lg hover:scale-105 transition-transform duration-300 ease-out select-none">
+            <div className="p-4 md:p-14 bg-[#ECE4DA] text-center hover:shadow-lg hover:scale-105 transition-transform duration-1000 ease-out select-none">
               <h3 className="text-xl font-light font-serif text-[#36302A] mb-4">
                 Digital Marketing
               </h3>
@@ -64,7 +64,7 @@ const services = () => {
             </div>
 
             {/* Tile 3 */}
-            <div className="p-4 md:p-14 bg-[#ECE4DA] text-center hover:shadow-lg hover:scale-105 transition-transform duration-300 ease-out select-none">
+            <div className="p-4 md:p-14 bg-[#ECE4DA] text-center hover:shadow-lg hover:scale-105 transition-transform duration-1000 ease-out select-none">
               <h3 className="text-xl font-light font-serif text-[#36302A] mb-4">
                 Website
               </h3>
@@ -74,7 +74,7 @@ const services = () => {
             </div>
 
             {/* Tile 4 */}
-            <div className="p-4 md:p-14 bg-[#ECE4DA] text-center hover:shadow-lg hover:scale-105 transition-transform duration-300 ease-out select-none">
+            <div className="p-4 md:p-14 bg-[#ECE4DA] text-center hover:shadow-lg hover:scale-105 transition-transform duration-1000 ease-out select-none">
               <h3 className="text-xl font-light font-serif text-[#36302A] mb-4">
                 Finance Services
               </h3>
@@ -107,13 +107,13 @@ const services = () => {
           </div>
 
           <div className="relative pt-5 z-10 h-full flex flex-col items-center justify-center px-4">
-            <h2 className="text-4xl md:text-6xl lg:text-7xl text-white font-serif font-normal text-center max-w-6xl leading-tight mb-12 tracking-tight">
+            <h2 className="text-4xl md:text-6xl lg:text-7xl text-[#D9D9D9] font-serif font-medium text-center max-w-6xl leading-tight mb-12 tracking-tight">
               Whatever it is, the way you tell your story online can make all the difference.
             </h2>
             <Link href="/inquire">
-            <button className="bg-[#B9A590] text-[#46423D] px-32 py-4 md:px-20 md:py-6 rounded-lg md:rounded-2xl text-md font-medium hover:opacity-90 transition-opacity duration-300">
-              Make It
-            </button>
+              <button className="bg-[#B9A590] text-[#46423D] px-32 py-4 md:px-20 md:py-6 rounded-lg md:rounded-2xl text-md font-medium hover:opacity-90 transition-opacity duration-300">
+                Make It
+              </button>
             </Link>
           </div>
 
