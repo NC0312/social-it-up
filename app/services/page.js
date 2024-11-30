@@ -4,6 +4,7 @@ import ServicesBranding from '../components/ServicesBranding';
 import ServicesDigitalMarketing from '../components/ServicesDigitalMarketing';
 import ServicesWebsite from '../components/ServicesWebsite';
 import ServicesFinancialServices from '../components/ServicesFinancialServices';
+import ServicesInfiniteScroll from '../components/ServicesInfiniteScroll';
 
 const services = () => {
   return (
@@ -127,6 +128,7 @@ const services = () => {
       <ServicesDigitalMarketing/>
       <ServicesWebsite/>
       <ServicesFinancialServices/>
+      <ServicesInfiniteScroll/>
     </div>
   );
 };
