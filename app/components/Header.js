@@ -50,7 +50,7 @@ function Header() {
         }`}
       >
         {/* Logo */}
-        <div className="pl-5">
+        <div className="md:pl-5">
           <Link href="/" passHref>
             <Image
               src="/logo.png"
