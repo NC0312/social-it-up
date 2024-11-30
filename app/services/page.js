@@ -1,6 +1,9 @@
 import Link from 'next/link';
 import React from 'react';
 import ServicesBranding from '../components/ServicesBranding';
+import ServicesDigitalMarketing from '../components/ServicesDigitalMarketing';
+import ServicesWebsite from '../components/ServicesWebsite';
+import ServicesFinancialServices from '../components/ServicesFinancialServices';
 
 const services = () => {
   return (
@@ -121,7 +124,9 @@ const services = () => {
         </div>
       </div>
       <ServicesBranding/>
-
+      <ServicesDigitalMarketing/>
+      <ServicesWebsite/>
+      <ServicesFinancialServices/>
     </div>
   );
 };

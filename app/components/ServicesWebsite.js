@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { AiOutlinePlus, AiOutlineMinus } from 'react-icons/ai';
 import { motion } from 'framer-motion';
 
-const ServicesBranding = () => {
+const ServicesWebsite = () => {
     const [openSection, setOpenSection] = useState('');
 
     const sections = [
@@ -182,4 +182,4 @@ const ServicesBranding = () => {
     );
 };
 
-export default ServicesBranding;
+export default ServicesWebsite;
