@@ -8,118 +8,146 @@ const ServicesWebsite = () => {
 
     const sections = [
         {
-            title: 'Brand Identity',
+            title: 'Website Development',
             items: [
                 {
-                    title: 'Logo Design and Development',
-                    description: 'Crafting a unique and memorable logo that encapsulates your brand\'s essence and values.'
+                    title: 'Custom Website Design',
+                    description: 'Tailored designs that reflect brand identity and engage audiences effectively.'
                 },
                 {
-                    title: 'Color Palette Creation',
-                    description: 'Developing a cohesive color scheme that reflects your brand\'s personality and evokes the desired emotional response.'
+                    title: 'Responsive Web Development',
+                    description: 'Ensuring websites look and function seamlessly on all devices, from desktops to smartphones.'
                 },
                 {
-                    title: 'Typography Selection',
-                    description: 'Choosing fonts that align with your brand identity and enhance readability across all mediums.'
+                    title: 'E-commerce Solutions',
+                    description: 'Creating user-friendly online stores with secure payment options to enhance the shopping experience.'
                 },
                 {
-                    title: 'Brand Voice and Messaging Guidelines',
-                    description: 'Establishing a clear and consistent tone for your brand communications to strengthen recognition and trust.'
+                    title: 'Content Management Systems (CMS)',
+                    description: 'Implementing platforms like WordPress or Joomla for easy content updates and management without technical expertise.'
                 },
                 {
-                    title: 'Visual Elements (Icons, Imagery)',
-                    description: 'Designing custom icons and imagery that complement your brand story and enhance visual appeal.'
+                    title: 'SEO Optimization',
+                    description: 'Integrating best practices to improve website visibility on search engines, driving organic traffic.'
                 },
                 {
-                    title: 'Brand Style Guide',
-                    description: 'Compiling all branding elements into a comprehensive style guide to ensure consistency across all platforms and materials.'
+                    title: 'Website Maintenance and Support',
+                    description: 'Ongoing assistance to keep websites updated, secure, and performing optimally.'
+                },
+                {
+                    title: 'Performance Optimization',
+                    description: 'Enhancing load times and overall user experience to keep visitors engaged and reduce bounce rates.'
+                },
+                {
+                    title: 'Web Application Development',
+                    description: 'Building interactive web applications that provide unique functionalities tailored to specific business needs.'
                 }
             ]
         },
         {
-            title: 'Packaging',
+            title: 'App Development',
             items: [
                 {
-                    title: 'Product Packaging Design',
-                    description: 'Designing attractive and functional packaging that reflects your brand’s identity and appeals to your target market.'
+                    title: 'iOS App Development',
+                    description: 'Creating high-performance applications tailored for Apple devices, ensuring seamless user experiences and adherence to App Store guidelines.'
                 },
                 {
-                    title: 'Label Design',
-                    description: 'Creating eye-catching labels that convey essential product information while adhering to branding guidelines.'
+                    title: 'Android App Development',
+                    description: 'Developing intuitive applications for Android devices, optimized for a wide range of screen sizes and OS versions.'
                 },
                 {
-                    title: 'Mockups',
-                    description: ' Providing realistic mockups to visualize how your packaging will look in real life before production.'
+                    title: 'Cross-Platform App Development',
+                    description: 'Utilizing frameworks like React Native or Flutter to build apps that work on both iOS and Android, reducing development time and costs.'
                 },
                 {
-                    title: 'Regulatory Compliance Considerations',
-                    description: 'Ensuring that all packaging designs meet relevant regulatory requirements and standards for your industry.'
+                    title: 'UI/UX Design',
+                    description: 'Crafting engaging user interfaces and experiences that enhance usability and drive user engagement across all app platforms.'
+                },
+                {
+                    title: 'API Integration',
+                    description: 'Implementing third-party APIs to enhance app functionality, allowing for features like payment processing, social media sharing, and data syncing.'
+                },
+                {
+                    title: 'App Maintenance and Support',
+                    description: 'Providing ongoing support and updates to ensure apps remain functional, secure, and compatible with the latest operating system changes.'
+                },
+                {
+                    title: 'App Testing and Quality Assurance',
+                    description: 'Conducting thorough testing to identify and fix bugs, ensuring high performance and reliability before launch.'
+                },
+                {
+                    title: 'Consultation and Strategy',
+                    description: 'Offering expert guidance on app ideas, market research, and development strategies to help bring innovative concepts to life.'
                 }
             ]
         },
         {
-            title: 'Print Media',
+            title: 'UI/UX',
             items: [
                 {
-                    title: 'Brochures and Flyers',
-                    description: 'Designing informative and visually appealing brochures and flyers that capture your brand’s message and attract attention.'
+                    title: 'User Research and Analysis',
+                    description: 'Conducting thorough research to understand user needs, preferences, and behaviors, informing design decisions.'
                 },
                 {
-                    title: 'Business Cards',
-                    description: 'Creating memorable business cards that leave a lasting impression and reflect your professional identity.'
+                    title: 'Wireframing and Prototyping',
+                    description: 'Creating low-fidelity wireframes and interactive prototypes to visualize layout and functionality before development.'
                 },
                 {
-                    title: 'Posters and Banners',
-                    description: 'Developing impactful posters and banners for events, promotions, and advertisements to maximize visibility.'
+                    title: 'Visual Design',
+                    description: 'Developing aesthetically pleasing designs that align with brand identity and enhance user engagement.'
                 },
                 {
-                    title: 'Infographics',
-                    description: 'Designing compelling infographics to present complex information in an easily digestible and visually engaging format.'
+                    title: 'Usability Testing',
+                    description: 'Performing tests with real users to identify pain points and areas for improvement, ensuring optimal user experience.'
                 },
                 {
-                    title: 'Stationery Design (Letterheads, Envelopes)',
-                    description: 'Customizing professional stationery that enhances your brand image in all business communications.'
+                    title: 'Responsive Design',
+                    description: 'Designing interfaces that adapt seamlessly across various devices and screen sizes, providing a consistent experience.'
                 },
                 {
-                    title: 'Annual Reports and Corporate Publications',
-                    description: 'Crafting comprehensive annual reports and publications that effectively communicate your organization’s achievements and goals.'
+                    title: 'Information Architecture',
+                    description: 'Structuring content and navigation to enhance usability, making it easy for users to find what they need.'
+                },
+                {
+                    title: 'Interaction Design',
+                    description: 'Focusing on how users interact with the interface, creating intuitive and engaging interactions that enhance usability.'
+                },
+                {
+                    title: 'Design System Development',
+                    description: 'Establishing a cohesive design system with guidelines, components, and styles to ensure consistency across all platforms.'
                 }
             ]
         },
         {
-            title: 'Brand Collaterals',
+            title: 'Website Hosting',
             items: [
                 {
-                    title:'Business Cards',
-                    description:'Designing unique business cards that facilitate networking and leave a memorable impression.'
+                    title: 'Managed WordPress Hosting',
+                    description: 'Optimized environments for WordPress sites, featuring automatic updates, enhanced security, and dedicated support.'
                 },
                 {
-                    title:'Letterhead/Envelope Design',
-                    description:'Creating personalized letterheads and envelopes that elevate your correspondence and enhance brand recognition.'
+                    title: 'Squarespace Hosting',
+                    description: 'Simplified hosting integrated with Squarespace’s design tools, perfect for creating visually appealing websites without technical hassles.'
                 },
                 {
-                    title:'Sticker Design',
-                    description:'Designing fun and engaging stickers that can be used for promotions or as giveaways to create buzz around your brand.'
+                    title: 'AWS Cloud Hosting',
+                    description: 'Scalable and flexible hosting solutions leveraging Amazon Web Services for high-performance websites that can handle varying traffic loads.'
                 },
                 {
-                    title:'Stationery Design',
-                    description:'Offering a full suite of stationery designs, including notebooks and notepads, to keep your brand front of mind.'
+                    title: 'E-commerce Hosting on WordPress',
+                    description: 'Specialized hosting plans for WordPress e-commerce sites, ensuring fast load times and secure transactions.'
                 },
                 {
-                    title:'Apparel',
-                    description:'Designing branded apparel, such as t-shirts and caps, for promotional events or employee uniforms that foster brand loyalty.'
+                    title: 'Website Migration Services',
+                    description: 'Seamless migration support for transferring existing sites to WordPress, Squarespace, or AWS with minimal downtime.'
                 },
                 {
-                    title:'Loyalty Cards',
-                    description:'Creating loyalty card designs that encourage repeat business and enhance customer retention.'
+                    title: 'SSL Certificates and Security',
+                    description: 'Provisioning SSL certificates and implementing security measures to protect websites and user data across all platforms.'
                 },
                 {
-                    title:'Thank You Cards',
-                    description:'Crafting personalized thank you cards that express appreciation and strengthen customer relationships.'
-                },
-                {
-                    title:'Gift Vouchers',
-                    description:'Designing attractive gift vouchers to boost sales and incentivize purchases.'
+                    title: 'Performance Monitoring',
+                    description: 'Regular performance checks and optimizations to ensure websites run smoothly and efficiently on chosen hosting platforms.'
                 }
             ]
         }
@@ -129,7 +157,7 @@ const ServicesWebsite = () => {
         <div className="w-full py-36 h-full bg-[#ECE4DA] text-[#36302A] mx-auto p-6 flex flex-col md:flex-row gap-8">
             {/* Branding Heading */}
             <div className="md:w-1/3 py-20 flex items-center justify-center h-full">
-                <h1 className="text-5xl md:text-6xl font-semibold font-serif">Branding</h1>
+                <h1 className="text-5xl md:text-6xl font-semibold font-serif">Website</h1>
             </div>
 
             {/* List Section */}

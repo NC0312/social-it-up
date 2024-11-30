@@ -8,129 +8,68 @@ const ServicesFinancialServices = () => {
 
     const sections = [
         {
-            title: 'Social Media Marketing',
+            title: 'GST Registrations / Returns',
             items: [
                 {
-                    title: 'Strategy Development',
-                    description: 'Tailored social media strategies based on target audience analysis.'
+                    title: 'GST Registration',
+                    description: 'Assistance with the registration process to obtain GSTIN, ensuring compliance with Indian tax laws.'
                 },
                 {
-                    title: 'Content Creation/Calendar',
-                    description: 'Engaging graphics, videos, and copy for posts.'
+                    title: 'Filing GST Returns',
+                    description: 'Support with timely filing of GST returns (GSTR-1, GSTR-3B, etc.) to avoid penalties and maintain compliance.'
                 },
                 {
-                    title: 'Community Management',
-                    description: 'Monitoring and responding to comments/messages.'
+                    title: 'GST Reconciliation',
+                    description: 'Helping businesses reconcile GST returns with input tax credits and sales records to ensure accuracy.'
                 },
                 {
-                    title: 'Social Media Advertising',
-                    description: 'Paid ad campaigns on platforms like Facebook, Instagram, LinkedIn, etc.'
-                },
-                {
-                    title: 'Analytics and Reporting',
-                    description: 'Tracking performance metrics and adjusting strategies accordingly.'
-                },
-                {
-                    title: 'Influencer Partnerships',
-                    description: 'Collaborating with influencers to expand reach.'
+                    title: 'Advisory Services',
+                    description: 'Providing guidance on GST implications for various business transactions and strategies for tax optimization.'
                 }
             ]
         },
         {
-            title: 'SEO',
+            title: 'Financial Account Management',
             items: [
                 {
-                    title: 'Keyword Research',
-                    description: 'Identifying relevant keywords for target audience.'
+                    title: 'Bookkeeping Services',
+                    description: 'Comprehensive bookkeeping solutions to maintain accurate financial records.'
                 },
                 {
-                    title: 'On-Page SEO',
-                    description: 'Optimizing website content, meta tags, and headings.'
+                    title: 'Financial Reporting',
+                    description: 'Preparation of monthly, quarterly, and annual financial statements (P&L, balance sheet, cash flow statements) to provide insights into business performance.'
                 },
                 {
-                    title: 'Technical SEO',
-                    description: 'Providing realistic mockups to visualize how your packaging will look in real life before production.'
+                    title: 'Budgeting and Forecasting',
+                    description: 'Assisting in creating budgets and financial forecasts to aid in strategic planning.'
                 },
                 {
-                    title: 'Content Marketing',
-                    description: 'Developing high-quality, SEO-optimized content.'
-                },
-                {
-                    title:'Link Building',
-                    description:'Strategies to gain high-quality backlinks.'
-                },
-                {
-                    title:'SEO Audits',
-                    description:'Regular assessments to identify areas for improvement.'
+                    title: 'Tax Compliance',
+                    description: 'Ensuring compliance with income tax and other applicable tax regulations, including filing tax returns.'
                 }
             ]
         },
         {
-            title: 'Adverts',
+            title: 'Company Licensing / Registrations',
             items: [
                 {
-                    title: 'PPC Advertising',
-                    description: 'Google Ads campaigns and management.'
+                    title: 'Company Registration',
+                    description: 'Complete assistance in the registration process for various business structures (LLP, Pvt. Ltd., etc.) with the Ministry of Corporate Affairs.'
                 },
                 {
-                    title: 'Display Advertising',
-                    description: 'Banner ads on relevant websites.'
+                    title: 'Licensing Support',
+                    description: 'Guidance on obtaining necessary licenses and permits based on the nature of the business (trade license, FSSAI, etc.).'
                 },
                 {
-                    title: 'Retargeting Campaigns',
-                    description: 'Targeting previous website visitors with tailored ads.'
+                    title: 'Compliance Management',
+                    description: 'Ongoing support to ensure compliance with regulatory requirements, including annual filings and statutory audits.'
                 },
                 {
-                    title: 'A/B Testing',
-                    description: 'Experimenting with different ad formats and copy for optimization.'
-                },
-                {
-                    title: 'Analytics and Reporting',
-                    description: 'Tracking ad performance and ROI.'
-                },
-                {
-                    title: 'Creative Development',
-                    description: 'Designing eye-catching ad creatives.'
+                    title: 'Advisory Services',
+                    description: 'Consulting on legal structures and business models to help you make informed decisions that align with your business goals.'
                 }
             ]
         },
-        {
-            title: 'Email Marketing',
-            items: [
-                {
-                    title: 'Business Cards',
-                    description: 'Designing unique business cards that facilitate networking and leave a memorable impression.'
-                },
-                {
-                    title: 'Letterhead/Envelope Design',
-                    description: 'Creating personalized letterheads and envelopes that elevate your correspondence and enhance brand recognition.'
-                },
-                {
-                    title: 'Sticker Design',
-                    description: 'Designing fun and engaging stickers that can be used for promotions or as giveaways to create buzz around your brand.'
-                },
-                {
-                    title: 'Stationery Design',
-                    description: 'Offering a full suite of stationery designs, including notebooks and notepads, to keep your brand front of mind.'
-                },
-                {
-                    title: 'Apparel',
-                    description: 'Designing branded apparel, such as t-shirts and caps, for promotional events or employee uniforms that foster brand loyalty.'
-                },
-                {
-                    title: 'Loyalty Cards',
-                    description: 'Creating loyalty card designs that encourage repeat business and enhance customer retention.'
-                },
-                {
-                    title: 'Thank You Cards',
-                    description: 'Crafting personalized thank you cards that express appreciation and strengthen customer relationships.'
-                },
-                {
-                    title: 'Gift Vouchers',
-                    description: 'Designing attractive gift vouchers to boost sales and incentivize purchases.'
-                }
-            ]
-        }
     ];
 
     return (
@@ -184,7 +123,7 @@ const ServicesFinancialServices = () => {
 
 
             <div className="md:w-1/3 py-28 flex items-center justify-center h-full md:pr-96">
-                <h1 className="text-4xl md:text-5xl font-semibold font-serif whitespace-nowrap">Digital Marketing</h1>
+                <h1 className="text-4xl md:text-5xl font-semibold font-serif whitespace-nowrap">Finance Services</h1>
             </div>
 
         </div>

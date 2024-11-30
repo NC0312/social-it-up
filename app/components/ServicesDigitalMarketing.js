@@ -56,12 +56,12 @@ const ServicesDigitalMarketing = () => {
                     description: 'Developing high-quality, SEO-optimized content.'
                 },
                 {
-                    title:'Link Building',
-                    description:'Strategies to gain high-quality backlinks.'
+                    title: 'Link Building',
+                    description: 'Strategies to gain high-quality backlinks.'
                 },
                 {
-                    title:'SEO Audits',
-                    description:'Regular assessments to identify areas for improvement.'
+                    title: 'SEO Audits',
+                    description: 'Regular assessments to identify areas for improvement.'
                 }
             ]
         },
@@ -98,36 +98,57 @@ const ServicesDigitalMarketing = () => {
             title: 'Email Marketing',
             items: [
                 {
-                    title: 'Business Cards',
-                    description: 'Designing unique business cards that facilitate networking and leave a memorable impression.'
+                    title: 'List Building',
+                    description: 'Strategies for growing a subscriber list.'
                 },
                 {
-                    title: 'Letterhead/Envelope Design',
-                    description: 'Creating personalized letterheads and envelopes that elevate your correspondence and enhance brand recognition.'
+                    title: 'Campaign Management',
+                    description: 'Designing and scheduling email campaigns.'
                 },
                 {
-                    title: 'Sticker Design',
-                    description: 'Designing fun and engaging stickers that can be used for promotions or as giveaways to create buzz around your brand.'
+                    title: 'Segmentation',
+                    description: 'Tailoring content for different audience segments.'
                 },
                 {
-                    title: 'Stationery Design',
-                    description: 'Offering a full suite of stationery designs, including notebooks and notepads, to keep your brand front of mind.'
+                    title: 'Automation',
+                    description: 'Setting up automated email sequences (welcome, follow-ups).'
                 },
                 {
-                    title: 'Apparel',
-                    description: 'Designing branded apparel, such as t-shirts and caps, for promotional events or employee uniforms that foster brand loyalty.'
+                    title: 'Analytics and Reporting',
+                    description: 'Measuring open rates, click-through rates, and conversions.'
                 },
                 {
-                    title: 'Loyalty Cards',
-                    description: 'Creating loyalty card designs that encourage repeat business and enhance customer retention.'
+                    title: 'Compliance',
+                    description: 'Ensuring campaigns adhere to all legal regulations.'
+                }
+            ]
+        },
+        {
+            title: 'WhatsApp for Businesses',
+            items: [
+                {
+                    title: 'Account Setup',
+                    description: 'Assistance with setting up a business profile.'
                 },
                 {
-                    title: 'Thank You Cards',
-                    description: 'Crafting personalized thank you cards that express appreciation and strengthen customer relationships.'
+                    title: 'Messaging Strategies',
+                    description: 'Developing effective communication strategies and creatives for customer engagement.'
                 },
                 {
-                    title: 'Gift Vouchers',
-                    description: 'Designing attractive gift vouchers to boost sales and incentivize purchases.'
+                    title: 'Customer Support',
+                    description: 'Using WhatsApp for real-time customer service.'
+                },
+                {
+                    title: 'Broadcast Lists',
+                    description: 'Sending targeted messages to specific groups.'
+                },
+                {
+                    title: 'Integration with CRM',
+                    description: 'Connecting WhatsApp with existing customer relationship management systems.'
+                },
+                {
+                    title: 'Analytics',
+                    description: 'Tracking message engagement and response rates.'
                 }
             ]
         }
