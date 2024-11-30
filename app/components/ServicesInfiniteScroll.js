@@ -1,4 +1,5 @@
 'use client';
+import Link from 'next/link';
 
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, useAnimation, useMotionValue } from 'framer-motion';
@@ -14,7 +15,7 @@ const ServicesInfiniteScroll = () => {
   const startAnimation = (startX = 0) => {
     // Calculate the width of a single text element including spacing
     const textWidth = containerRef.current?.firstChild?.offsetWidth || 2000;
-    
+
     controls.start({
       x: [startX, -textWidth],
       transition: {
@@ -91,7 +92,7 @@ const ServicesInfiniteScroll = () => {
         <motion.div
           className="flex"
           animate={controls}
-          style={{ x , cursor:"default" , userSelect: "none"}}
+          style={{ x, cursor: "default", userSelect: "none" }}
           onHoverStart={handleHoverStart}
           onHoverEnd={handleHoverEnd}
         >
@@ -99,13 +100,18 @@ const ServicesInfiniteScroll = () => {
         </motion.div>
       </div>
 
-      <div 
+      <div
         className="absolute bottom-24 left-1/2 transform -translate-x-1/2"
         onClick={(e) => e.stopPropagation()} // Prevent button clicks from affecting animation
       >
-        <button className="bg-[#B9A590] text-[#49392C] px-12 py-3 md:px-8 md:py-5 text-md rounded-xl hover:bg-[#a2907c] transition" style={{userSelect: "none"}}>
-          Tell us about your brand!
-        </button>
+        <Link href="/inquire" target="_blank">
+          <button
+            className="bg-[#B9A590] text-[#49392C] px-12 py-3 md:px-8 md:py-5 text-md rounded-xl hover:bg-[#a2907c] transition"
+            style={{ userSelect: "none" }}
+          >
+            Tell us about your brand!
+          </button>
+        </Link>
       </div>
     </div>
   );
