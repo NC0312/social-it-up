@@ -45,7 +45,7 @@ const services = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Tile 1 */}
-            <div className="p-4 md:p-14 bg-[#ECE4DA] text-center hover:shadow-lg hover:scale-105 transition-transform duration-1000 ease-out select-none">
+            <div className="p-4 md:p-14 bg-[#ECE4DA] text-center hover:shadow-lg hover:scale-105 transition-transform duration-800 ease-out select-none">
               <h3 className="text-xl font-light font-serif text-[#36302A] mb-4">
                 Branding
               </h3>
