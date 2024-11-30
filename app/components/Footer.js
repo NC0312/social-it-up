@@ -8,7 +8,7 @@ import { MdEmail } from 'react-icons/md';
 
 const Footer = () => {
   return (
-    <footer className="flex flex-col items-center justify-center py-8 px-4">
+    <footer className="flex flex-col items-center justify-center py-8 px-4" style={{userSelect: "none"}}>
       {/* Logo */}
       <div className="mb-8">
         <Image

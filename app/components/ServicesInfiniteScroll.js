@@ -91,7 +91,7 @@ const ServicesInfiniteScroll = () => {
         <motion.div
           className="flex"
           animate={controls}
-          style={{ x , cursor:"default" }}
+          style={{ x , cursor:"default" , userSelect: "none"}}
           onHoverStart={handleHoverStart}
           onHoverEnd={handleHoverEnd}
         >
@@ -103,7 +103,7 @@ const ServicesInfiniteScroll = () => {
         className="absolute bottom-24 left-1/2 transform -translate-x-1/2"
         onClick={(e) => e.stopPropagation()} // Prevent button clicks from affecting animation
       >
-        <button className="bg-[#B9A590] text-[#49392C] px-12 py-3 md:px-8 md:py-5 text-md rounded-xl hover:bg-[#a2907c] transition">
+        <button className="bg-[#B9A590] text-[#49392C] px-12 py-3 md:px-8 md:py-5 text-md rounded-xl hover:bg-[#a2907c] transition" style={{userSelect: "none"}}>
           Tell us about your brand!
         </button>
       </div>
