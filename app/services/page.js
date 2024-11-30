@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import React from 'react';
+import ServicesBranding from '../components/ServicesBranding';
 
 const services = () => {
   return (
@@ -119,6 +120,7 @@ const services = () => {
 
         </div>
       </div>
+      <ServicesBranding/>
 
     </div>
   );

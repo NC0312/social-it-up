@@ -66,12 +66,12 @@ function Header() {
         <div className="hidden md:flex pr-12">
           <ul className="flex space-x-16">
             {["Home", "About", "Work", "Services", "Inquire"].map((item) => (
-              <li
-                key={item}
-                className={`cursor-pointer text-[#575553] text-md font-medium pb-0.25 ${
-                  active === item ? "border-b border-[#575553]" : ""
-                }`}
-              >
+                  <li
+                  key={item}
+                  className={`cursor-pointer ${isDevelopment ? 'text-white' : 'text-[#575553]'} text-md font-medium pb-0.25 ${
+                    active === item ? `border-b ${isDevelopment ? 'border-white' : 'border-[#575553]'}` : ""
+                  }`}
+                >
                 <Link
                   href={item === "Home" ? "/" : `/${item.toLowerCase()}`}
                   passHref
