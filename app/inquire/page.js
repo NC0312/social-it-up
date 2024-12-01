@@ -17,7 +17,7 @@ const Inquire = () => {
         x: {
           repeat: Infinity,
           repeatType: "loop",
-          duration: 40000,
+          duration: 25000,
           ease: "linear",
         },
       },
