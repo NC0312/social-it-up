@@ -1,8 +1,14 @@
 'use client'
-import React, { useEffect, useRef } from 'react';
-import { motion, useAnimation, useMotionValue } from 'framer-motion';
+import React, { useEffect, useRef, useState } from 'react';
+import { motion, useAnimation, useMotionValue, AnimatePresence } from 'framer-motion';
+
 
 const Inquire = () => {
+
+  const [isChecked, setIsChecked] = useState(false);
+  const [showMessage, setShowMessage] = useState(false);
+
+
   const controls = useAnimation();
   const x = useMotionValue(0);
   const text = "Contact Us";
@@ -41,6 +47,23 @@ const Inquire = () => {
       </span>
     );
   }
+
+  const handleCheckboxChange = (e) => {
+    const isCheckedNow = e.target.checked;
+
+    setIsChecked(isCheckedNow);
+
+    if (isCheckedNow) {
+      // Show the message for 2 seconds only when checked
+      setShowMessage(true);
+      setTimeout(() => {
+        setShowMessage(false);
+      }, 2000);
+    } else {
+      // Hide the message immediately when unchecked
+      setShowMessage(false);
+    }
+  };
 
   return (
     <div className="relative w-full h-screen">
@@ -97,6 +120,47 @@ const Inquire = () => {
               </div>
 
             </div>
+
+            {/* Email Field */}
+            <div className="flex flex-col py-1 md:py-2">
+              <label className="text-sm text-[#36302A]">
+                Email <span className="text-[#86807A] ml-1">(required)</span>
+              </label>
+              <input type='email'
+                className="bg-[#EFE7DD] text-[#36302A] border border-transparent focus:outline-none focus:ring-1 focus:ring-[#36302A] hover:border-[#36302A] px-3 py-1 rounded-lg w-full"
+                required
+              />
+            </div>
+
+            <div className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                className="appearance-none h-4 w-4 border bg-[#EFE7DD] hover:border-[#36302A] rounded-lg cursor-pointer checked:bg-[#36302A] checked:text-white focus:ring-1 focus:ring-[#36302A]"
+                checked={isChecked}
+                onChange={handleCheckboxChange}
+              />
+
+              <label className="text-sm text-[#36302A]">
+                Sign up for news and updates
+              </label>
+            </div>
+
+            {/* Animated Success Message */}
+            <AnimatePresence>
+              {showMessage && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.5 }}
+                  className="text-sm text-[#36302A] mt-2 bg-[#EFE7DD] px-4 py-2 rounded-lg border border-[#36302A]"
+                >
+                  Signed up successfully! 🎊  
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+
 
           </form>
 

@@ -22,3 +22,18 @@ body {
   font-family: 'Syne', Arial, Helvetica, sans-serif;
   overflow-x: hidden !important;
 }
+
+input[type="checkbox"] {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  border: none;
+  background-color: #EFE7DD;
+  color: #36302A;
+  cursor: pointer;
+}
+
+input[type="checkbox"]:checked {
+  background-color: #36302A;
+  color: #EFE7DD;
+}
