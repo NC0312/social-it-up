@@ -48,7 +48,7 @@ const Inquire = () => {
     );
   }
 
-  
+
   const handleCheckboxChange = (e) => {
     const isCheckedNow = e.target.checked;
 
@@ -108,7 +108,7 @@ const Inquire = () => {
               <div className="flex flex-col">
                 <label className="text-sm text-[#36302A]">First Name</label>
                 <input
-                  className="bg-[#EFE7DD] text-[#36302A] border border-transparent focus:outline-none focus:ring-1 focus:ring-[#36302A] hover:border-[#36302A] px-3 w-44 md:w-80 py-1 rounded-lg" required
+                  className="bg-[#EFE7DD] text-[#36302A] border border-transparent focus:outline-none focus:ring-1 focus:ring-[#36302A] hover:border-[#36302A] px-3 w-full md:w-80 py-1 rounded-lg" required
                 />
               </div>
 
@@ -116,7 +116,7 @@ const Inquire = () => {
               <div className="flex flex-col ml-3">
                 <label className="text-sm text-[#36302A]">Last Name</label>
                 <input
-                  className="bg-[#EFE7DD] text-[#36302A] border border-transparent focus:outline-none focus:ring-1 focus:ring-[#36302A] hover:border-[#36302A] px-3 w-44 md:w-80 py-1 rounded-lg"
+                  className="bg-[#EFE7DD] text-[#36302A] border border-transparent focus:outline-none focus:ring-1 focus:ring-[#36302A] hover:border-[#36302A] px-3 w-full md:w-80 py-1 rounded-lg"
                 />
               </div>
 
@@ -146,27 +146,29 @@ const Inquire = () => {
               </label>
             </div>
 
-             {/* Animated Message */}
-      <AnimatePresence>
-        {message && (
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.5 }}
-            className={`text-sm mt-2 px-4 py-2 rounded-lg border ${
-              message === "Signed up successfully!"
-                ? "text-green-700 bg-green-100 border-green-400"
-                : "text-red-700 bg-red-100 border-red-400"
-            }`}
-          >
-            {message}
-          </motion.div>
-        )}
-      </AnimatePresence>
+            {/* Animated Message */}
+            <AnimatePresence>
+              {message && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.5 }}
+                  className={`text-sm mt-2 px-4 py-2 rounded-lg border ${message === "Signed up successfully!"
+                      ? "text-green-700 bg-green-100 border-green-400"
+                      : "text-red-700 bg-red-100 border-red-400"
+                    }`}
+                >
+                  {message}
+                </motion.div>
+              )}
+            </AnimatePresence>
 
-
-
+            <div className="flex flex-col py-1 md:py-2">
+            <label className="text-sm text-[#36302A]">
+                Phone <span className="text-[#86807A] ml-1">(required)</span>
+              </label>
+            </div>
           </form>
 
 
