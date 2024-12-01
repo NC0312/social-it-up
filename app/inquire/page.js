@@ -47,7 +47,7 @@ const Inquire = () => {
       {/* Container for both animation and image */}
       <div className="flex flex-col md:flex-row relative h-[40vh] md:h-screen">
         {/* Image container */}
-        <div className="w-full md:w-1/2 md:absolute md:right-0 md:top-0 md:bottom-0 z-10 h-[20vh] md:h-screen">
+        <div className="w-full md:w-1/2 md:absolute md:right-0 md:top-0 md:bottom-0 z-10 h-[25vh] md:h-screen">
           <img
             src="/inquire-image.jpeg"
             alt="Inquire"
