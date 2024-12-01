@@ -115,6 +115,7 @@ const Inquire = () => {
             >
               Submit
             </button>
+            <p>Hey </p>
           </form>
         </div>
       </div>
