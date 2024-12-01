@@ -45,11 +45,11 @@ function Header() {
   return (
     <div className="border-b border-[#575553] relative">
       <nav
-        className={`flex items-center justify-between px-12 py-3 relative z-20 ${isDevelopment ? "bg-[#6C92F0] " : ""
+        className={`flex items-center justify-between px-12 py-1 md:py-2 relative z-20 ${isDevelopment ? "bg-[#6C92F0] " : ""
           }`}
       >
         {/* Logo */}
-        <div className="flex flex-row md:pl-5">
+        <div className="flex flex-row left-0 md:pl-5">
           <Link href="/" passHref>
             <Image
               src="/logo.png"
