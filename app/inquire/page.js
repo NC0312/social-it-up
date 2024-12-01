@@ -79,7 +79,7 @@ const Inquire = () => {
               Interested in working together?
             </h2>
             <p className="text-base md:text-lg">
-              Fill out the form below, and we'll get back to you soon!
+              Fill out the form below, and we&apos;ll get back to you soon!
             </p>
 
             <div className="flex flex-col md:flex-row gap-4">
