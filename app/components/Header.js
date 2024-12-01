@@ -45,12 +45,11 @@ function Header() {
   return (
     <div className="border-b border-[#575553] relative">
       <nav
-        className={`flex items-center justify-between px-12 py-3 relative z-20 ${
-          isDevelopment ? "bg-[#6C92F0] " : ""
-        }`}
+        className={`flex items-center justify-between px-12 py-3 relative z-20 ${isDevelopment ? "bg-[#6C92F0] " : ""
+          }`}
       >
         {/* Logo */}
-        <div className="md:pl-5">
+        <div className="flex flex-row md:pl-5">
           <Link href="/" passHref>
             <Image
               src="/logo.png"
@@ -60,18 +59,30 @@ function Header() {
               className="cursor-pointer"
             />
           </Link>
+
+          <p className={`text-[10px] md:text-xs ${isDevelopment ? 'text-white' : 'text-[#575553]'} ml-2 mt-20`}>
+            Made by{" "}
+            <Link
+              href="https://niketchawla.vercel.app/" // Replace with your desired URL
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`${isDevelopment ? 'text-white' : 'text-[#575553]'} underline`}
+            >
+              Niket Chawla
+            </Link>
+          </p>
+
         </div>
 
         {/* Menu Items (Desktop View) */}
         <div className="hidden md:flex pr-12">
           <ul className="flex space-x-16">
             {["Home", "About", "Work", "Services", "Inquire"].map((item) => (
-                  <li
-                  key={item}
-                  className={`cursor-pointer ${isDevelopment ? 'text-white' : 'text-[#575553]'} text-md font-medium pb-0.25 ${
-                    active === item ? `border-b ${isDevelopment ? 'border-white' : 'border-[#575553]'}` : ""
+              <li
+                key={item}
+                className={`cursor-pointer ${isDevelopment ? 'text-white' : 'text-[#575553]'} text-md font-medium pb-0.25 ${active === item ? `border-b ${isDevelopment ? 'border-white' : 'border-[#575553]'}` : ""
                   }`}
-                >
+              >
                 <Link
                   href={item === "Home" ? "/" : `/${item.toLowerCase()}`}
                   passHref
@@ -93,8 +104,8 @@ function Header() {
 
         {/* Hamburger Icon (Mobile View) */}
         <div className="md:hidden pr-5 relative z-50">
-          <FaBars 
-            className="text-[#575553] text-2xl cursor-pointer" 
+          <FaBars
+            className="text-[#575553] text-2xl cursor-pointer"
             onClick={handleMenuToggle}
           />
         </div>
@@ -125,8 +136,8 @@ function Header() {
           >
             {/* Close Button */}
             <div className="absolute top-4 right-4">
-              <FaTimes 
-                className="text-[#575553] text-2xl cursor-pointer" 
+              <FaTimes
+                className="text-[#575553] text-2xl cursor-pointer"
                 onClick={handleMenuToggle}
               />
             </div>
@@ -146,9 +157,8 @@ function Header() {
               {["Home", "About", "Work", "Services", "Inquire"].map((item) => (
                 <li
                   key={item}
-                  className={`cursor-pointer text-[#575553] text-lg font-medium pb-0.25 ${
-                    active === item ? "border-b border-[#575553]" : ""
-                  }`}
+                  className={`cursor-pointer text-[#575553] text-lg font-medium pb-0.25 ${active === item ? "border-b border-[#575553]" : ""
+                    }`}
                 >
                   <Link
                     href={item === "Home" ? "/" : `/${item.toLowerCase()}`}
