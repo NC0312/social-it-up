@@ -72,12 +72,31 @@ const Inquire = () => {
           </div>
 
 
-          <form className='px-6 md:px-10 w-full md:w-1/2 py-5 md:py-14'>
+          <form className='overflow-x-hidden px-6 md:px-10 w-full md:w-1/2 py-5 md:py-14'>
             <p className='text-[#36302A] text-sm md:text-lg'>Interested in working together? Fill out some info and we will be in touch shortly! We can&apos;t wait to hear from you!</p>
 
-            <p className=" md:text-md !important py-5 md:py-10 text-[#36302A]">
+            <p className=" md:text-md !important pt-5 md:pt-10 text-[#36302A]">
               Name<span className='text-sm text-[#86807A] ml-1'> (required)</span>
             </p>
+
+            <div className='flex flex-row py-1 md:py-2'>
+              {/* Div for firstName */}
+              <div className="flex flex-col">
+                <label className="text-sm text-[#36302A]">First Name</label>
+                <input
+                  className="bg-[#EFE7DD] text-[#36302A] border border-transparent focus:outline-none focus:ring-1 focus:ring-[#36302A] hover:border-[#36302A] px-3 w-44 md:w-80 py-1 rounded-lg" required
+                />
+              </div>
+
+              {/* Div for lastName */}
+              <div className="flex flex-col ml-3">
+                <label className="text-sm text-[#36302A]">Last Name</label>
+                <input
+                  className="bg-[#EFE7DD] text-[#36302A] border border-transparent focus:outline-none focus:ring-1 focus:ring-[#36302A] hover:border-[#36302A] px-3 w-44 md:w-80 py-1 rounded-lg"
+                />
+              </div>
+
+            </div>
 
           </form>
 
