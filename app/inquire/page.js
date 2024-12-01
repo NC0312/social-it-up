@@ -35,7 +35,7 @@ const Inquire = () => {
     textElements.push(
       <span
         key={i}
-        className="text-6xl md:text-8xl font-serif font-medium text-[#36302A] whitespace-nowrap px-5 py-7"
+        className="text-5xl md:text-8xl font-serif font-medium text-[#36302A] whitespace-nowrap px-5 py-7"
       >
         {text}
       </span>
@@ -73,8 +73,8 @@ const Inquire = () => {
           </div>
 
           
-        <form>
-          hey
+        <form className='px-10 w-full md:w-1/2'>
+        <p className='text-sm md:text-lg'>Interested in working together? Fill out some info and we will be in touch shortly! We can't wait to hear from you!</p>
         </form>
 
   
