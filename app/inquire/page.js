@@ -58,7 +58,7 @@ const Inquire = () => {
 
         <div className='flex flex-col'>
           {/* Animation container */}
-          <div className="w-screen overflow-hidden py-7 md:py-12 h-[10vh] md:h-[30vh]">
+          <div className="w-screen overflow-hidden py-10 md:py-24 h-[10vh] md:h-[30vh]">
             <div className="flex whitespace-nowrap h-full items-center md:items-start" ref={containerRef}>
               <motion.div
                 className="flex"
@@ -73,7 +73,7 @@ const Inquire = () => {
           </div>
 
           
-        <form className='px-10 w-full md:w-1/2'>
+        <form className='px-6 md:px-10 w-full md:w-1/2 py-5 md:py-14'>
         <p className='text-[#36302A] text-sm md:text-lg'>Interested in working together? Fill out some info and we will be in touch shortly! We can&apos;t wait to hear from you!</p>
         </form>
 
