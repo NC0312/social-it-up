@@ -6,7 +6,7 @@ import { motion, useAnimation, useMotionValue, AnimatePresence } from 'framer-mo
 const Inquire = () => {
 
   const [isChecked, setIsChecked] = useState(false);
-  const [showMessage, setShowMessage] = useState(false);
+  const [message, setMessage] = useState("");
 
 
   const controls = useAnimation();
@@ -48,21 +48,22 @@ const Inquire = () => {
     );
   }
 
+  
   const handleCheckboxChange = (e) => {
     const isCheckedNow = e.target.checked;
 
     setIsChecked(isCheckedNow);
 
     if (isCheckedNow) {
-      // Show the message for 2 seconds only when checked
-      setShowMessage(true);
-      setTimeout(() => {
-        setShowMessage(false);
-      }, 2000);
+      setMessage("Signed up successfully!");
     } else {
-      // Hide the message immediately when unchecked
-      setShowMessage(false);
+      setMessage("Uh ohh!!! why?? 😲 ");
     }
+
+    // Show the message for 2 seconds
+    setTimeout(() => {
+      setMessage("");
+    }, 3000);
   };
 
   return (
@@ -145,21 +146,24 @@ const Inquire = () => {
               </label>
             </div>
 
-            {/* Animated Success Message */}
-            <AnimatePresence>
-              {showMessage && (
-                <motion.div
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  transition={{ duration: 0.5 }}
-                  className="text-sm text-[#36302A] mt-2 bg-[#EFE7DD] px-4 py-2 rounded-lg border border-[#36302A]"
-                  style={{userSelect:"none"}}
-                >
-                  Signed up successfully! 🎊  
-                </motion.div>
-              )}
-            </AnimatePresence>
+             {/* Animated Message */}
+      <AnimatePresence>
+        {message && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.5 }}
+            className={`text-sm mt-2 px-4 py-2 rounded-lg border ${
+              message === "Signed up successfully!"
+                ? "text-green-700 bg-green-100 border-green-400"
+                : "text-red-700 bg-red-100 border-red-400"
+            }`}
+          >
+            {message}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
 
 
