@@ -58,7 +58,7 @@ const Inquire = () => {
 
         <div className='flex flex-col'>
           {/* Animation container */}
-          <div className="w-full overflow-hidden py-7 md:py-12 h-[10vh] md:h-[30vh]">
+          <div className="w-screen overflow-hidden py-7 md:py-12 h-[10vh] md:h-[30vh]">
             <div className="flex whitespace-nowrap h-full items-center md:items-start" ref={containerRef}>
               <motion.div
                 className="flex"
