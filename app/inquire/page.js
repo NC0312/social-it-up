@@ -74,7 +74,7 @@ const Inquire = () => {
 
           
         <form className='px-10 w-full md:w-1/2'>
-        <p className='text-sm md:text-lg'>Interested in working together? Fill out some info and we will be in touch shortly! We can&apos;t wait to hear from you!</p>
+        <p className='text-[#36302A] text-sm md:text-lg'>Interested in working together? Fill out some info and we will be in touch shortly! We can&apos;t wait to hear from you!</p>
         </form>
 
   
