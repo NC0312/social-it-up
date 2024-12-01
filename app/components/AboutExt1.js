@@ -11,7 +11,7 @@ function AboutExt1() {
                     {/* Left Section - Heading and Description */}
                     <div className="w-full md:w-2/3 mb-5 text-center md:text-left">
                         <h1
-                            className="text-3xl md:text-[70px] lg:text-[70px] pt-40 pl-10 pb-12 font-bold"
+                            className="text-3xl md:text-[70px] lg:text-[70px] pt-40 md:pl-10 pb-12 font-bold"
                             style={{ fontFamily: "'Noto Serif Display', serif" }}
                         >
                             How we Started...
