@@ -11,8 +11,8 @@ const Inquire = () => {
   const [phoneError, setPhoneError] = useState('');
   const [email, setEmail] = useState('');
   const [company, setCompany] = useState('');
-  const [website,setWebsite]=useState('');
-  const[websiteError,setWebsiteError]=useState('');
+  const [website, setWebsite] = useState('');
+  const [websiteError, setWebsiteError] = useState('');
   const [companyError, setCompanyError] = useState('');
   const [emailError, setEmailError] = useState('');
   const [firstName, setFirstName] = useState('');
@@ -139,9 +139,8 @@ const Inquire = () => {
     return true;
   }
 
-  const validateWebsite = ()=>{
-    if(!website.trim())
-    {
+  const validateWebsite = () => {
+    if (!website.trim()) {
       setWebsiteError('Website is required');
       return false;
     }
@@ -296,11 +295,10 @@ const Inquire = () => {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
                   transition={{ duration: 0.5 }}
-                  className={`text-sm mt-2 px-4 py-2 rounded-lg border ${
-                    message === 'Signed up successfully!'
-                      ? 'text-green-700 bg-green-100 border-green-400'
-                      : 'text-red-700 bg-red-100 border-red-400'
-                  }`}
+                  className={`text-sm mt-2 px-4 py-2 rounded-lg border ${message === 'Signed up successfully!'
+                    ? 'text-green-700 bg-green-100 border-green-400'
+                    : 'text-red-700 bg-red-100 border-red-400'
+                    }`}
                 >
                   {message}
                 </motion.div>
@@ -390,57 +388,30 @@ const Inquire = () => {
               >
                 {isSubmitting ? 'Submitting...' : 'Submit'}
               </button> */}
+
             <motion.button
               type="submit"
-              className="relative mt-5 md:mt-10 px-5 py-2 md:py-4 md:w-28 text-sm rounded-md md:rounded-md bg-gradient-to-r from-[#36302A] to-[#4A423B] text-white"
+              className="mt-5 md:mt-10 px-5 py-3 md:py-6 md:w-28 text-sm rounded-md md:rounded-xl bg-[#36302A] text-white relative overflow-hidden"
               disabled={isSubmitting}
               whileHover={{
-                scale: 1.05, // Slightly emphasize the button
-                rotate: 0.5, // Add a subtle tilt
-                boxShadow: "0px 0px 10px 2px rgba(255, 255, 255, 0.6)", // Glow effect
-                transition: {
-                  duration: 0.4,
-                  ease: "easeInOut",
-                },
+                scale: 1.05, // Slight scale-up on hover
+                transition: { duration: 0.3, ease: "easeOut" },
               }}
               whileTap={{
-                scale: 0.95, // Add a press-in effect
-                boxShadow: "0px 0px 5px 1px rgba(255, 255, 255, 0.3)", // Dim glow on tap
+                scale: 0.95, // Slight tap effect
                 transition: { duration: 0.2 },
               }}
             >
-              <span className="absolute inset-0 bg-gradient-to-r from-[#4A423B] via-[#8A7965] to-[#36302A] animate-shimmer"></span>
-              <span className="relative z-10">
-                {isSubmitting ? 'Submitting...' : 'Submit'}
-              </span>
+              <span className="relative z-10">{isSubmitting ? 'Submitting...' : 'Submit'}</span>
+              <motion.div
+                className="absolute top-0 left-0 w-full h-full bg-white opacity-0"
+                whileHover={{ opacity: 0.1 }} // Slight fade effect
+                transition={{ duration: 0.3 }}
+              />
             </motion.button>
 
-            <style jsx>{`
-              @keyframes shimmer {
-                0% {
-                  transform: translateX(-100%);
-                }
-                100% {
-                  transform: translateX(100%);
-                }
-              }
-              .animate-shimmer {
-                content: "";
-                position: absolute;
-                top: 0;
-                left: -150%;
-                width: 300%;
-                height: 100%;
-                background: linear-gradient(
-                  90deg,
-                  rgba(255, 255, 255, 0) 25%,
-                  rgba(255, 255, 255, 0.3) 50%,
-                  rgba(255, 255, 255, 0) 75%
-                );
-                animation: shimmer 2s infinite;
-                z-index: 0;
-              }
-            `}</style>
+
+
 
 
           </form>
