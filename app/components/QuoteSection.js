@@ -8,7 +8,7 @@ const QuoteSection = () => {
         "Branding is not just about being seen,
       </p>
       <p className="text-lg md:text-2xl font-serif mb-6">
-        it's about being remembered."
+        it&apos;s about being remembered."
         
       </p>
 
