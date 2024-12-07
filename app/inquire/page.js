@@ -272,7 +272,7 @@ const Inquire = () => {
               )}
             </AnimatePresence>
 
-            <p className="md:text-md pt-5 md:pt-10 text-[#36302A]">
+            <p className="md:text-md pt-5 md:pt-5 text-[#36302A]">
               Phone <span className="text-sm text-[#86807A] ml-1">(required)</span>
             </p>
             <div className="flex items-center gap-4 py-2">
