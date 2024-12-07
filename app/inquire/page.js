@@ -13,6 +13,12 @@ const Inquire = () => {
   const [email, setEmail] = useState('');
   const [company, setCompany] = useState('');
   const [website, setWebsite] = useState('');
+  const [socials, setSocials] = useState('');
+  const [socialsError, setSocialsError] = useState('');
+  const [services,setServices] = useState('');
+  const [servicesError , setServicesError] = useState('');
+  const [messages,setMessages] = useState('');
+  const [messagesError,setMessagesError] = useState('');
   const [websiteError, setWebsiteError] = useState('');
   const [companyError, setCompanyError] = useState('');
   const [emailError, setEmailError] = useState('');
@@ -149,6 +155,34 @@ const Inquire = () => {
     return true;
   }
 
+  const validateMessages = () =>{
+    if(!messages.trim()){
+      setMessagesError('Message is required');
+      return false;
+    }
+    setMessagesError('');
+    return true;
+  }
+
+  const validateSocials = () => {
+    if (!socials.trim()) {
+      setSocialsError('Socials are required');
+      return false;
+    }
+    setSocialsError('');
+    return true;
+  }
+
+  const validateServices = () =>{
+    if(!services.trim())
+    {
+      setServicesError('This field is required');
+      return false;
+    }
+    setServicesError('');
+    return true;
+  }
+
   const validatePhoneCode = () => {
     if (!phoneDialCode.trim()) {
       setPhoneCodeError('Phone Code is required');
@@ -177,8 +211,11 @@ const Inquire = () => {
     const isCompanyValid = validateCompany();
     const isWebsiteValid = validateWebsite();
     const isPhoneCodeValid = validatePhoneCode();
+    const isSocialsValid = validateSocials();
+    const isServicesValid = validateServices();
+    const isMessagesValid = validateMessages();
 
-    if (isPhoneValid && isEmailValid && isFirstNameValid && isCompanyValid && isWebsiteValid && isPhoneCodeValid) {
+    if (isPhoneValid && isEmailValid && isFirstNameValid && isCompanyValid && isWebsiteValid && isPhoneCodeValid && isSocialsValid && isServicesValid && isMessagesValid) {
       // Simulate form submission delay
       setTimeout(() => {
         // Reset all fields
@@ -189,6 +226,9 @@ const Inquire = () => {
         setCompany('');
         setWebsite('');
         setPhoneDialCode('');
+        setMessages('');
+        setSocials('');
+        setServices('');
         setIsChecked(false);
 
         // Show success message
@@ -387,7 +427,7 @@ const Inquire = () => {
 
 
             <div className="flex flex-col py-1">
-              <label className="text-sm text-[#36302A]">
+              <label className="text-sm text-[#36302A] mb-1">
                 Your Company/Brand&apos;s Name <span className="text-[#86807A] ml-1">(required)</span>
               </label>
               <input
@@ -405,7 +445,7 @@ const Inquire = () => {
             </div>
 
             <div className='flex flex-col py-1'>
-              <label className='text-sm text-[#36302A]'>
+              <label className='text-sm text-[#36302A] mb-1'>
                 Your Website <span className="text-[#86807A] ml-1">(required)</span>
               </label>
               <input
@@ -418,6 +458,59 @@ const Inquire = () => {
                 className="bg-[#EFE7DD] text-[#36302A] border border-transparent focus:outline-none focus:ring-1 focus:ring-[#36302A] hover:border-[#36302A] px-3 py-2 rounded-lg w-full"
               />{websiteError && (
                 <p className="text-sm text-red-600 mt-1">{websiteError}</p>
+              )}
+            </div>
+
+            <div className='flex flex-col py-1'>
+              <label className='text-sm text-[#36302A]'>
+                Your Socials <span className='text-[#86807A] ml-1'>(required)</span>
+              </label>
+              <p className='text-sm text-[#86807A] pt-2 pb-1'>Instagram/Facebook/Threads/Youtube/TikTok/More (Show us everything!)</p>
+              <input
+                type='socials'
+                value={socials}
+                onChange={(e) => {
+                  setSocials(e.target.value);
+                  if (socialsError) setSocialsError('');
+                }}
+                className="bg-[#EFE7DD] text-[#36302A] border border-transparent focus:outline-none focus:ring-1 focus:ring-[#36302A] hover:border-[#36302A] px-3 py-2 rounded-lg w-full"
+              />{socialsError && (
+                <p className="text-sm text-red-600 mt-1">{socialsError}</p>
+              )}
+            </div>
+
+            <div className='flex flex-col py-2'>
+              <label className='text-sm text-[#36302A] mb-1'>
+                What services are you interested in? <span className='text-[#86807A] ml-1'>(required)</span>
+              </label>
+              <input
+                type='services'
+                value={services}
+                onChange={(e) => {
+                  setServices(e.target.value);
+                  if (servicesError) setServicesError('');
+                }}
+                className="bg-[#EFE7DD] text-[#36302A] border border-transparent focus:outline-none focus:ring-1 focus:ring-[#36302A] hover:border-[#36302A] px-3 py-2 rounded-lg w-full"
+              />{servicesError && (
+                <p className="text-sm text-red-600 mt-1">{servicesError}</p>
+              )}
+            </div>
+
+            <div className='flex flex-col py-2'>
+              <label className='text-sm text-[#36302A] mb-1'>
+                Message <span className='text-[#86807A] ml-1'>(required)</span>
+              </label>
+              <textarea
+              type='messages'
+              value={messages}
+              onChange={(e)=>{
+                setMessages(e.target.value);
+                if(messagesError) setMessagesError('');
+              }}
+              className="bg-[#EFE7DD] text-[#36302A] border border-transparent focus:outline-none focus:ring-1 focus:ring-[#36302A] hover:border-[#36302A] px-3 py-2 rounded-lg w-full"
+              />
+              {messagesError && (
+                <p className="text-sm text-red-600 mt-1">{messagesError}</p>
               )}
             </div>
 
@@ -444,7 +537,7 @@ const Inquire = () => {
 
             <motion.button
               type="submit"
-              className="mt-5 md:mt-10 px-5 py-3 md:py-4 md:w-28 text-sm rounded-md md:rounded-md bg-[#36302A] text-white relative overflow-hidden"
+              className="mt-5 md:mt-2 px-5 py-3 md:py-4 md:w-28 text-sm rounded-md md:rounded-md bg-[#36302A] text-white relative overflow-hidden"
               disabled={isSubmitting}
               whileHover={{
                 scale: 1.05, // Slight scale-up on hover
