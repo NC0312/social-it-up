@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 
 const QuoteSection = () => {
   return (
-    <div className="bg-[#36302A] text-[#F6F3EE] py-40 px-8 text-center">
+    <div className="bg-[#36302A] text-[#F6F3EE] py-40 px-8 text-center" style={{userSelect:"none"}}>
       <p className="text-6xl font-serif font-medium mb-6">
         &quot;Branding is not just about being seen,
       </p>

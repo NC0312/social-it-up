@@ -37,6 +37,16 @@ export default function HomeExt1() {
         setIsAnimationPaused(!isAnimationPaused);
     };
 
+    const handleMouseEnter = () => {
+        controls.stop();
+    };
+
+    const handleMouseLeave = () => {
+        // Continue animation from the current position
+        const currentX = x.get();
+        startAnimation(currentX);
+    };
+
     useEffect(() => {
         const handleClick = (e) => {
             if (!e.target.closest('button')) {
@@ -77,6 +87,8 @@ export default function HomeExt1() {
                         className="flex"
                         animate={controls}
                         style={{ x, cursor: 'default', userSelect: 'none' }}
+                        onMouseEnter={handleMouseEnter} 
+                        onMouseLeave={handleMouseLeave} 
                     >
                         {textElements}
                     </motion.div>
@@ -86,13 +98,13 @@ export default function HomeExt1() {
             {/* Image and Content Section */}
             <div className="flex flex-col md:flex-row items-center justify-center bg-[#F7F4EF] px-6 py-16 md:px-20">
                 {/* Left Image */}
-                <div className="relative w-full px-6 md:px-36 md:w-1/2 z-10 mb-10 md:mb-0 -mt-[100px] md:-mt-[100px] flex justify-center">
+                <div className="relative w-full px-6 md:px-36 md:w-1/2 z-10 mb-10 md:mb-0 -mt-[100px] md:-mt-[100px] flex justify-center" style={{userSelect:"none"}}>
                     <img
                         src="/home1.jpeg"
                         alt="Branding Image"
                         className="rounded-3xl shadow-md"
                         style={{
-
+                            userSelect:"none",
                             // maxWidth: '850px', // Max width for larger screens
                             // maxHeight: '850px', // Max height for larger screens
                             width: '100%',  // Set to full width for mobile screens
@@ -105,7 +117,7 @@ export default function HomeExt1() {
 
 
                 {/* Right Content */}
-                <div className="w-full md:w-1/2 md:pl-10 md:mt-[-50px] flex flex-col items-center justify-center">
+                <div className="w-full md:w-1/2 md:pl-10 md:mt-[-50px] flex flex-col items-center justify-center" style={{userSelect:"none"}}>
                     <p className="text-md md:text-lg text-[#36302A] mb-6">
                         In today&apos;s fast-paced market, effective branding is more than just
                         a logo or a catchy tagline; it&apos;s the essence of your business.
