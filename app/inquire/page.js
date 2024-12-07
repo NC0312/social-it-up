@@ -391,7 +391,7 @@ const Inquire = () => {
 
             <motion.button
               type="submit"
-              className="mt-5 md:mt-10 px-5 py-3 md:py-6 md:w-28 text-sm rounded-md md:rounded-xl bg-[#36302A] text-white relative overflow-hidden"
+              className="mt-5 md:mt-10 px-5 py-3 md:py-4 md:w-28 text-sm rounded-md md:rounded-md bg-[#36302A] text-white relative overflow-hidden"
               disabled={isSubmitting}
               whileHover={{
                 scale: 1.05, // Slight scale-up on hover
