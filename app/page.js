@@ -1,4 +1,5 @@
 import HomeExt1 from "./components/HomeExt1";
+import QuoteSection from "./components/QuoteSection";
 
 export default function Home() {
   return (
@@ -14,6 +15,7 @@ export default function Home() {
       />
     </div>
     <HomeExt1/>
+    <QuoteSection/>
     </>
   );
 }
