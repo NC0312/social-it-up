@@ -241,7 +241,7 @@ const Inquire = () => {
                     setFirstName(e.target.value);
                     if (firstNameError) setFirstNameError('');
                   }}
-                  className="bg-[#EFE7DD] text-[#36302A] border border-transparent focus:outline-none focus:ring-1 focus:ring-[#36302A] hover:border-[#36302A] px-3 py-1 rounded-lg w-full"
+                  className="bg-[#EFE7DD] text-[#36302A] border border-transparent focus:outline-none focus:ring-1 focus:ring-[#36302A] hover:border-[#36302A] px-3 py-2 rounded-lg w-full"
                 />
                 {firstNameError && (
                   <p className="text-sm text-red-600 mt-1">{firstNameError}</p>
@@ -254,7 +254,7 @@ const Inquire = () => {
                   name="last-name"
                   value={lastName}
                   onChange={(e) => setLastName(e.target.value)}
-                  className="bg-[#EFE7DD] text-[#36302A] border border-transparent focus:outline-none focus:ring-1 focus:ring-[#36302A] hover:border-[#36302A] px-3 py-1 rounded-lg w-full"
+                  className="bg-[#EFE7DD] text-[#36302A] border border-transparent focus:outline-none focus:ring-1 focus:ring-[#36302A] hover:border-[#36302A] px-3 py-2 rounded-lg w-full"
                 />
               </div>
             </div>
@@ -270,7 +270,7 @@ const Inquire = () => {
                   setEmail(e.target.value);
                   if (emailError) setEmailError('');
                 }}
-                className="bg-[#EFE7DD] text-[#36302A] border border-transparent focus:outline-none focus:ring-1 focus:ring-[#36302A] hover:border-[#36302A] px-3 py-1 rounded-lg w-full"
+                className="bg-[#EFE7DD] text-[#36302A] border border-transparent focus:outline-none focus:ring-1 focus:ring-[#36302A] hover:border-[#36302A] px-3 py-2 rounded-lg w-full"
               />
               {emailError && (
                 <p className="text-sm text-red-600 mt-1">{emailError}</p>
@@ -317,7 +317,7 @@ const Inquire = () => {
                 type="tel"
                 value={phoneNumber}
                 onChange={handlePhoneChange}
-                className="bg-[#EFE7DD] text-[#36302A] border border-transparent focus:outline-none focus:ring-1 focus:ring-[#36302A] hover:border-[#36302A] px-3 py-1 rounded-lg w-full"
+                className="bg-[#EFE7DD] text-[#36302A] border border-transparent focus:outline-none focus:ring-1 focus:ring-[#36302A] hover:border-[#36302A] px-3 py-2 rounded-lg w-full"
               />
             </div>
 
@@ -344,7 +344,7 @@ const Inquire = () => {
                   setCompany(e.target.value);
                   if (companyError) setCompanyError('');
                 }}
-                className="bg-[#EFE7DD] text-[#36302A] border border-transparent focus:outline-none focus:ring-1 focus:ring-[#36302A] hover:border-[#36302A] px-3 py-1 rounded-lg w-full"
+                className="bg-[#EFE7DD] text-[#36302A] border border-transparent focus:outline-none focus:ring-1 focus:ring-[#36302A] hover:border-[#36302A] px-3 py-2 rounded-lg w-full"
               />
               {companyError && (
                 <p className="text-sm text-red-600 mt-1">{companyError}</p>
@@ -362,7 +362,7 @@ const Inquire = () => {
                   setWebsite(e.target.value);
                   if (websiteError) setWebsiteError('');
                 }}
-                className="bg-[#EFE7DD] text-[#36302A] border border-transparent focus:outline-none focus:ring-1 focus:ring-[#36302A] hover:border-[#36302A] px-3 py-1 rounded-lg w-full"
+                className="bg-[#EFE7DD] text-[#36302A] border border-transparent focus:outline-none focus:ring-1 focus:ring-[#36302A] hover:border-[#36302A] px-3 py-2 rounded-lg w-full"
               />{websiteError && (
                 <p className="text-sm text-red-600 mt-1">{websiteError}</p>
               )}

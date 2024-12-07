@@ -1233,7 +1233,7 @@ const CountrySelector = ({ onChange }) => {
           );
           handleChange(selected);
         }}
-        className="bg-[#EFE7DD] text-[#36302A] border border-transparent focus:outline-none focus:ring-1 focus:ring-[#36302A] hover:border-[#36302A] px-3 py-1.5 rounded-lg w-full"
+        className="bg-[#EFE7DD] text-[#36302A] border border-transparent focus:outline-none focus:ring-1 focus:ring-[#36302A] hover:border-[#36302A] px-3 py-2.5 rounded-lg w-full"
       >
         <option value="" disabled>
           Select country code
