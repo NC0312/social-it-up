@@ -189,7 +189,7 @@ const Inquire = () => {
           <form className="px-6 md:px-10 w-full py-5 md:py-0 z-20 bg-[#FAF4ED]" onSubmit={handleSubmit}>
             <p className="text-[#36302A] text-sm md:text-lg">
               Interested in working together? Fill out some info and we will be in
-              touch shortly! We can't wait to hear from you!
+              touch shortly! We can&apos;t wait to hear from you!
             </p>
 
             <p className="md:text-md pt-5 md:pt-10 text-[#36302A]">
