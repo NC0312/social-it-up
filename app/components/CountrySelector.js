@@ -1214,19 +1214,19 @@ const CountrySelector = ({ onChange }) => {
     }
   ]
 
-  const [selectedCountry, setSelectedCountry] = useState(countries[0]);
+  const [selectedCountry, setSelectedCountry] = useState(null);
 
   const handleChange = (selected) => {
     setSelectedCountry(selected);
     if (onChange) {
-      onChange(selected.dial_code); // Call the onChange prop with the selected dial code
+      onChange(selected?.dial_code || ''); // Call the onChange prop with the selected dial code
     }
   };
 
   return (
     <div className="flex items-center gap-3">
       <select
-        value={selectedCountry.dial_code}
+        value={selectedCountry ? selectedCountry.dial_code : ''}
         onChange={(e) => {
           const selected = countries.find(
             (country) => country.dial_code === e.target.value
@@ -1235,6 +1235,9 @@ const CountrySelector = ({ onChange }) => {
         }}
         className="bg-[#EFE7DD] text-[#36302A] border border-transparent focus:outline-none focus:ring-1 focus:ring-[#36302A] hover:border-[#36302A] px-3 py-1.5 rounded-lg w-full"
       >
+        <option value="" disabled>
+          Select country code
+        </option>
         {countries.map((country) => (
           <option key={country.code} value={country.dial_code}>
             {country.name} ({country.dial_code})
