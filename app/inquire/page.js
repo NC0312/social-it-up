@@ -320,7 +320,7 @@ const Inquire = () => {
 
             <div className="flex flex-col py-1">
               <label className="text-sm text-[#36302A]">
-                Your Company/Brand's Name <span className="text-[#86807A] ml-1">(required)</span>
+                Your Company/Brand&apos;s Name <span className="text-[#86807A] ml-1">(required)</span>
               </label>
               <input
                 type="company"
