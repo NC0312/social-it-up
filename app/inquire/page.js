@@ -7,6 +7,7 @@ const Inquire = () => {
   const [isChecked, setIsChecked] = useState(false);
   const [message, setMessage] = useState('');
   const [phoneDialCode, setPhoneDialCode] = useState('');
+  const [phoneCodeError, setPhoneCodeError] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [phoneError, setPhoneError] = useState('');
   const [email, setEmail] = useState('');
@@ -148,6 +149,15 @@ const Inquire = () => {
     return true;
   }
 
+  const validatePhoneCode = () => {
+    if (!phoneDialCode.trim()) {
+      setPhoneCodeError('Phone Code is required');
+      return false;
+    }
+    setPhoneCodeError('');
+    return true;
+  }
+
   const validateFirstName = () => {
     if (!firstName.trim()) {
       setFirstNameError('First name is required');
@@ -166,8 +176,9 @@ const Inquire = () => {
     const isFirstNameValid = validateFirstName();
     const isCompanyValid = validateCompany();
     const isWebsiteValid = validateWebsite();
+    const isPhoneCodeValid = validatePhoneCode();
 
-    if (isPhoneValid && isEmailValid && isFirstNameValid && isCompanyValid && isWebsiteValid) {
+    if (isPhoneValid && isEmailValid && isFirstNameValid && isCompanyValid && isWebsiteValid && isPhoneCodeValid) {
       // Simulate form submission delay
       setTimeout(() => {
         // Reset all fields
@@ -177,6 +188,7 @@ const Inquire = () => {
         setPhoneNumber('');
         setCompany('');
         setWebsite('');
+        setPhoneDialCode('');
         setIsChecked(false);
 
         // Show success message
@@ -308,10 +320,11 @@ const Inquire = () => {
             <p className="md:text-md pt-5 md:pt-2 text-[#36302A]">
               Phone <span className="text-sm text-[#86807A] ml-1">(required)</span>
             </p>
-            <div className="flex items-center gap-4 py-0">
+            {/* <div className="flex items-center gap-4 py-0">
               <CountrySelector
                 onChange={(dialCode) => setPhoneDialCode(dialCode)}
               />
+               
 
               <input
                 type="tel"
@@ -320,6 +333,10 @@ const Inquire = () => {
                 className="bg-[#EFE7DD] text-[#36302A] border border-transparent focus:outline-none focus:ring-1 focus:ring-[#36302A] hover:border-[#36302A] px-3 py-2 rounded-lg w-full"
               />
             </div>
+
+            {phoneCodeError && (
+                  <p className="text-sm text-red-600 mt-1">{phoneCodeError}</p>
+                )}
 
             {phoneError && (
               <motion.div
@@ -331,7 +348,43 @@ const Inquire = () => {
               >
                 {phoneError}
               </motion.div>
-            )}
+            )} */}
+
+            <div className="flex items-center gap-4 py-0">
+              {/* Country Selector */}
+              <div className="flex-1">
+                <CountrySelector
+                  onChange={(dialCode) => setPhoneDialCode(dialCode)}
+                />
+                {/* Dial Code Error */}
+                {phoneCodeError && (
+                  <p className="text-sm text-red-600 mt-1">{phoneCodeError}</p>
+                )}
+              </div>
+
+              {/* Phone Number Input */}
+              <div className="flex-1">
+                <input
+                  type="tel"
+                  value={phoneNumber}
+                  onChange={handlePhoneChange}
+                  className="bg-[#EFE7DD] text-[#36302A] border border-transparent focus:outline-none focus:ring-1 focus:ring-[#36302A] hover:border-[#36302A] px-3 py-2 rounded-lg w-full"
+                />
+                {/* Phone Number Error */}
+                {phoneError && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.5 }}
+                    className="text-sm text-red-600 mt-2"
+                  >
+                    {phoneError}
+                  </motion.div>
+                )}
+              </div>
+            </div>
+
 
             <div className="flex flex-col py-1">
               <label className="text-sm text-[#36302A]">
