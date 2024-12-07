@@ -2,6 +2,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { motion, useAnimation, useMotionValue, AnimatePresence } from 'framer-motion';
 import CountrySelector from '../components/CountrySelector';
+import { FaInfoCircle } from "react-icons/fa";
+
 
 const Inquire = () => {
   const [isChecked, setIsChecked] = useState(false);
@@ -296,7 +298,7 @@ const Inquire = () => {
                   className="bg-[#EFE7DD] text-[#36302A] border border-transparent focus:outline-none focus:ring-1 focus:ring-[#36302A] hover:border-[#36302A] px-3 py-2 rounded-lg w-full"
                 />
                 {firstNameError && (
-                  <p className="text-sm text-red-600 mt-1">{firstNameError}</p>
+                  <p className="text-sm text-red-600 mt-1 flex items-center gap-1"><FaInfoCircle /> {firstNameError}</p>
                 )}
               </div>
 
@@ -325,7 +327,7 @@ const Inquire = () => {
                 className="bg-[#EFE7DD] text-[#36302A] border border-transparent focus:outline-none focus:ring-1 focus:ring-[#36302A] hover:border-[#36302A] px-3 py-2 rounded-lg w-full"
               />
               {emailError && (
-                <p className="text-sm text-red-600 mt-1">{emailError}</p>
+                <p className="text-sm text-red-600 mt-1 flex items-center gap-1"><FaInfoCircle/>{emailError}</p>
               )}
             </div>
 
@@ -398,7 +400,7 @@ const Inquire = () => {
                 />
                 {/* Dial Code Error */}
                 {phoneCodeError && (
-                  <p className="text-sm text-red-600 mt-1">{phoneCodeError}</p>
+                  <p className="text-sm text-red-600 mt-1 flex items-center gap-1"><FaInfoCircle/> {phoneCodeError}</p>
                 )}
               </div>
 
@@ -417,9 +419,9 @@ const Inquire = () => {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
                     transition={{ duration: 0.5 }}
-                    className="text-sm text-red-600 mt-2"
+                    className="text-sm text-red-600 mt-2 flex items-center gap-1"
                   >
-                    {phoneError}
+                    <FaInfoCircle/> {phoneError}
                   </motion.div>
                 )}
               </div>
@@ -440,7 +442,7 @@ const Inquire = () => {
                 className="bg-[#EFE7DD] text-[#36302A] border border-transparent focus:outline-none focus:ring-1 focus:ring-[#36302A] hover:border-[#36302A] px-3 py-2 rounded-lg w-full"
               />
               {companyError && (
-                <p className="text-sm text-red-600 mt-1">{companyError}</p>
+                <p className="text-sm text-red-600 mt-1 flex items-center gap-1"><FaInfoCircle/> {companyError}</p>
               )}
             </div>
 
@@ -457,7 +459,7 @@ const Inquire = () => {
                 }}
                 className="bg-[#EFE7DD] text-[#36302A] border border-transparent focus:outline-none focus:ring-1 focus:ring-[#36302A] hover:border-[#36302A] px-3 py-2 rounded-lg w-full"
               />{websiteError && (
-                <p className="text-sm text-red-600 mt-1">{websiteError}</p>
+                <p className="text-sm text-red-600 mt-1 flex items-center gap-1"><FaInfoCircle/> {websiteError}</p>
               )}
             </div>
 
@@ -475,7 +477,7 @@ const Inquire = () => {
                 }}
                 className="bg-[#EFE7DD] text-[#36302A] border border-transparent focus:outline-none focus:ring-1 focus:ring-[#36302A] hover:border-[#36302A] px-3 py-2 rounded-lg w-full"
               />{socialsError && (
-                <p className="text-sm text-red-600 mt-1">{socialsError}</p>
+                <p className="text-sm text-red-600 mt-1 flex items-center gap-1"><FaInfoCircle/> {socialsError}</p>
               )}
             </div>
 
@@ -492,7 +494,7 @@ const Inquire = () => {
                 }}
                 className="bg-[#EFE7DD] text-[#36302A] border border-transparent focus:outline-none focus:ring-1 focus:ring-[#36302A] hover:border-[#36302A] px-3 py-2 rounded-lg w-full"
               />{servicesError && (
-                <p className="text-sm text-red-600 mt-1">{servicesError}</p>
+                <p className="text-sm text-red-600 mt-1 flex items-center gap-1"><FaInfoCircle/> {servicesError}</p>
               )}
             </div>
 
@@ -510,7 +512,7 @@ const Inquire = () => {
               className="bg-[#EFE7DD] text-[#36302A] border border-transparent focus:outline-none focus:ring-1 focus:ring-[#36302A] hover:border-[#36302A] px-3 py-2 rounded-lg w-full"
               />
               {messagesError && (
-                <p className="text-sm text-red-600 mt-1">{messagesError}</p>
+                <p className="text-sm text-red-600 mt-1 flex items-center gap-1"><FaInfoCircle/> {messagesError}</p>
               )}
             </div>
 
