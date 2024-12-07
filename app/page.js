@@ -1,4 +1,5 @@
 import HomeExt1 from "./components/HomeExt1";
+import LegacyCarousel from "./components/LegacyCarousel";
 import QuoteSection from "./components/QuoteSection";
 
 export default function Home() {
@@ -16,6 +17,7 @@ export default function Home() {
     </div>
     <HomeExt1/>
     <QuoteSection/>
+    {/* <LegacyCarousel/> */}
     </>
   );
 }
