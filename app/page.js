@@ -17,7 +17,7 @@ export default function Home() {
     </div>
     <HomeExt1/>
     <QuoteSection/>
-    {/* <LegacyCarousel/> */}
+    <LegacyCarousel/>
     </>
   );
 }
