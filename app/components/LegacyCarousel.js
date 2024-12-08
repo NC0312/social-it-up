@@ -91,7 +91,7 @@ const LegacyCarousel = () => {
                             >
                                 <div className="h-[200px] w-screen pr-8 md:h-[300px] md:w-full overflow-hidden">
                                     <div className="h-full bg-white rounded-lg overflow-hidden shadow-md group">
-                                        <div className="relative h-full">
+                                        <div className="relative h-full cursor-pointer">
                                             <img
                                                 src={slide.image}
                                                 alt={slide.alt}
