@@ -96,7 +96,7 @@ const LegacyCarousel = () => {
   };
 
   return (
-    <div className="bg-[#FAF4ED] py-16">
+    <div className="bg-[#FAF4ED] py-16 overflow-x-hidden">
       <h2 className="text-center text-[45px] leading-[67px] text-[#36302A] font-serif font-bold mb-12">
         Our Legacy
       </h2>
@@ -120,7 +120,7 @@ const LegacyCarousel = () => {
                 key={index}
                 className={`flex-shrink-0 ${isMobile ? "w-full" : "w-[calc(100%/4)]"}`}
               >
-                <div className="h-[200px] w-[350px] mx-1 md:h-[400px] md:w-full overflow-hidden flex-shrink-0 px-2">
+                <div className="h-[200px] w-[400px] mx-4 md:h-[400px] md:w-full overflow-hidden flex-shrink-0 px-2">
                   <div className="h-full bg-white rounded-lg overflow-hidden shadow-md">
                     <div className="relative h-full">
                       <img
