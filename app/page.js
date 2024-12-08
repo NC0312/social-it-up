@@ -1,5 +1,6 @@
 import Endorsements from "./components/Endorsements";
 import FAQs from "./components/faqs";
+import HeroSection from "./components/HeroSection";
 import HomeExt1 from "./components/HomeExt1";
 import LegacyCarousel from "./components/LegacyCarousel";
 import OurServices from "./components/OurServices";
@@ -24,6 +25,7 @@ export default function Home() {
     <Endorsements/>
     <OurServices/>
     <FAQs/>
+    <HeroSection/>
     </>
   );
 }
