@@ -1,14 +1,15 @@
 "use client";
 import { useState, useEffect } from "react";
-import { motion, useAnimation, useMotionValue } from 'framer-motion';
+import { motion } from 'framer-motion';
 
 const LegacyCarousel = () => {
     const slides = [
-        { image: "/legacy-carousel/boxongo.png", alt: "Boxongo" },
-        { image: "/legacy-carousel/ecojet.png", alt: "Airplane Design" },
-        { image: "/legacy-carousel/taiga-2.png", alt: "TAIGA 2" },
-        { image: "/legacy-carousel/cbse.png", alt: "CBSE" },
-        { image: "/legacy-carousel/taiga.png", alt: "TAIGA - Across Horizon" },
+        { image: "/legacy-carousel/boxongo.png", alt: "Boxongo", name: "Boxongo" },
+        { image: "/legacy-carousel/ecojet.png", alt: "Airplane Design", name: "Ecojet" },
+        { image: "/legacy-carousel/taiga-2.png", alt: "TAIGA 2", name: "TAIGA 2" },
+        // { image: "/legacy-carousel/cbse.png", alt: "CBSE", name: "CBSE" },
+        {image:"/work-images/image3.png",alt:"indo canadian",name:"Indo Canadian"},
+        { image: "/legacy-carousel/taiga.png", alt: "TAIGA - Across Horizon", name: "TAIGA - Across Horizon" },
     ];
 
     const duplicatedSlides = [
@@ -20,8 +21,6 @@ const LegacyCarousel = () => {
     const [currentIndex, setCurrentIndex] = useState(1); // Start at the first real slide
     const [isTransitioning, setIsTransitioning] = useState(false);
     const [isMobile, setIsMobile] = useState(false);
-    const [startX, setStartX] = useState(0);
-    const [endX, setEndX] = useState(0);
 
     // Detect if the viewport is mobile
     useEffect(() => {
@@ -30,33 +29,6 @@ const LegacyCarousel = () => {
         window.addEventListener("resize", updateView);
         return () => window.removeEventListener("resize", updateView);
     }, []);
-
-    const handleTouchStart = (e) => {
-        setStartX(e.touches[0].clientX);
-    };
-
-    const handleTouchMove = (e) => {
-        setEndX(e.touches[0].clientX);
-    };
-
-    const handleTouchEnd = () => {
-        if (isTransitioning) return;
-
-        const swipeDistance = startX - endX;
-        const swipeThreshold = 50; // Minimum swipe distance to trigger navigation
-
-        if (swipeDistance > swipeThreshold) {
-            // Swipe left, move to the next slide
-            nextSlide();
-        } else if (swipeDistance < -swipeThreshold) {
-            // Swipe right, move to the previous slide
-            prevSlide();
-        }
-
-        // Reset swipe state
-        setStartX(0);
-        setEndX(0);
-    };
 
     const nextSlide = () => {
         if (isTransitioning) return; // Prevent rapid clicks
@@ -102,7 +74,6 @@ const LegacyCarousel = () => {
                 Our Legacy
             </h2>
 
-            {/* Added overflow-hidden to prevent x-axis overflow on mobile */}
             <div className="max-w-7xl mx-auto px-4 overflow-hidden">
                 <div className="relative">
                     {/* Carousel Container */}
@@ -112,9 +83,6 @@ const LegacyCarousel = () => {
                             transform: `translateX(-${currentIndex * (isMobile ? 100 : 25)}%)`,
                             width: `${duplicatedSlides.length * (isMobile ? 75 : 25)}%`,
                         }}
-                        onTouchStart={handleTouchStart}
-                        onTouchMove={handleTouchMove}
-                        onTouchEnd={handleTouchEnd}
                     >
                         {duplicatedSlides.map((slide, index) => (
                             <div
@@ -122,13 +90,17 @@ const LegacyCarousel = () => {
                                 className={`flex-shrink-0 ${isMobile ? "w-full" : "w-[calc(100%/4)]"}`}
                             >
                                 <div className="h-[200px] w-screen pr-8 md:h-[300px] md:w-full overflow-hidden">
-                                    <div className="h-full bg-white rounded-lg overflow-hidden shadow-md">
+                                    <div className="h-full bg-white rounded-lg overflow-hidden shadow-md group">
                                         <div className="relative h-full">
                                             <img
                                                 src={slide.image}
                                                 alt={slide.alt}
-                                                className="absolute inset-0 w-full h-full object-cover"
+                                                className="absolute inset-0 w-full h-full object-cover transition-all duration-300 group-hover:scale-105 group-hover:shadow-xl"
                                             />
+                                            {/* Company Name Overlay */}
+                                            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 bg-black bg-opacity-50 transition-opacity duration-300">
+                                                <h3 className="text-white text-lg font-semibold">{slide.name}</h3>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -140,7 +112,7 @@ const LegacyCarousel = () => {
                     <div className="flex justify-center items-center mt-8 gap-6">
                         <button
                             onClick={prevSlide}
-                            className="w-10 h-10 md:w-14 md:h-14 flex items-center justify-center rounded-full bg-[#36302A]  md:bg-[#716B64] text-white md:hover:bg-[#36302A] transition-colors duration-300"
+                            className="w-10 h-10 md:w-14 md:h-14 flex items-center justify-center rounded-full bg-[#36302A] md:bg-[#716B64] text-white md:hover:bg-[#36302A] transition-colors duration-300"
                         >
                             <span className="text-2xl">←</span>
                         </button>
@@ -169,29 +141,21 @@ const LegacyCarousel = () => {
 
                 {/* View More Button */}
                 <div className="flex justify-center mt-8 md:mt-12">
-                    {/* <button
-                        onClick={handleViewMore}
-                        className="px-20 py-3 md:px-8 md:py-5 bg-[#36302A] text-sm text-white rounded-md md:rounded-xl hover:bg-[#716B64] transition-colors duration-300 font-light"
-                    >
-                        View More
-                    </button> */}
                     <motion.button
-                            className="bg-[#36302A] text-[#F6F3EE] px-20 py-3 md:px-12 md:py-5 rounded-md md:rounded-xl transition-all mt-5"
-                            onClick={handleViewMore}
-                            initial={{ scale: 1 }}
-                            whileHover={{
-                                //   scale: 1.05, // Slightly increase size on hover
-                                backgroundColor: '#4A3F31', // Slight color change on hover
-                                // transition: { duration: 0.3 },
-                            }}
-                            whileTap={{
-                                scale: 0.98, // Shrink the button slightly when clicked to simulate pressing
-                                boxShadow: '0px 10px 20px rgba(0, 0, 0, 0.2)', // Slight shadow on click
-                                transition: { type: 'spring', stiffness: 200, damping: 20 },
-                            }}
-                        >
-                            View more
-                        </motion.button>
+                        className="bg-[#36302A] text-[#F6F3EE] px-20 py-3 md:px-12 md:py-5 rounded-md md:rounded-xl transition-all mt-5"
+                        onClick={handleViewMore}
+                        initial={{ scale: 1 }}
+                        whileHover={{
+                            backgroundColor: '#4A3F31',
+                        }}
+                        whileTap={{
+                            scale: 0.98,
+                            boxShadow: '0px 10px 20px rgba(0, 0, 0, 0.2)',
+                            transition: { type: 'spring', stiffness: 200, damping: 20 },
+                        }}
+                    >
+                        View more
+                    </motion.button>
                 </div>
             </div>
         </div>
