@@ -120,7 +120,7 @@ const LegacyCarousel = () => {
                                 key={index}
                                 className={`flex-shrink-0 ${isMobile ? "w-full" : "w-[calc(100%/4)]"}`}
                             >
-                                <div className="h-[200px] w-screen pr-8 md:h-[400px] md:w-full overflow-hidden flex-shrink-0 md:px-2">
+                                <div className="h-[200px] w-screen pr-8 md:h-[300px] md:w-full overflow-hidden">
                                     <div className="h-full bg-white rounded-lg overflow-hidden shadow-md">
                                         <div className="relative h-full">
                                             <img
