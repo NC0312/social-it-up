@@ -1,5 +1,4 @@
 import Endorsements from "./components/Endorsements";
-import FAQs from "./components/faqs";
 import HomeExt1 from "./components/HomeExt1";
 import LegacyCarousel from "./components/LegacyCarousel";
 import OurServices from "./components/OurServices";
@@ -23,7 +22,6 @@ export default function Home() {
     <LegacyCarousel/>
     <Endorsements/>
     <OurServices/>
-    <FAQs/>
     </>
   );
 }
