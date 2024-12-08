@@ -2,6 +2,8 @@
 import React, { useState } from 'react';
 import { AiOutlinePlus, AiOutlineMinus } from 'react-icons/ai';
 import { motion } from 'framer-motion';
+import { IoIosArrowUp } from "react-icons/io";
+import { IoIosArrowDown } from "react-icons/io";
 
 const FAQs = () => {
     const [openSection, setOpenSection] = useState('');
@@ -26,19 +28,19 @@ const FAQs = () => {
     ];
 
     return (
-        <div className="w-full py-36 h-full bg-[#FAF4ED] text-[#36302A] mx-auto p-6 flex flex-col md:flex-row gap-48">
+        <div className="w-full py-16 h-full bg-[#FAF4ED] text-[#36302A] mx-auto p-6 flex flex-col md:flex-row gap-5 md:gap-48">
             {/* FAQS HEADING */}
             <div className="md:w-1/3 py-20 flex items-center justify-center h-full">
-                <h1 className="text-[67px] font-[700] leading-[60px] text-[rgb(54,48,42)] font-serif">FAQs</h1> {/* Title with specified font settings */}
+                <h1 className="text-5xl md:text-6xl font-[700] leading-[60px] text-[rgb(54,48,42)] font-serif">FAQs</h1> {/* Title with specified font settings */}
             </div>
 
             {/* List Section */}
             <div className="md:w-[45%] flex items-center justify-center h-full scale-110">
-                <div className="space-y-4 w-full mx-auto">
+                <div className="space-y-2 md:space-y-4 w-full mx-auto">
                     {sections.map((section, index) => (
                         <div
                             key={section.title}
-                            className={`border-b border-[#36302A] text-[26px] font-thin ${index === 0 ? 'border-t pt-5' : 'pt-2'}`}
+                            className={`border-b border-[#36302A] text-[#36302A] md:text-[26px] font-thin ${index === 0 ? 'border-t pt-5' : 'pt-2'}`}
                         >
                             {/* Accordion Title */}
                             <button
@@ -49,9 +51,9 @@ const FAQs = () => {
                             >
                                 <span>{section.title}</span>
                                 {openSection === section.title ? (
-                                    <AiOutlineMinus className="w-5 h-5 text-[#98928B]" />
+                                    <IoIosArrowUp className="w-5 h-5 text-[#36302A]" />
                                 ) : (
-                                    <AiOutlinePlus className="w-5 h-5 text-[#98928B]" />
+                                    <IoIosArrowDown  className="w-5 h-5 text-[#36302A]" />
                                 )}
                             </button>
 
@@ -63,7 +65,7 @@ const FAQs = () => {
                                 className="overflow-hidden"
                             >
                                 <div className="pb-4 space-y-4">
-                                    <p className="ml-8 text-gray-600 text-sm mt-1 leading-relaxed tracking-wide">{section.description}</p>
+                                    <p className="ml-8 text-[#36302A] text-xs md:text-sm mt-1 leading-relaxed tracking-wide">{section.description}</p>
                                 </div>
                             </motion.div>
 
