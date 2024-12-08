@@ -26,13 +26,13 @@ function Header() {
 
   useEffect(() => {
     if (isMenuOpen) {
-      document.body.style.overflow = 'hidden';
+      document.body.style.overflow = "hidden";
     } else {
-      document.body.style.overflow = 'unset';
+      document.body.style.overflow = "unset";
     }
 
     return () => {
-      document.body.style.overflow = 'unset';
+      document.body.style.overflow = "unset";
     };
   }, [isMenuOpen]);
 
@@ -45,8 +45,9 @@ function Header() {
   return (
     <div className="border-b border-[#575553] relative">
       <nav
-        className={`flex items-center justify-between px-12 py-1 md:py-2 relative z-20 ${isDevelopment ? "bg-[#6C92F0] " : ""
-          }`}
+        className={`flex items-center justify-between px-12 py-1 md:py-2 relative z-20 ${
+          isDevelopment ? "bg-[#6C92F0] " : ""
+        }`}
       >
         {/* Logo */}
         <div className="flex flex-row left-0 md:pl-5">
@@ -60,28 +61,35 @@ function Header() {
             />
           </Link>
 
-          <p className={`text-[10px] md:text-xs ${isDevelopment ? 'text-white' : 'text-[#575553]'} ml-2 mt-20`}>
+          <p
+            className={`text-[10px] md:text-xs ${
+              isDevelopment ? "text-white" : "text-[#575553]"
+            } ml-2 mt-20`}
+          >
             Made by{" "}
             <Link
               href="https://niketchawla.vercel.app/" // Replace with your desired URL
               target="_blank"
               rel="noopener noreferrer"
-              className={`${isDevelopment ? 'text-white' : 'text-[#575553]'} underline`}
+              className={`${
+                isDevelopment ? "text-white" : "text-[#575553]"
+              } underline`}
             >
               Niket Chawla
             </Link>
           </p>
-
         </div>
 
         {/* Menu Items (Desktop View) */}
         <div className="hidden md:flex pr-12">
-          <ul className="flex space-x-16">
-            {["Home", "About", "Work", "Services", "Inquire"].map((item) => (
+          <ul className="relative flex space-x-16">
+            {["Home", "About", "Work", "Services", "Inquire"].map((item, index) => (
               <li
                 key={item}
-                className={`cursor-pointer ${isDevelopment ? 'text-white' : 'text-[#575553]'} text-md font-medium pb-0.25 ${active === item ? `border-b ${isDevelopment ? 'border-white' : 'border-[#575553]'}` : ""
-                  }`}
+                className={`relative cursor-pointer ${
+                  isDevelopment ? "text-white" : "text-[#575553]"
+                } text-md font-medium`}
+                style={{userSelect:"none"}}
               >
                 <Link
                   href={item === "Home" ? "/" : `/${item.toLowerCase()}`}
@@ -90,6 +98,33 @@ function Header() {
                 >
                   {item}
                 </Link>
+
+                {/* Animated Underline */}
+                {active === item && (
+                  // <motion.div
+                    // className={`absolute bottom-[-3px] left-0 h-[2px] ${
+                    //   isDevelopment ? "bg-white" : "bg-[#575553]"
+                    // }`}
+                  //   layoutId="underline" // Framer Motion layout ID for shared animations
+                  //   style={{ height: "2px", width: "100%" }} // Adjusted height to 2px for a thinner line
+                  //   initial={{ width: 0 }}
+                  //   animate={{ width: "100%" }}
+                  //   transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                  // />
+                  <motion.div
+                  layoutId="underline"
+                  className={`absolute bottom-0 left-0 
+                  ${
+                      isDevelopment ? "bg-white" : "bg-[#575553]"
+                    }`}
+                  
+                  style={{ height: "2px", width: "100%" }} // Adjusted height to 2px for a thinner line
+                  initial={{ width: "0%" }}
+                  animate={{ width: "100%" }}
+                  exit={{ width: "0%" }}
+                  transition={{ duration: 0.4 }}
+                />
+                )}
               </li>
             ))}
           </ul>
@@ -157,8 +192,9 @@ function Header() {
               {["Home", "About", "Work", "Services", "Inquire"].map((item) => (
                 <li
                   key={item}
-                  className={`cursor-pointer text-[#575553] text-lg font-medium pb-0.25 ${active === item ? "border-b border-[#575553]" : ""
-                    }`}
+                  className={`cursor-pointer text-[#575553] text-lg font-medium pb-0.25 ${
+                    active === item ? "border-b border-[#575553]" : ""
+                  }`}
                 >
                   <Link
                     href={item === "Home" ? "/" : `/${item.toLowerCase()}`}
