@@ -35,12 +35,12 @@ const FAQs = () => {
             </div>
 
             {/* List Section */}
-            <div className="md:w-[45%] flex items-center justify-center h-full scale-110">
+            <div className="md:w-[45%] px-5 flex items-center justify-center h-full scale-110">
                 <div className="space-y-2 md:space-y-4 w-full mx-auto">
                     {sections.map((section, index) => (
                         <div
                             key={section.title}
-                            className={`border-b border-[#36302A] text-[#36302A] md:text-[26px] font-thin ${index === 0 ? 'border-t pt-5' : 'pt-2'}`}
+                            className={`border-b border-[#36302A] text-[#36302A] text-[13px] md:text-[26px] font-thin ${index === 0 ? 'border-t pt-5' : 'pt-2'}`}
                         >
                             {/* Accordion Title */}
                             <button
@@ -64,8 +64,8 @@ const FAQs = () => {
                                 transition={{ duration: 0.3, ease: 'easeInOut' }}
                                 className="overflow-hidden"
                             >
-                                <div className="pb-4 space-y-4">
-                                    <p className="ml-8 text-[#36302A] text-xs md:text-sm mt-1 leading-relaxed tracking-wide">{section.description}</p>
+                                <div className="pb-4 px-6 space-y-4">
+                                    <p className="ml-8 text-[#36302A] text-[10px] md:text-sm mt-1 leading-relaxed tracking-wide">{section.description}</p>
                                 </div>
                             </motion.div>
 
