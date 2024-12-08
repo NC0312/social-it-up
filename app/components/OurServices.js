@@ -21,7 +21,7 @@ const OurServices = () => {
                         <h2 className="text-4xl md:text-7xl font-serif font-medium text-[#36302A]">Our Services</h2>
                         <p className="text-[#36302A] max-w-md">
                             Not sure about where to start? Book a free strategy call with us,
-                            and let's map out your future together!
+                            and let&apos;s map out your future together!
                         </p>
                         <Link href="/inquire">
                         <button className="bg-[#36302A] text-[#F6F3EE] px-20 py-3 md:px-20 md:py-5 rounded-md md:rounded-xl transition-all duration-300 hover:bg-[#4A3F31]">
