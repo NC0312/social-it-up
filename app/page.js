@@ -23,7 +23,7 @@ export default function Home() {
     <LegacyCarousel/>
     <Endorsements/>
     <OurServices/>
-    <FAQs/>
+    {/* <FAQs/> */}
     </>
   );
 }
