@@ -141,13 +141,13 @@ const LegacyCarousel = () => {
                             onClick={prevSlide}
                             className="w-10 h-10 md:w-14 md:h-14 flex items-center justify-center rounded-full bg-[#36302A]  md:bg-[#716B64] text-white md:hover:bg-[#36302A] transition-colors duration-300"
                         >
-                            <span className="text-lg md:text-2xl">←</span>
+                            <span className="text-2xl">←</span>
                         </button>
                         <button
                             onClick={nextSlide}
                             className="w-10 h-10 md:w-14 md:h-14 flex items-center justify-center rounded-full bg-[#36302A] md:bg-[#716B64] text-white md:hover:bg-[#36302A] transition-colors duration-300"
                         >
-                            <span className="text-lg md:text-2xl">→</span>
+                            <span className="text-2xl">→</span>
                         </button>
                     </div>
 
