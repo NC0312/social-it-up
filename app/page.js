@@ -1,6 +1,7 @@
 import Endorsements from "./components/Endorsements";
 import HomeExt1 from "./components/HomeExt1";
 import LegacyCarousel from "./components/LegacyCarousel";
+import OurServices from "./components/OurServices";
 import QuoteSection from "./components/QuoteSection";
 
 export default function Home() {
@@ -20,6 +21,7 @@ export default function Home() {
     <QuoteSection/>
     <LegacyCarousel/>
     <Endorsements/>
+    <OurServices/>
     </>
   );
 }

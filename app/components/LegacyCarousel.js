@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
+import { motion, useAnimation, useMotionValue } from 'framer-motion';
 
 const LegacyCarousel = () => {
     const slides = [
@@ -168,12 +169,29 @@ const LegacyCarousel = () => {
 
                 {/* View More Button */}
                 <div className="flex justify-center mt-8 md:mt-12">
-                    <button
+                    {/* <button
                         onClick={handleViewMore}
                         className="px-20 py-3 md:px-8 md:py-5 bg-[#36302A] text-sm text-white rounded-md md:rounded-xl hover:bg-[#716B64] transition-colors duration-300 font-light"
                     >
                         View More
-                    </button>
+                    </button> */}
+                    <motion.button
+                            className="bg-[#36302A] text-[#F6F3EE] px-20 py-3 md:px-12 md:py-5 rounded-md md:rounded-xl transition-all mt-5"
+                            onClick={handleViewMore}
+                            initial={{ scale: 1 }}
+                            whileHover={{
+                                //   scale: 1.05, // Slightly increase size on hover
+                                backgroundColor: '#4A3F31', // Slight color change on hover
+                                // transition: { duration: 0.3 },
+                            }}
+                            whileTap={{
+                                scale: 0.98, // Shrink the button slightly when clicked to simulate pressing
+                                boxShadow: '0px 10px 20px rgba(0, 0, 0, 0.2)', // Slight shadow on click
+                                transition: { type: 'spring', stiffness: 200, damping: 20 },
+                            }}
+                        >
+                            View more
+                        </motion.button>
                 </div>
             </div>
         </div>
