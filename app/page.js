@@ -1,3 +1,4 @@
+import Endorsements from "./components/Endorsements";
 import HomeExt1 from "./components/HomeExt1";
 import LegacyCarousel from "./components/LegacyCarousel";
 import QuoteSection from "./components/QuoteSection";
@@ -18,6 +19,7 @@ export default function Home() {
     <HomeExt1/>
     <QuoteSection/>
     <LegacyCarousel/>
+    <Endorsements/>
     </>
   );
 }
