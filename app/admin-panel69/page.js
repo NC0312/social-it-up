@@ -114,22 +114,40 @@ const AdminPanel = () => {
           <thead className="bg-gray-100">
             <tr>
               <th className="border border-gray-300 px-4 py-2 text-left text-sm md:text-base font-semibold">
-                Action
+                Action <span className="text-red-500">*</span>
               </th>
               <th className="border border-gray-300 px-4 py-2 text-left text-sm md:text-base font-semibold">
-                First Name
+                Timestamp
+              </th>
+              <th className="border border-gray-300 px-4 py-2 text-left text-sm md:text-base font-semibold">
+                First Name <span className="text-red-500">*</span>
               </th>
               <th className="border border-gray-300 px-4 py-2 text-left text-sm md:text-base font-semibold">
                 Last Name
               </th>
               <th className="border border-gray-300 px-4 py-2 text-left text-sm md:text-base font-semibold">
-                Email
+                Email <span className="text-red-500">*</span>
               </th>
               <th className="border border-gray-300 px-4 py-2 text-left text-sm md:text-base font-semibold">
-                Phone Number
+                Dial Code <span className="text-red-500">*</span>
               </th>
               <th className="border border-gray-300 px-4 py-2 text-left text-sm md:text-base font-semibold">
-                Timestamp
+                Phone Number <span className="text-red-500">*</span>
+              </th>
+              <th className="border border-gray-300 px-4 py-2 text-left text-sm md:text-base font-semibold">
+               Company/Brand <span className="text-red-500">*</span>
+              </th>
+              <th className="border border-gray-300 px-4 py-2 text-left text-sm md:text-base font-semibold">
+                Services <span className="text-red-500">*</span>
+              </th>
+              <th className="border border-gray-300 px-4 py-2 text-left text-sm md:text-base font-semibold">
+                Socials <span className="text-red-500">*</span>
+              </th>
+              <th className="border border-gray-300 px-4 py-2 text-left text-sm md:text-base font-semibold">
+                Website <span className="text-red-500">*</span>
+              </th>
+              <th className="border border-gray-300 px-4 py-2 text-left text-sm md:text-base font-semibold">
+                Messages <span className="text-red-500">*</span>
               </th>
             </tr>
           </thead>
@@ -147,6 +165,13 @@ const AdminPanel = () => {
                     </button>
                   </td>
                   <td className="border border-gray-300 px-4 py-2 text-sm md:text-base">
+                    {inquiry.timestamp
+                      ? new Date(
+                        inquiry.timestamp.seconds * 1000
+                      ).toLocaleDateString()
+                      : "N/A"}
+                  </td>
+                  <td className="border border-gray-300 px-4 py-2 text-sm md:text-base">
                     {inquiry.firstName}
                   </td>
                   <td className="border border-gray-300 px-4 py-2 text-sm md:text-base">
@@ -156,14 +181,25 @@ const AdminPanel = () => {
                     {inquiry.email}
                   </td>
                   <td className="border border-gray-300 px-4 py-2 text-sm md:text-base">
+                    {inquiry.phoneDialCode}
+                  </td>
+                  <td className="border border-gray-300 px-4 py-2 text-sm md:text-base">
                     {inquiry.phoneNumber}
                   </td>
                   <td className="border border-gray-300 px-4 py-2 text-sm md:text-base">
-                    {inquiry.timestamp
-                      ? new Date(
-                          inquiry.timestamp.seconds * 1000
-                        ).toLocaleDateString()
-                      : "N/A"}
+                    {inquiry.company}
+                  </td>
+                  <td className="border border-gray-300 px-4 py-2 text-sm md:text-base">
+                    {inquiry.services}
+                  </td>
+                  <td className="border border-gray-300 px-4 py-2 text-sm md:text-base">
+                    {inquiry.socials}
+                  </td>
+                  <td className="border border-gray-300 px-4 py-2 text-sm md:text-base">
+                    {inquiry.website}
+                  </td>
+                  <td className="border border-gray-300 px-4 py-2 text-sm md:text-base">
+                    {inquiry.messages}
                   </td>
                 </tr>
               ))
