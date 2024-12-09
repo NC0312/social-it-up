@@ -82,7 +82,7 @@ function Header() {
 
         {/* Menu Items (Desktop View) */}
         <div className="hidden md:flex pr-12">
-          <ul className="relative flex space-x-16 items-center">
+          <ul className="relative flex space-x-12 items-center">
             {["Home", "About", "Work", "Services", "Inquire"].map((item) => (
               <li
                 key={item}
@@ -115,12 +115,12 @@ function Header() {
               </li>
             ))}
 
-            {/* Admin Panel Button (Visible in Development Only) */}
+            {/* Admin Panel Button (Responsive View) */}
             {isDevelopment && (
-              <li>
+              <li className="hidden lg:block text-center">
                 <Link
                   href="/admin-panel69"
-                  className="px-4 py-1 bg-[#ff8c00] text-white rounded-md hover:bg-[#ff9d33] transition"
+                  className="px-4 py-1 bg-[#ff8c00] text-white rounded-md hover:bg-[#ff9d33] transition text-sm lg:text-md"
                 >
                   Admin Panel
                 </Link>
@@ -207,6 +207,19 @@ function Header() {
                   </Link>
                 </li>
               ))}
+
+              {/* Admin Panel Button (Mobile View, Visible in Development Only) */}
+              {isDevelopment && (
+                <li className="pt-6">
+                  <Link
+                    href="/admin-panel69"
+                    className="px-4 py-2 bg-[#ff8c00] text-white rounded-md hover:bg-[#ff9d33] transition"
+                    onClick={handleMenuToggle}
+                  >
+                    Admin Panel
+                  </Link>
+                </li>
+              )}
             </ul>
           </motion.div>
         )}
