@@ -3,6 +3,7 @@ import "./globals.css";
 import Header from "./components/Header";
 import DynamicTitle from "./components/DynamicTitle";
 import Footer from "./components/Footer";
+import { Toaster } from "sonner";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -33,6 +34,7 @@ export default function RootLayout({ children }) {
         <Header />
         {children}
         <Footer/>
+        <Toaster />
       </body>
     </html>
   );

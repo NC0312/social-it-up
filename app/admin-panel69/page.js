@@ -1,78 +1,185 @@
-'use client';
+"use client";
+
 import React, { useEffect, useState } from "react";
-import { collection, getDocs } from "firebase/firestore";
+import { collection, getDocs, query, where, deleteDoc, doc } from "firebase/firestore";
 import { db } from "../lib/firebase";
+import { toast } from "sonner";
+import { MdDeleteForever } from "react-icons/md";
 
 const AdminPanel = () => {
   const [inquiries, setInquiries] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [filteredInquiries, setFilteredInquiries] = useState([]);
+  const [selectedDate, setSelectedDate] = useState("");
 
-  // Fetch data from Firestore
+  // Fetch all inquiries from Firestore
   const fetchInquiries = async () => {
     try {
-      const querySnapshot = await getDocs(collection(db, "inquiries"));
-      const data = querySnapshot.docs.map((doc) => ({
-        id: doc.id, // Include document ID for uniqueness
+      const snapshot = await getDocs(collection(db, "inquiries"));
+      const data = snapshot.docs.map((doc) => ({
+        id: doc.id,
         ...doc.data(),
       }));
       setInquiries(data);
+      setFilteredInquiries(data); // Initially display all inquiries
     } catch (error) {
       console.error("Error fetching inquiries:", error);
-    } finally {
-      setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchInquiries();
+    fetchInquiries(); // Fetch data on initial render
   }, []);
 
+  // Filter inquiries based on selected date
+  const handleDateChange = (e) => {
+    setSelectedDate(e.target.value);
+  };
+
+  const handleFetchData = async () => {
+    if (!selectedDate) {
+      setFilteredInquiries(inquiries); // If no date is selected, reset filter
+      return;
+    }
+
+    const selectedDateStart = new Date(selectedDate);
+    const selectedDateEnd = new Date(selectedDate);
+    selectedDateEnd.setHours(23, 59, 59, 999); // Include the entire day
+
+    // Query Firestore to get documents matching the selected date
+    try {
+      const q = query(
+        collection(db, "inquiries"),
+        where("timestamp", ">=", selectedDateStart),
+        where("timestamp", "<=", selectedDateEnd)
+      );
+      const snapshot = await getDocs(q);
+      const filteredData = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setFilteredInquiries(filteredData);
+    } catch (error) {
+      console.error("Error filtering inquiries by date:", error);
+    }
+  };
+
+  // Delete inquiry from Firestore
+  const handleDeleteInquiry = async (id) => {
+    try {
+      const inquiryDoc = doc(db, "inquiries", id);
+      await deleteDoc(inquiryDoc);
+      setInquiries(inquiries.filter((inquiry) => inquiry.id !== id)); // Remove the deleted inquiry from the state
+      setFilteredInquiries(filteredInquiries.filter((inquiry) => inquiry.id !== id)); // Update filtered inquiries
+      toast.success("Deleted successfully!"); // Show success toast
+    } catch (error) {
+      console.error("Error deleting inquiry:", error);
+      toast.error("Failed to delete inquiry.");
+    }
+  };
+
   return (
-    <div className="p-4">
-      <h1 className="text-2xl font-bold mb-4">Admin Panel</h1>
-      {loading ? (
-        <p>Loading data...</p>
-      ) : inquiries.length > 0 ? (
-        <table className="table-auto w-full border-collapse border border-gray-200">
-          <thead>
+    <div className="p-4 md:p-6 bg-[#FAF4ED] min-h-screen">
+      {/* Heading */}
+      <h1 className="text-4xl md:text-6xl font-serif font-bold text-center py-4 mb-6 border-b border-gray-300 text-[#36302A]">
+        Admin Panel
+      </h1>
+
+      {/* Date Filter */}
+      <div className="mb-6">
+        <label className="block text-sm md:text-lg font-medium mb-2" htmlFor="date-filter">
+          Filter by Date:
+        </label>
+        <input
+          id="date-filter"
+          type="date"
+          value={selectedDate}
+          onChange={handleDateChange}
+          className="w-full md:w-1/3 border border-gray-300 rounded-lg px-3 py-1 md:py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-[#36302A]"
+        />
+      </div>
+
+      {/* Fetch Button */}
+      <div className="mb-6 text-center">
+        <button
+          onClick={handleFetchData}
+          className="px-16 py-2 md:py-2 bg-[#36302A] text-[#FAF4ED] font-semibold rounded-md md:rounded-lg shadow-md hover:bg-[#2C2925] focus:outline-none focus:ring-2 focus:ring-[#36302A]"
+        >
+          Apply Filter
+        </button>
+      </div>
+
+      {/* Inquiries Table */}
+      <div className="overflow-x-auto bg-white rounded-lg shadow-md">
+        <table className="min-w-full table-auto border-collapse border border-gray-200">
+          <thead className="bg-gray-100">
             <tr>
-              <th className="border px-4 py-2">First Name</th>
-              <th className="border px-4 py-2">Last Name</th>
-              <th className="border px-4 py-2">Email</th>
-              <th className="border px-4 py-2">Phone Number</th>
-              <th className="border px-4 py-2">Company</th>
-              <th className="border px-4 py-2">Website</th>
-              <th className="border px-4 py-2">Time</th>
-              <th className="border px-4 py-2">Actions</th>
+              <th className="border border-gray-300 px-4 py-2 text-left text-sm md:text-base font-semibold">
+                Action
+              </th>
+              <th className="border border-gray-300 px-4 py-2 text-left text-sm md:text-base font-semibold">
+                First Name
+              </th>
+              <th className="border border-gray-300 px-4 py-2 text-left text-sm md:text-base font-semibold">
+                Last Name
+              </th>
+              <th className="border border-gray-300 px-4 py-2 text-left text-sm md:text-base font-semibold">
+                Email
+              </th>
+              <th className="border border-gray-300 px-4 py-2 text-left text-sm md:text-base font-semibold">
+                Phone Number
+              </th>
+              <th className="border border-gray-300 px-4 py-2 text-left text-sm md:text-base font-semibold">
+                Timestamp
+              </th>
             </tr>
           </thead>
           <tbody>
-            {inquiries.map((inquiry) => (
-              <tr key={inquiry.id}>
-                <td className="border px-4 py-2">{inquiry.firstName}</td>
-                <td className="border px-4 py-2">{inquiry.lastName}</td>
-                <td className="border px-4 py-2">{inquiry.email}</td>
-                <td className="border px-4 py-2">{inquiry.phoneNumber}</td>
-                <td className="border px-4 py-2">{inquiry.company}</td>
-                <td className="border px-4 py-2">{inquiry.website}</td>
-                <td className="border px-4 py-2">
-                  {new Date(inquiry.timestamp?.seconds * 1000).toLocaleString()}
-                </td>
-                <td className="border px-4 py-2">
-                  <button
-                    onClick={() => console.log("Delete", inquiry.id)}
-                    className="bg-red-500 text-white px-2 py-1 rounded"
-                  >
-                    Delete
-                  </button>
+            {filteredInquiries.length > 0 ? (
+              filteredInquiries.map((inquiry) => (
+                <tr key={inquiry.id} className="hover:bg-gray-50">
+                  {/* Action column */}
+                  <td className="border border-gray-300 px-7 py-4 text-sm md:text-base">
+                    <button
+                      onClick={() => handleDeleteInquiry(inquiry.id)}
+                      className="text-red-500 hover:text-red-700 text-lg md:text-2xl"
+                    >
+                      <MdDeleteForever />
+                    </button>
+                  </td>
+                  <td className="border border-gray-300 px-4 py-2 text-sm md:text-base">
+                    {inquiry.firstName}
+                  </td>
+                  <td className="border border-gray-300 px-4 py-2 text-sm md:text-base">
+                    {inquiry.lastName}
+                  </td>
+                  <td className="border border-gray-300 px-4 py-2 text-sm md:text-base">
+                    {inquiry.email}
+                  </td>
+                  <td className="border border-gray-300 px-4 py-2 text-sm md:text-base">
+                    {inquiry.phoneNumber}
+                  </td>
+                  <td className="border border-gray-300 px-4 py-2 text-sm md:text-base">
+                    {inquiry.timestamp
+                      ? new Date(
+                          inquiry.timestamp.seconds * 1000
+                        ).toLocaleDateString()
+                      : "N/A"}
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td
+                  colSpan="6"
+                  className="text-center text-gray-500 py-4 text-sm md:text-base"
+                >
+                  No inquiries found.
                 </td>
               </tr>
-            ))}
+            )}
           </tbody>
         </table>
-      ) : (
-        <p>No inquiries found.</p>
-      )}
+      </div>
     </div>
   );
 };
