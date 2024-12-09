@@ -3,6 +3,8 @@ import React, { useEffect, useRef, useState } from 'react';
 import { motion, useAnimation, useMotionValue, AnimatePresence } from 'framer-motion';
 import CountrySelector from '../components/CountrySelector';
 import { FaInfoCircle } from "react-icons/fa";
+import { addDoc, collection } from 'firebase/firestore';
+import { db } from '../lib/firebase';
 
 
 const Inquire = () => {
@@ -114,12 +116,6 @@ const Inquire = () => {
       return false;
     }
 
-    // Check for sequential digits (optional, uncomment if needed)
-    // const sequentialDigitsRegex = /^(?:(?:0(?=1)|1(?=2)|2(?=3)|3(?=4)|4(?=5)|5(?=6)|6(?=7)|7(?=8)|8(?=9)){8,}|\d+$/;
-    // if (sequentialDigitsRegex.test(phoneNumber)) {
-    //   setPhoneError('Invalid phone number: cannot be sequential digits');
-    //   return false;
-    // }
 
     setPhoneError('');
     return true;
@@ -203,10 +199,55 @@ const Inquire = () => {
     return true;
   };
 
+  // const handleSubmit = async (e) => {
+  //   e.preventDefault();
+  //   setIsSubmitting(true);
+
+  //   const isPhoneValid = validatePhoneNumber();
+  //   const isEmailValid = validateEmail();
+  //   const isFirstNameValid = validateFirstName();
+  //   const isCompanyValid = validateCompany();
+  //   const isWebsiteValid = validateWebsite();
+  //   const isPhoneCodeValid = validatePhoneCode();
+  //   const isSocialsValid = validateSocials();
+  //   const isServicesValid = validateServices();
+  //   const isMessagesValid = validateMessages();
+
+  //   if (isPhoneValid && isEmailValid && isFirstNameValid && isCompanyValid && isWebsiteValid && isPhoneCodeValid && isSocialsValid && isServicesValid && isMessagesValid) {
+  //     // Simulate form submission delay
+  //     setTimeout(() => {
+  //       // Reset all fields
+  //       setFirstName('');
+  //       setLastName('');
+  //       setEmail('');
+  //       setPhoneNumber('');
+  //       setCompany('');
+  //       setWebsite('');
+  //       setPhoneDialCode('');
+  //       setMessages('');
+  //       setSocials('');
+  //       setServices('');
+  //       setIsChecked(false);
+
+  //       // Show success message
+  //       setFormSubmitMessage('Form submitted successfully!');
+
+  //       // Clear success message after 3 seconds
+  //       setTimeout(() => {
+  //         setFormSubmitMessage('');
+  //       }, 3000);
+
+  //       setIsSubmitting(false);
+  //     }, 1000);
+  //   } else {
+  //     setIsSubmitting(false);
+  //   }
+  // };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
-
+  
     const isPhoneValid = validatePhoneNumber();
     const isEmailValid = validateEmail();
     const isFirstNameValid = validateFirstName();
@@ -216,38 +257,70 @@ const Inquire = () => {
     const isSocialsValid = validateSocials();
     const isServicesValid = validateServices();
     const isMessagesValid = validateMessages();
-
-    if (isPhoneValid && isEmailValid && isFirstNameValid && isCompanyValid && isWebsiteValid && isPhoneCodeValid && isSocialsValid && isServicesValid && isMessagesValid) {
-      // Simulate form submission delay
-      setTimeout(() => {
+  
+    if (
+      isPhoneValid &&
+      isEmailValid &&
+      isFirstNameValid &&
+      isCompanyValid &&
+      isWebsiteValid &&
+      isPhoneCodeValid &&
+      isSocialsValid &&
+      isServicesValid &&
+      isMessagesValid
+    ) {
+      try {
+        // Store form data in Firestore
+        await addDoc(collection(db, "inquiries"), {
+          firstName,
+          lastName,
+          email,
+          phoneNumber,
+          company,
+          website,
+          phoneDialCode,
+          messages,
+          socials,
+          services,
+          isChecked,
+          timestamp: new Date(), // Add a timestamp for tracking
+        });
+  
         // Reset all fields
-        setFirstName('');
-        setLastName('');
-        setEmail('');
-        setPhoneNumber('');
-        setCompany('');
-        setWebsite('');
-        setPhoneDialCode('');
-        setMessages('');
-        setSocials('');
-        setServices('');
+        setFirstName("");
+        setLastName("");
+        setEmail("");
+        setPhoneNumber("");
+        setCompany("");
+        setWebsite("");
+        setPhoneDialCode("");
+        setMessages("");
+        setSocials("");
+        setServices("");
         setIsChecked(false);
-
+  
         // Show success message
-        setFormSubmitMessage('Form submitted successfully!');
-
+        setFormSubmitMessage("Form submitted successfully!");
+  
         // Clear success message after 3 seconds
         setTimeout(() => {
-          setFormSubmitMessage('');
+          setFormSubmitMessage("");
         }, 3000);
-
+      } catch (error) {
+        console.error("Error adding document to Firestore: ", error);
+        setFormSubmitMessage("Failed to submit the form. Please try again later.");
+        
+        // Clear error message after 3 seconds
+        setTimeout(() => {
+          setFormSubmitMessage("");
+        }, 3000);
+      } finally {
         setIsSubmitting(false);
-      }, 1000);
+      }
     } else {
       setIsSubmitting(false);
     }
   };
-
 
 
   return (
@@ -362,35 +435,6 @@ const Inquire = () => {
             <p className="md:text-md pt-5 md:pt-2 text-[#36302A]">
               Phone <span className="text-sm text-[#86807A] ml-1">(required)</span>
             </p>
-            {/* <div className="flex items-center gap-4 py-0">
-              <CountrySelector
-                onChange={(dialCode) => setPhoneDialCode(dialCode)}
-              />
-               
-
-              <input
-                type="tel"
-                value={phoneNumber}
-                onChange={handlePhoneChange}
-                className="bg-[#EFE7DD] text-[#36302A] border border-transparent focus:outline-none focus:ring-1 focus:ring-[#36302A] hover:border-[#36302A] px-3 py-2 rounded-lg w-full"
-              />
-            </div>
-
-            {phoneCodeError && (
-                  <p className="text-sm text-red-600 mt-1">{phoneCodeError}</p>
-                )}
-
-            {phoneError && (
-              <motion.div
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.5 }}
-                className="text-sm text-red-600 mt-2"
-              >
-                {phoneError}
-              </motion.div>
-            )} */}
 
             <div className="flex items-center gap-4 py-0">
               {/* Country Selector */}
@@ -426,7 +470,6 @@ const Inquire = () => {
                 )}
               </div>
             </div>
-
 
             <div className="flex flex-col py-1">
               <label className="text-sm text-[#36302A] mb-1">
@@ -529,13 +572,6 @@ const Inquire = () => {
                 </motion.div>
               )}
             </AnimatePresence>
-            {/* <button
-                type="submit"
-                className="mt-5 md:mt-10 px-5 py-6 w-28 text-sm rounded-xl bg-[#36302A] text-white"
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? 'Submitting...' : 'Submit'}
-              </button> */}
 
             <motion.button
               type="submit"
@@ -557,11 +593,6 @@ const Inquire = () => {
                 transition={{ duration: 0.3 }}
               />
             </motion.button>
-
-
-
-
-
           </form>
         </div>
       </div>
