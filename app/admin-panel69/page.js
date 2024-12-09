@@ -1,7 +1,14 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { collection, getDocs, query, where, deleteDoc, doc } from "firebase/firestore";
+import {
+  collection,
+  getDocs,
+  query,
+  where,
+  deleteDoc,
+  doc,
+} from "firebase/firestore";
 import { db } from "../lib/firebase";
 import { toast } from "sonner";
 import { MdDeleteForever } from "react-icons/md";
@@ -69,7 +76,9 @@ const AdminPanel = () => {
       const inquiryDoc = doc(db, "inquiries", id);
       await deleteDoc(inquiryDoc);
       setInquiries(inquiries.filter((inquiry) => inquiry.id !== id)); // Remove the deleted inquiry from the state
-      setFilteredInquiries(filteredInquiries.filter((inquiry) => inquiry.id !== id)); // Update filtered inquiries
+      setFilteredInquiries(
+        filteredInquiries.filter((inquiry) => inquiry.id !== id)
+      ); // Update filtered inquiries
       toast.success("Deleted successfully!"); // Show success toast
     } catch (error) {
       console.error("Error deleting inquiry:", error);
@@ -81,12 +90,15 @@ const AdminPanel = () => {
     <div className="p-4 md:p-6 bg-[#FAF4ED] min-h-screen">
       {/* Heading */}
       <h1 className="text-4xl md:text-6xl font-serif font-bold text-center py-4 mb-6 border-b border-gray-300 text-[#36302A]">
-        Admin Panel
+        Admin Panel👨‍💻
       </h1>
 
       {/* Date Filter */}
       <div className="mb-6">
-        <label className="block text-sm md:text-lg font-medium mb-2" htmlFor="date-filter">
+        <label
+          className="block text-sm md:text-lg font-medium mb-2"
+          htmlFor="date-filter"
+        >
           Filter by Date:
         </label>
         <input
@@ -109,54 +121,38 @@ const AdminPanel = () => {
       </div>
 
       {/* Inquiries Table */}
-      <div className="overflow-x-auto bg-white rounded-lg shadow-md">
+      <div className="overflow-x-auto bg-[#FAF4ED] rounded-lg shadow-md">
         <table className="min-w-full table-auto border-collapse border border-gray-200">
-          <thead className="bg-gray-100">
+          <thead className="bg-[#5a4c3f] text-[#FAF4ED]">
             <tr>
-              <th className="border border-gray-300 px-4 py-2 text-left text-sm md:text-base font-semibold">
-                Action <span className="text-red-500">*</span>
-              </th>
-              <th className="border border-gray-300 px-4 py-2 text-left text-sm md:text-base font-semibold">
-                Timestamp
-              </th>
-              <th className="border border-gray-300 px-4 py-2 text-left text-sm md:text-base font-semibold">
-                First Name <span className="text-red-500">*</span>
-              </th>
-              <th className="border border-gray-300 px-4 py-2 text-left text-sm md:text-base font-semibold">
-                Last Name
-              </th>
-              <th className="border border-gray-300 px-4 py-2 text-left text-sm md:text-base font-semibold">
-                Email <span className="text-red-500">*</span>
-              </th>
-              <th className="border border-gray-300 px-4 py-2 text-left text-sm md:text-base font-semibold">
-                Dial Code <span className="text-red-500">*</span>
-              </th>
-              <th className="border border-gray-300 px-4 py-2 text-left text-sm md:text-base font-semibold">
-                Phone Number <span className="text-red-500">*</span>
-              </th>
-              <th className="border border-gray-300 px-4 py-2 text-left text-sm md:text-base font-semibold">
-               Company/Brand <span className="text-red-500">*</span>
-              </th>
-              <th className="border border-gray-300 px-4 py-2 text-left text-sm md:text-base font-semibold">
-                Services <span className="text-red-500">*</span>
-              </th>
-              <th className="border border-gray-300 px-4 py-2 text-left text-sm md:text-base font-semibold">
-                Socials <span className="text-red-500">*</span>
-              </th>
-              <th className="border border-gray-300 px-4 py-2 text-left text-sm md:text-base font-semibold">
-                Website <span className="text-red-500">*</span>
-              </th>
-              <th className="border border-gray-300 px-4 py-2 text-left text-sm md:text-base font-semibold">
-                Messages <span className="text-red-500">*</span>
-              </th>
+              {[
+                "Action",
+                "Timestamp",
+                "FirstName",
+                "LastName",
+                "Email",
+                "DialCode",
+                "PhoneNumber",
+                "Company/Brand",
+                "Services",
+                "Socials",
+                "Website",
+                "Messages",
+              ].map((header) => (
+                <th
+                  key={header}
+                  className="border border-[#36302A] px-4 py-2 text-left text-sm md:text-base font-semibold"
+                >
+                  {header}
+                </th>
+              ))}
             </tr>
           </thead>
           <tbody>
             {filteredInquiries.length > 0 ? (
               filteredInquiries.map((inquiry) => (
-                <tr key={inquiry.id} className="hover:bg-gray-50">
-                  {/* Action column */}
-                  <td className="border border-gray-300 px-7 py-4 text-sm md:text-base">
+                <tr key={inquiry.id} className="hover:bg-[#F2EAE2]">
+                  <td className="border border-[#36302A] px-7 py-4 text-sm md:text-base">
                     <button
                       onClick={() => handleDeleteInquiry(inquiry.id)}
                       className="text-red-500 hover:text-red-700 text-lg md:text-2xl"
@@ -164,41 +160,41 @@ const AdminPanel = () => {
                       <MdDeleteForever />
                     </button>
                   </td>
-                  <td className="border border-gray-300 px-4 py-2 text-sm md:text-base">
+                  <td className="border border-[#36302A] px-4 py-2 text-sm md:text-base">
                     {inquiry.timestamp
                       ? new Date(
-                        inquiry.timestamp.seconds * 1000
-                      ).toLocaleDateString()
+                          inquiry.timestamp.seconds * 1000
+                        ).toLocaleDateString()
                       : "N/A"}
                   </td>
-                  <td className="border border-gray-300 px-4 py-2 text-sm md:text-base">
+                  <td className="border border-[#36302A] px-4 py-2 text-sm md:text-base">
                     {inquiry.firstName}
                   </td>
-                  <td className="border border-gray-300 px-4 py-2 text-sm md:text-base">
+                  <td className="border border-[#36302A] px-4 py-2 text-sm md:text-base">
                     {inquiry.lastName}
                   </td>
-                  <td className="border border-gray-300 px-4 py-2 text-sm md:text-base">
+                  <td className="border border-[#36302A] px-4 py-2 text-sm md:text-base">
                     {inquiry.email}
                   </td>
-                  <td className="border border-gray-300 px-4 py-2 text-sm md:text-base">
+                  <td className="border border-[#36302A] px-4 py-2 text-sm md:text-base">
                     {inquiry.phoneDialCode}
                   </td>
-                  <td className="border border-gray-300 px-4 py-2 text-sm md:text-base">
+                  <td className="border border-[#36302A] px-4 py-2 text-sm md:text-base">
                     {inquiry.phoneNumber}
                   </td>
-                  <td className="border border-gray-300 px-4 py-2 text-sm md:text-base">
+                  <td className="border border-[#36302A] px-4 py-2 text-sm md:text-base">
                     {inquiry.company}
                   </td>
-                  <td className="border border-gray-300 px-4 py-2 text-sm md:text-base">
+                  <td className="border border-[#36302A] px-4 py-2 text-sm md:text-base">
                     {inquiry.services}
                   </td>
-                  <td className="border border-gray-300 px-4 py-2 text-sm md:text-base">
+                  <td className="border border-[#36302A] px-4 py-2 text-sm md:text-base">
                     {inquiry.socials}
                   </td>
-                  <td className="border border-gray-300 px-4 py-2 text-sm md:text-base">
+                  <td className="border border-[#36302A] px-4 py-2 text-sm md:text-base">
                     {inquiry.website}
                   </td>
-                  <td className="border border-gray-300 px-4 py-2 text-sm md:text-base">
+                  <td className="border border-[#36302A] px-4 py-2 text-sm md:text-base">
                     {inquiry.messages}
                   </td>
                 </tr>
@@ -206,7 +202,7 @@ const AdminPanel = () => {
             ) : (
               <tr>
                 <td
-                  colSpan="6"
+                  colSpan="12"
                   className="text-center text-gray-500 py-4 text-sm md:text-base"
                 >
                   No inquiries found.
