@@ -46,7 +46,7 @@ function Header() {
     <div className="border-b border-[#575553] relative">
       <nav
         className={`flex items-center justify-between px-12 py-1 md:py-2 relative z-20 ${
-          isDevelopment ? "bg-[#6C92F0] " : ""
+          isDevelopment ? "bg-[#6C92F0]" : ""
         }`}
       >
         {/* Logo */}
@@ -68,7 +68,7 @@ function Header() {
           >
             Made by{" "}
             <Link
-              href="https://niketchawla.vercel.app/" // Replace with your desired URL
+              href="https://niketchawla.vercel.app/"
               target="_blank"
               rel="noopener noreferrer"
               className={`${
@@ -82,14 +82,13 @@ function Header() {
 
         {/* Menu Items (Desktop View) */}
         <div className="hidden md:flex pr-12">
-          <ul className="relative flex space-x-16">
-            {["Home", "About", "Work", "Services", "Inquire"].map((item, index) => (
+          <ul className="relative flex space-x-16 items-center">
+            {["Home", "About", "Work", "Services", "Inquire"].map((item) => (
               <li
                 key={item}
                 className={`relative cursor-pointer ${
                   isDevelopment ? "text-white" : "text-[#575553]"
                 } text-md font-medium`}
-                style={{userSelect:"none"}}
               >
                 <Link
                   href={item === "Home" ? "/" : `/${item.toLowerCase()}`}
@@ -101,32 +100,32 @@ function Header() {
 
                 {/* Animated Underline */}
                 {active === item && (
-                  // <motion.div
-                    // className={`absolute bottom-[-3px] left-0 h-[2px] ${
-                    //   isDevelopment ? "bg-white" : "bg-[#575553]"
-                    // }`}
-                  //   layoutId="underline" // Framer Motion layout ID for shared animations
-                  //   style={{ height: "2px", width: "100%" }} // Adjusted height to 2px for a thinner line
-                  //   initial={{ width: 0 }}
-                  //   animate={{ width: "100%" }}
-                  //   transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                  // />
                   <motion.div
-                  layoutId="underline"
-                  className={`absolute bottom-0 left-0 
-                  ${
+                    layoutId="underline"
+                    className={`absolute bottom-0 left-0 ${
                       isDevelopment ? "bg-white" : "bg-[#575553]"
                     }`}
-                  
-                  style={{ height: "2px", width: "100%" }} // Adjusted height to 2px for a thinner line
-                  initial={{ width: "0%" }}
-                  animate={{ width: "100%" }}
-                  exit={{ width: "0%" }}
-                  transition={{ duration: 0.4 }}
-                />
+                    style={{ height: "2px", width: "100%" }}
+                    initial={{ width: "0%" }}
+                    animate={{ width: "100%" }}
+                    exit={{ width: "0%" }}
+                    transition={{ duration: 0.4 }}
+                  />
                 )}
               </li>
             ))}
+
+            {/* Admin Panel Button (Visible in Development Only) */}
+            {isDevelopment && (
+              <li>
+                <Link
+                  href="/admin-panel69"
+                  className="px-4 py-1 bg-[#ff8c00] text-white rounded-md hover:bg-[#ff9d33] transition"
+                >
+                  Admin Panel
+                </Link>
+              </li>
+            )}
           </ul>
         </div>
 
