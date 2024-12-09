@@ -71,7 +71,7 @@ export default function HomeExt1() {
         textElements.push(
             <span
                 key={i}
-                className="text-3xl md:text-6xl font-serif font-medium text-[#36302A] whitespace-nowrap px-4 md:px-20"
+                className="text-3xl md:text-6xl font-serif font-medium text-[#36302A] whitespace-nowrap px-4 md:px-7"
             >
                 {text}
             </span>
