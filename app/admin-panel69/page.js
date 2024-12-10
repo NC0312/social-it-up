@@ -17,6 +17,8 @@ const AdminPanel = () => {
   const [inquiries, setInquiries] = useState([]);
   const [filteredInquiries, setFilteredInquiries] = useState([]);
   const [selectedDate, setSelectedDate] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const entriesPerPage = 20;
 
   // Fetch all inquiries from Firestore
   const fetchInquiries = async () => {
@@ -75,15 +77,26 @@ const AdminPanel = () => {
     try {
       const inquiryDoc = doc(db, "inquiries", id);
       await deleteDoc(inquiryDoc);
-      setInquiries(inquiries.filter((inquiry) => inquiry.id !== id)); // Remove the deleted inquiry from the state
+      setInquiries(inquiries.filter((inquiry) => inquiry.id !== id));
       setFilteredInquiries(
         filteredInquiries.filter((inquiry) => inquiry.id !== id)
-      ); // Update filtered inquiries
-      toast.success("Deleted successfully!"); // Show success toast
+      );
+      toast.success("Deleted successfully!");
     } catch (error) {
       console.error("Error deleting inquiry:", error);
       toast.error("Failed to delete inquiry.");
     }
+  };
+
+  // Pagination logic
+  const totalPages = Math.ceil(filteredInquiries.length / entriesPerPage);
+  const displayedInquiries = filteredInquiries.slice(
+    (currentPage - 1) * entriesPerPage,
+    currentPage * entriesPerPage
+  );
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
   };
 
   return (
@@ -120,97 +133,129 @@ const AdminPanel = () => {
         </button>
       </div>
 
-      {/* Inquiries Table */}
-      <div className="overflow-x-auto bg-[#FAF4ED] rounded-lg shadow-md">
-        <table className="min-w-full table-auto border-collapse border border-gray-200">
-          <thead className="bg-[#5a4c3f] text-[#FAF4ED]">
-            <tr>
-              {[
-                "Action",
-                "Timestamp",
-                "FirstName",
-                "LastName",
-                "Email",
-                "DialCode",
-                "PhoneNumber",
-                "Company/Brand",
-                "Services",
-                "Socials",
-                "Website",
-                "Messages",
-              ].map((header) => (
-                <th
-                  key={header}
-                  className="border border-[#36302A] px-4 py-2 text-left text-sm md:text-base font-semibold"
-                >
-                  {header}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {filteredInquiries.length > 0 ? (
-              filteredInquiries.map((inquiry) => (
-                <tr key={inquiry.id} className="hover:bg-[#F2EAE2]">
-                  <td className="border border-[#36302A] px-7 py-4 text-sm md:text-base">
-                    <button
-                      onClick={() => handleDeleteInquiry(inquiry.id)}
-                      className="text-red-500 hover:text-red-700 text-lg md:text-2xl"
-                    >
-                      <MdDeleteForever />
-                    </button>
-                  </td>
-                  <td className="border border-[#36302A] px-4 py-2 text-sm md:text-base">
-                    {inquiry.timestamp
-                      ? new Date(
-                          inquiry.timestamp.seconds * 1000
-                        ).toLocaleDateString()
-                      : "N/A"}
-                  </td>
-                  <td className="border border-[#36302A] px-4 py-2 text-sm md:text-base">
-                    {inquiry.firstName}
-                  </td>
-                  <td className="border border-[#36302A] px-4 py-2 text-sm md:text-base">
-                    {inquiry.lastName}
-                  </td>
-                  <td className="border border-[#36302A] px-4 py-2 text-sm md:text-base">
-                    {inquiry.email}
-                  </td>
-                  <td className="border border-[#36302A] px-4 py-2 text-sm md:text-base">
-                    {inquiry.phoneDialCode}
-                  </td>
-                  <td className="border border-[#36302A] px-4 py-2 text-sm md:text-base">
-                    {inquiry.phoneNumber}
-                  </td>
-                  <td className="border border-[#36302A] px-4 py-2 text-sm md:text-base">
-                    {inquiry.company}
-                  </td>
-                  <td className="border border-[#36302A] px-4 py-2 text-sm md:text-base">
-                    {inquiry.services}
-                  </td>
-                  <td className="border border-[#36302A] px-4 py-2 text-sm md:text-base">
-                    {inquiry.socials}
-                  </td>
-                  <td className="border border-[#36302A] px-4 py-2 text-sm md:text-base">
-                    {inquiry.website}
-                  </td>
-                  <td className="border border-[#36302A] px-4 py-2 text-sm md:text-base">
-                    {inquiry.messages}
+      {/* Modified Table Container */}
+      <div className="relative w-full overflow-hidden bg-[#FAF4ED] shadow-md">
+        <div 
+          className="overflow-x-auto scrollbar-hide" 
+          style={{
+            scrollbarWidth: 'none',
+            msOverflowStyle: 'none',
+            WebkitOverflowScrolling: 'touch'
+          }}
+        >
+          <style jsx global>{`
+            .scrollbar-hide::-webkit-scrollbar {
+              display: none;
+            }
+          `}</style>
+
+          <table className="min-w-full table-auto border-collapse border border-gray-200">
+            <thead className="bg-[#5a4c3f] text-[#FAF4ED]">
+              <tr>
+                {[
+                  "Action",
+                  "Timestamp",
+                  "FirstName",
+                  "LastName",
+                  "Email",
+                  "DialCode",
+                  "PhoneNumber",
+                  "Company/Brand",
+                  "Services",
+                  "Socials",
+                  "Website",
+                  "Messages",
+                ].map((header) => (
+                  <th
+                    key={header}
+                    className="border border-[#36302A] px-4 md:px-4 py-2 md:py-6 text-left text-xs md:text-md md:text-base font-serif font-semibold"
+                  >
+                    {header}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {displayedInquiries.length > 0 ? (
+                displayedInquiries.map((inquiry) => (
+                  <tr key={inquiry.id} className="hover:bg-[#F2EAE2]">
+                    <td className="border border-[#36302A] px-4 md:px-7 py-2 md:py-4 text-xs md:text-base">
+                      <button
+                        onClick={() => handleDeleteInquiry(inquiry.id)}
+                        className="text-red-500 hover:text-red-700 text-lg md:text-2xl"
+                      >
+                        <MdDeleteForever />
+                      </button>
+                    </td>
+                    <td className="border border-[#36302A] px-4 py-2 text-sm md:text-base">
+                      {inquiry.timestamp
+                        ? new Date(
+                            inquiry.timestamp.seconds * 1000
+                          ).toLocaleDateString()
+                        : "N/A"}
+                    </td>
+                    <td className="border border-[#36302A] px-4 py-2 text-sm md:text-base">
+                      {inquiry.firstName}
+                    </td>
+                    <td className="border border-[#36302A] px-4 py-2 text-sm md:text-base">
+                      {inquiry.lastName}
+                    </td>
+                    <td className="border border-[#36302A] px-4 py-2 text-sm md:text-base">
+                      {inquiry.email}
+                    </td>
+                    <td className="border border-[#36302A] px-4 py-2 text-sm md:text-base">
+                      {inquiry.phoneDialCode}
+                    </td>
+                    <td className="border border-[#36302A] px-4 py-2 text-sm md:text-base">
+                      {inquiry.phoneNumber}
+                    </td>
+                    <td className="border border-[#36302A] px-4 py-2 text-sm md:text-base">
+                      {inquiry.company}
+                    </td>
+                    <td className="border border-[#36302A] px-4 py-2 text-sm md:text-base">
+                      {inquiry.services}
+                    </td>
+                    <td className="border border-[#36302A] px-4 py-2 text-sm md:text-base">
+                      {inquiry.socials}
+                    </td>
+                    <td className="border border-[#36302A] px-4 py-2 text-sm md:text-base">
+                      {inquiry.website}
+                    </td>
+                    <td className="border border-[#36302A] px-4 py-2 text-sm md:text-base">
+                      {inquiry.messages}
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td
+                    colSpan="12"
+                    className="text-center text-gray-500 py-4 text-sm md:text-base"
+                  >
+                    No inquiries found.
                   </td>
                 </tr>
-              ))
-            ) : (
-              <tr>
-                <td
-                  colSpan="12"
-                  className="text-center text-gray-500 py-4 text-sm md:text-base"
-                >
-                  No inquiries found.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Pagination */}
+      <div className="mt-6 flex justify-center space-x-2">
+        {Array.from({ length: totalPages }, (_, index) => (
+          <button
+            key={index}
+            onClick={() => handlePageChange(index + 1)}
+            className={`px-4 py-2 rounded ${
+              currentPage === index + 1
+                ? "bg-[#36302A] text-[#FAF4ED]"
+                : "bg-gray-300 text-gray-800"
+            }`}
+          >
+            {index + 1}
+          </button>
+        ))}
       </div>
     </div>
   );
