@@ -228,7 +228,7 @@ const AdminPanel = () => {
                     </td>
 
                     <td className="border border-[#36302A] px-4 py-2 text-sm md:text-base">
-                      {inquiry.companyBrand}
+                      {inquiry.company}
                     </td>
 
                     <td className="border border-[#36302A] px-4 py-2 text-sm md:text-base">
@@ -236,14 +236,14 @@ const AdminPanel = () => {
                     </td>
 
                     <td className="border border-[#36302A] px-4 py-2 text-sm md:text-base">
-                      {inquiry.socialLinks}
+                      {inquiry.socials}
                     </td>
 
                     <td className="border border-[#36302A] px-4 py-2 text-sm md:text-base">
                       {inquiry.website}
                     </td>
                     <td className="border border-[#36302A] px-4 py-2 text-sm md:text-base">
-                      {inquiry.message}
+                      {inquiry.messages}
                     </td>
                   </tr>
                 ))
@@ -264,7 +264,7 @@ const AdminPanel = () => {
         <div className="flex flex-col md:flex-row justify-between items-center py-4">
           <div>
             <span className="text-sm md:text-lg text-[#36302A]">
-              Showing {startIndex} to {endIndex} of {filteredInquiries.length}
+              Total Entries : {filteredInquiries.length} | Showing {startIndex} to {endIndex} of {filteredInquiries.length} entries
             </span>
           </div>
           <div className="space-y-0 md:space-y-0 space-x-4 md:space-x-4 flex flex-row md:flex-row">
