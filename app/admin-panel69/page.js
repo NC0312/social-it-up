@@ -1,14 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import {
-  collection,
-  getDocs,
-  query,
-  where,
-  deleteDoc,
-  doc,
-} from "firebase/firestore";
+import { collection, getDocs, query, where, deleteDoc, doc } from "firebase/firestore";
 import { db } from "../lib/firebase";
 import { toast } from "sonner";
 import { MdDeleteForever } from "react-icons/md";
@@ -54,7 +47,6 @@ const AdminPanel = () => {
     const selectedDateEnd = new Date(selectedDate);
     selectedDateEnd.setHours(23, 59, 59, 999); // Include the entire day
 
-    // Query Firestore to get documents matching the selected date
     try {
       const q = query(
         collection(db, "inquiries"),
@@ -78,9 +70,7 @@ const AdminPanel = () => {
       const inquiryDoc = doc(db, "inquiries", id);
       await deleteDoc(inquiryDoc);
       setInquiries(inquiries.filter((inquiry) => inquiry.id !== id));
-      setFilteredInquiries(
-        filteredInquiries.filter((inquiry) => inquiry.id !== id)
-      );
+      setFilteredInquiries(filteredInquiries.filter((inquiry) => inquiry.id !== id));
       toast.success("Deleted successfully!");
     } catch (error) {
       console.error("Error deleting inquiry:", error);
@@ -99,14 +89,16 @@ const AdminPanel = () => {
     setCurrentPage(page);
   };
 
+  // Calculate current range
+  const startIndex = (currentPage - 1) * entriesPerPage + 1;
+  const endIndex = Math.min(currentPage * entriesPerPage, filteredInquiries.length);
+
   return (
     <div className="p-4 md:p-6 bg-[#FAF4ED] min-h-screen">
-      {/* Heading */}
       <h1 className="text-4xl md:text-6xl font-serif font-bold text-center py-4 mb-6 border-b border-gray-300 text-[#36302A]">
         Admin Panel👨‍💻
       </h1>
 
-      {/* Date Filter */}
       <div className="mb-6">
         <label
           className="block text-sm md:text-lg font-medium mb-2"
@@ -123,32 +115,38 @@ const AdminPanel = () => {
         />
       </div>
 
-      {/* Fetch Button */}
-      <div className="mb-6 text-center">
+      <div className="mb-6 text-center flex justify-center items-center space-x-4">
         <button
-          onClick={handleFetchData}
-          className="px-16 py-2 md:py-2 bg-[#36302A] text-[#FAF4ED] font-semibold rounded-md md:rounded-lg shadow-md hover:bg-[#2C2925] focus:outline-none focus:ring-2 focus:ring-[#36302A]"
+           onClick={() => {
+            handleFetchData();
+            toast.success("Data fetched successfully!");
+          }}
+          className="px-8 py-2 md:py-3 bg-[#36302A] text-[#FAF4ED] font-semibold rounded-md md:rounded-lg shadow-md hover:bg-[#2C2925] focus:outline-none focus:ring-2 focus:ring-[#36302A] w-full md:w-auto"
         >
           Apply Filter
         </button>
+        <button
+          onClick={() => {
+            setSelectedDate(""); // Clear the date input
+            setFilteredInquiries(inquiries); // Reset to show all inquiries
+            toast.success("Filter cleared!");
+          }}
+          className="px-5 py-2 md:py-3 bg-red-600 text-[#FAF4ED] font-semibold rounded-md md:rounded-lg shadow-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-600 md:w-auto"
+        >
+          <MdDeleteForever className="text-lg md:text-2xl" />
+        </button>
       </div>
 
-      {/* Modified Table Container */}
+
       <div className="relative w-full overflow-hidden bg-[#FAF4ED] shadow-md">
-        <div 
-          className="overflow-x-auto scrollbar-hide" 
+        <div
+          className="overflow-x-auto scrollbar-hide"
           style={{
-            scrollbarWidth: 'none',
-            msOverflowStyle: 'none',
-            WebkitOverflowScrolling: 'touch'
+            scrollbarWidth: "none",
+            msOverflowStyle: "none",
+            WebkitOverflowScrolling: "touch",
           }}
         >
-          <style jsx global>{`
-            .scrollbar-hide::-webkit-scrollbar {
-              display: none;
-            }
-          `}</style>
-
           <table className="min-w-full table-auto border-collapse border border-gray-200">
             <thead className="bg-[#5a4c3f] text-[#FAF4ED]">
               <tr>
@@ -190,8 +188,8 @@ const AdminPanel = () => {
                     <td className="border border-[#36302A] px-4 py-2 text-sm md:text-base">
                       {inquiry.timestamp
                         ? new Date(
-                            inquiry.timestamp.seconds * 1000
-                          ).toLocaleDateString()
+                          inquiry.timestamp.seconds * 1000
+                        ).toLocaleDateString()
                         : "N/A"}
                     </td>
                     <td className="border border-[#36302A] px-4 py-2 text-sm md:text-base">
@@ -241,17 +239,22 @@ const AdminPanel = () => {
         </div>
       </div>
 
+      {/* Data Count and Range */}
+      <div className="mt-4 text-sm md:text-base text-gray-700">
+        Total entries: {filteredInquiries.length} | Showing {startIndex} to{" "}
+        {endIndex} of {filteredInquiries.length} entries
+      </div>
+
       {/* Pagination */}
-      <div className="mt-6 flex justify-center space-x-2">
+      <div className="mt-6 flex justify-center">
         {Array.from({ length: totalPages }, (_, index) => (
           <button
             key={index}
             onClick={() => handlePageChange(index + 1)}
-            className={`px-4 py-2 rounded ${
-              currentPage === index + 1
-                ? "bg-[#36302A] text-[#FAF4ED]"
-                : "bg-gray-300 text-gray-800"
-            }`}
+            className={`mx-1 px-4 py-2 text-sm md:text-base font-medium ${index + 1 === currentPage
+              ? "bg-[#36302A] text-[#FAF4ED]"
+              : "bg-gray-200 text-gray-700"
+              } rounded-lg hover:bg-[#2C2925]`}
           >
             {index + 1}
           </button>
