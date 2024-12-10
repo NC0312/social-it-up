@@ -261,7 +261,7 @@ const AdminPanel = () => {
             onClick={() => handlePageChange(index + 1)}
             className={`mx-1 px-4 py-2 text-sm md:text-base font-medium ${index + 1 === currentPage
               ? "bg-[#36302A] text-[#FAF4ED]"
-              : "bg-gray-200 text-gray-700"
+              : "bg-[#FAF4ED] text-[#36302A]"
               } rounded-lg hover:bg-[#2C2925]`}
           >
             {index + 1}
