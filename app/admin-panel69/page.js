@@ -118,8 +118,12 @@ const AdminPanel = () => {
       <div className="mb-6 text-center flex justify-center items-center space-x-4">
         <button
            onClick={() => {
-            handleFetchData();
-            toast.success("Data fetched successfully!");
+            if (selectedDate) { // Check if there is a filter selected
+              handleFetchData();
+              toast.success("Data fetched successfully!");
+            } else {
+              toast.error("No filter applied!");
+            }
           }}
           className="px-8 py-2 md:py-3 bg-[#36302A] text-[#FAF4ED] font-semibold rounded-md md:rounded-lg shadow-md hover:bg-[#2C2925] focus:outline-none focus:ring-2 focus:ring-[#36302A] w-full md:w-auto"
         >
@@ -127,9 +131,13 @@ const AdminPanel = () => {
         </button>
         <button
           onClick={() => {
-            setSelectedDate(""); // Clear the date input
-            setFilteredInquiries(inquiries); // Reset to show all inquiries
-            toast.success("Filter cleared!");
+            if (selectedDate) { // Only clear filter and show toast if there is a filter applied
+              setSelectedDate(""); // Clear the date input
+              setFilteredInquiries(inquiries); // Reset to show all inquiries
+              toast.success("Filter cleared!");
+            } else {
+              toast.error("No filter to clear!");
+            }
           }}
           className="px-5 py-2 md:py-3 bg-red-600 text-[#FAF4ED] font-semibold rounded-md md:rounded-lg shadow-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-600 md:w-auto"
         >
