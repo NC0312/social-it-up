@@ -1,10 +1,12 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { collection, getDocs, query, where, deleteDoc, doc } from "firebase/firestore";
+import { collection, getDocs, query, where, orderBy, deleteDoc, doc } from "firebase/firestore";
 import { db } from "../lib/firebase";
 import { toast } from "sonner";
 import { MdDeleteForever } from "react-icons/md";
+import { FaArrowLeft } from "react-icons/fa6";
+
 
 const AdminPanel = () => {
   const [inquiries, setInquiries] = useState([]);
@@ -13,10 +15,14 @@ const AdminPanel = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const entriesPerPage = 20;
 
-  // Fetch all inquiries from Firestore
+  // Fetch all inquiries from Firestore, ordered by timestamp in descending order
   const fetchInquiries = async () => {
     try {
-      const snapshot = await getDocs(collection(db, "inquiries"));
+      const q = query(
+        collection(db, "inquiries"),
+        orderBy("timestamp", "desc") // Order by timestamp in descending order
+      );
+      const snapshot = await getDocs(q);
       const data = snapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
@@ -51,7 +57,8 @@ const AdminPanel = () => {
       const q = query(
         collection(db, "inquiries"),
         where("timestamp", ">=", selectedDateStart),
-        where("timestamp", "<=", selectedDateEnd)
+        where("timestamp", "<=", selectedDateEnd),
+        orderBy("timestamp", "desc") // Ensure the filtered data is also ordered
       );
       const snapshot = await getDocs(q);
       const filteredData = snapshot.docs.map((doc) => ({
@@ -117,7 +124,7 @@ const AdminPanel = () => {
 
       <div className="mb-6 text-center flex justify-center items-center space-x-4">
         <button
-           onClick={() => {
+          onClick={() => {
             if (selectedDate) { // Check if there is a filter selected
               handleFetchData();
               toast.success("Data fetched successfully!");
@@ -145,7 +152,6 @@ const AdminPanel = () => {
         </button>
       </div>
 
-
       <div className="relative w-full overflow-hidden bg-[#FAF4ED] shadow-md">
         <div
           className="overflow-x-auto scrollbar-hide"
@@ -164,6 +170,7 @@ const AdminPanel = () => {
                   "FirstName",
                   "LastName",
                   "Email",
+                  "SignedUp",
                   "DialCode",
                   "PhoneNumber",
                   "Company/Brand",
@@ -210,35 +217,40 @@ const AdminPanel = () => {
                       {inquiry.email}
                     </td>
                     <td className="border border-[#36302A] px-4 py-2 text-sm md:text-base">
+                      {inquiry.isChecked ? "Yes" : "No"}
+                    </td>
+
+                    <td className="border border-[#36302A] px-4 py-2 text-sm md:text-base">
                       {inquiry.phoneDialCode}
                     </td>
                     <td className="border border-[#36302A] px-4 py-2 text-sm md:text-base">
                       {inquiry.phoneNumber}
                     </td>
+
                     <td className="border border-[#36302A] px-4 py-2 text-sm md:text-base">
-                      {inquiry.company}
+                      {inquiry.companyBrand}
                     </td>
+
                     <td className="border border-[#36302A] px-4 py-2 text-sm md:text-base">
                       {inquiry.services}
                     </td>
+
                     <td className="border border-[#36302A] px-4 py-2 text-sm md:text-base">
-                      {inquiry.socials}
+                      {inquiry.socialLinks}
                     </td>
+
                     <td className="border border-[#36302A] px-4 py-2 text-sm md:text-base">
                       {inquiry.website}
                     </td>
                     <td className="border border-[#36302A] px-4 py-2 text-sm md:text-base">
-                      {inquiry.messages}
+                      {inquiry.message}
                     </td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td
-                    colSpan="12"
-                    className="text-center text-gray-500 py-4 text-sm md:text-base"
-                  >
-                    No inquiries found.
+                  <td colSpan="13" className="text-center py-4">
+                    No data available
                   </td>
                 </tr>
               )}
@@ -247,27 +259,47 @@ const AdminPanel = () => {
         </div>
       </div>
 
-      {/* Data Count and Range */}
-      <div className="mt-4 text-sm md:text-base text-gray-700">
-        Total entries: {filteredInquiries.length} | Showing {startIndex} to{" "}
-        {endIndex} of {filteredInquiries.length} entries
-      </div>
-
       {/* Pagination */}
-      <div className="mt-6 flex justify-center">
-        {Array.from({ length: totalPages }, (_, index) => (
-          <button
-            key={index}
-            onClick={() => handlePageChange(index + 1)}
-            className={`mx-1 px-4 py-2 text-sm md:text-base font-medium ${index + 1 === currentPage
-              ? "bg-[#36302A] text-[#FAF4ED]"
-              : "bg-[#FAF4ED] text-[#36302A]"
-              } rounded-lg hover:bg-[#2C2925]`}
-          >
-            {index + 1}
-          </button>
-        ))}
-      </div>
+      {filteredInquiries.length > 0 && (
+        <div className="flex flex-col md:flex-row justify-between items-center py-4">
+          <div>
+            <span className="text-sm md:text-lg text-[#36302A]">
+              Showing {startIndex} to {endIndex} of {filteredInquiries.length}
+            </span>
+          </div>
+          <div className="space-y-0 md:space-y-0 space-x-4 md:space-x-4 flex flex-row md:flex-row">
+            <button
+              onClick={() => handlePageChange(1)}
+              disabled={currentPage === 1}
+              className="px-4 py-2 text-[#FAF4ED] bg-[#36302A] rounded-md shadow-md hover:bg-[#2C2925] w-full md:w-auto"
+            >
+              First
+            </button>
+            <button
+              onClick={() => handlePageChange(currentPage - 1)}
+              disabled={currentPage === 1}
+              className="px-4 py-2 text-[#FAF4ED] bg-[#36302A] rounded-md shadow-md hover:bg-[#2C2925] w-full md:w-auto"
+            >
+              Prev
+            </button>
+            <button
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={currentPage === totalPages}
+              className="px-4 py-2 text-[#FAF4ED] bg-[#36302A] rounded-md shadow-md hover:bg-[#2C2925] w-full md:w-auto"
+            >
+              Next
+            </button>
+            <button
+              onClick={() => handlePageChange(totalPages)}
+              disabled={currentPage === totalPages}
+              className="px-4 py-2 text-[#FAF4ED] bg-[#36302A] rounded-md shadow-md hover:bg-[#2C2925] w-full md:w-auto"
+            >
+              Last
+            </button>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };
