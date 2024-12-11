@@ -271,21 +271,21 @@ const Inquire = () => {
     ) {
       try {
         // Store form data in Firestore
-        await addDoc(collection(db, "inquiries"), {
-          firstName,
-          lastName,
-          email,
-          phoneNumber,
-          company,
-          website,
-          phoneDialCode,
-          messages,
-          socials,
-          services,
-          isChecked,
-          timestamp: new Date(), // Add a timestamp for tracking
-        });
-  
+          await addDoc(collection(db, "inquiries"), {
+            firstName,
+            lastName,
+            email,
+            phoneNumber,
+            company,
+            website,
+            phoneDialCode,
+            messages,
+            socials,
+            services,
+            isChecked,
+            timestamp: new Date(), // Add a timestamp for tracking
+          });
+        
         // Reset all fields
         setFirstName("");
         setLastName("");
@@ -321,6 +321,35 @@ const Inquire = () => {
       setIsSubmitting(false);
     }
   };
+
+  const handleDeleteAll = async () => {
+    try {
+      const querySnapshot = await getDocs(collection(db, "inquiries"));
+      const batch = writeBatch(db);
+  
+      querySnapshot.forEach((doc) => {
+        batch.delete(doc.ref);
+      });
+  
+      await batch.commit();
+  
+      setFormSubmitMessage("All entries deleted successfully!");
+  
+      // Clear success message after 3 seconds
+      setTimeout(() => {
+        setFormSubmitMessage("");
+      }, 3000);
+    } catch (error) {
+      console.error("Error deleting documents from Firestore: ", error);
+      setFormSubmitMessage("Failed to delete entries. Please try again later.");
+  
+      // Clear error message after 3 seconds
+      setTimeout(() => {
+        setFormSubmitMessage("");
+      }, 3000);
+    }
+  };
+  
 
 
   return (
