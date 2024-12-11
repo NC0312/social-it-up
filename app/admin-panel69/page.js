@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { collection, getDocs, query, where, orderBy, deleteDoc, doc } from "firebase/firestore";
+import { collection, getDocs, query, where, orderBy, deleteDoc, doc, writeBatch } from "firebase/firestore";
 import { db } from "../lib/firebase";
 import { toast } from "sonner";
 import { MdDeleteForever } from "react-icons/md";
@@ -85,6 +85,34 @@ const AdminPanel = () => {
     }
   };
 
+  const handleDeleteAll = async () => {
+    try {
+      const querySnapshot = await getDocs(collection(db, "inquiries"));
+      const batch = writeBatch(db);
+  
+      querySnapshot.forEach((doc) => {
+        batch.delete(doc.ref);
+      });
+  
+      await batch.commit();
+  
+      // setFormSubmitMessage("All entries deleted successfully!");
+  
+      // Clear success message after 3 seconds
+      setTimeout(() => {
+        setFormSubmitMessage("");
+      }, 3000);
+    } catch (error) {
+      console.error("Error deleting documents from Firestore: ", error);
+      setFormSubmitMessage("Failed to delete entries. Please try again later.");
+  
+      // Clear error message after 3 seconds
+      setTimeout(() => {
+        setFormSubmitMessage("");
+      }, 3000);
+    }
+  };
+
   // Pagination logic
   const totalPages = Math.ceil(filteredInquiries.length / entriesPerPage);
   const displayedInquiries = filteredInquiries.slice(
@@ -102,9 +130,25 @@ const AdminPanel = () => {
 
   return (
     <div className="p-4 md:p-6 bg-[#FAF4ED] min-h-screen">
-      <h1 className="text-4xl md:text-6xl font-serif font-bold text-center py-4 mb-6 border-b border-gray-300 text-[#36302A]">
-        Admin Panel👨‍💻
-      </h1>
+      <div className="flex flex-col md:flex-row justify-between items-center border-b border-gray-300 pb-4 mb-6">
+        <h1 className="text-4xl md:text-6xl font-serif font-bold text-[#36302A] mb-4 md:mb-0">
+          Admin Panel👨‍💻
+        </h1>
+        <button
+          onClick={() => {
+            // Add your delete all confirmation logic here
+            if (window.confirm('Are you sure you want to delete all data? This action cannot be undone.')) {
+              handleDeleteAll();
+              window.location.reload();
+              toast.success("All data deleted successfully!");
+            }
+          }}
+          className="px-4 py-2 bg-red-600 text-[#FAF4ED] font-semibold rounded-lg shadow-md hover:bg-red-700 transition-colors duration-200 flex items-center space-x-2"
+        >
+          <MdDeleteForever className="text-xl" />
+          <span>Delete All Data</span>
+        </button>
+      </div>
 
       <div className="mb-6">
         <label
