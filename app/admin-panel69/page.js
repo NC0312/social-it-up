@@ -130,7 +130,7 @@ const AdminPanel = () => {
 
   return (
     <div className="p-4 md:p-6 bg-[#FAF4ED] min-h-screen">
-      <div className="flex flex-col md:flex-row justify-between items-center border-b border-gray-300 pb-4 mb-6">
+      <div className="flex flex-col md:flex-row justify-between items-center border-b border-gray-300 py-6 pb-4 mb-6">
         <h1 className="text-4xl md:text-6xl font-serif font-bold text-[#36302A] mb-4 md:mb-0">
           Admin Panel👨‍💻
         </h1>

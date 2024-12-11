@@ -271,6 +271,8 @@ const Inquire = () => {
     ) {
       try {
         // Store form data in Firestore
+        // for(let i=0;i<50;i++)
+        // {
           await addDoc(collection(db, "inquiries"), {
             firstName,
             lastName,
@@ -285,6 +287,8 @@ const Inquire = () => {
             isChecked,
             timestamp: new Date(), // Add a timestamp for tracking
           });
+        // }
+
         
         // Reset all fields
         setFirstName("");
