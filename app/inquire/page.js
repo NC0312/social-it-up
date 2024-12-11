@@ -322,33 +322,33 @@ const Inquire = () => {
     }
   };
 
-  const handleDeleteAll = async () => {
-    try {
-      const querySnapshot = await getDocs(collection(db, "inquiries"));
-      const batch = writeBatch(db);
+  // const handleDeleteAll = async () => {
+  //   try {
+  //     const querySnapshot = await getDocs(collection(db, "inquiries"));
+  //     const batch = writeBatch(db);
   
-      querySnapshot.forEach((doc) => {
-        batch.delete(doc.ref);
-      });
+  //     querySnapshot.forEach((doc) => {
+  //       batch.delete(doc.ref);
+  //     });
   
-      await batch.commit();
+  //     await batch.commit();
   
-      setFormSubmitMessage("All entries deleted successfully!");
+  //     setFormSubmitMessage("All entries deleted successfully!");
   
-      // Clear success message after 3 seconds
-      setTimeout(() => {
-        setFormSubmitMessage("");
-      }, 3000);
-    } catch (error) {
-      console.error("Error deleting documents from Firestore: ", error);
-      setFormSubmitMessage("Failed to delete entries. Please try again later.");
+  //     // Clear success message after 3 seconds
+  //     setTimeout(() => {
+  //       setFormSubmitMessage("");
+  //     }, 3000);
+  //   } catch (error) {
+  //     console.error("Error deleting documents from Firestore: ", error);
+  //     setFormSubmitMessage("Failed to delete entries. Please try again later.");
   
-      // Clear error message after 3 seconds
-      setTimeout(() => {
-        setFormSubmitMessage("");
-      }, 3000);
-    }
-  };
+  //     // Clear error message after 3 seconds
+  //     setTimeout(() => {
+  //       setFormSubmitMessage("");
+  //     }, 3000);
+  //   }
+  // };
   
 
 
