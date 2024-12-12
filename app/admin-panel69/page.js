@@ -109,65 +109,6 @@ const AdminPanel = () => {
       toast.warning("No data matches the selected filters.");
     }
   };
-  // const handleFetchData = async () => {
-  //   debugger
-  //   let filtered = inquiries;
-
-  //   // Apply date filter if selected
-  //   if (selectedDate) {
-  //     const selectedDateStart = new Date(selectedDate);
-  //     const selectedDateEnd = new Date(selectedDate);
-  //     selectedDateEnd.setHours(23, 59, 59, 999);
-
-  //     filtered = filtered.filter(inquiry => {
-  //       const inquiryDate = new Date(inquiry.timestamp.seconds * 1000);
-  //       return inquiryDate >= selectedDateStart && inquiryDate <= selectedDateEnd;
-  //     });
-  //   }
-
-  //   // Apply signup filter if selected
-  //   if (signedUp) {
-  //     filtered = filtered.filter(inquiry => {
-  //       if (signedUp === "Yes") {
-  //         return inquiry.isChecked === true;
-  //       } else if (signedUp === "No") {
-  //         return inquiry.isChecked === false;
-  //       }
-  //       return true;
-  //     });
-  //   }
-
-  //   setFilteredInquiries(filtered);
-
-  //   if (filtered.length > 0) {
-  //     toast.success("Data filtered successfully!");
-  //   } else {
-  //     toast.warning("No data matches the selected filters.");
-  //   }
-
-
-
-  //   const selectedDateStart = new Date(selectedDate);
-  //   const selectedDateEnd = new Date(selectedDate);
-  //   selectedDateEnd.setHours(23, 59, 59, 999); // Include the entire day
-
-  //   try {
-  //     const q = query(
-  //       collection(db, "inquiries"),
-  //       where("timestamp", ">=", selectedDateStart),
-  //       where("timestamp", "<=", selectedDateEnd),
-  //       orderBy("timestamp", "desc") // Ensure the filtered data is also ordered
-  //     );
-  //     const snapshot = await getDocs(q);
-  //     const filteredData = snapshot.docs.map((doc) => ({
-  //       id: doc.id,
-  //       ...doc.data(),
-  //     }));
-  //     setFilteredInquiries(filteredData);
-  //   } catch (error) {
-  //     console.error("Error filtering inquiries by date:", error);
-  //   }
-  // };
 
   // Delete inquiry from Firestore
   const handleDeleteInquiry = async (id) => {
