@@ -14,6 +14,7 @@ const ReviewPanel = () => {
     const [selectedDate, setSelectedDate] = useState("");
     const [signedUp, setSignedUp] = useState("");
     const [currentPage, setCurrentPage] = useState(1);
+    const [isDeleting, setIsDeleting] = useState(false);
     const entriesPerPage = 20;
 
     const fetchReviews = async () => {
@@ -24,7 +25,7 @@ const ReviewPanel = () => {
             );
             const snapshot = await getDocs(q);
             const data = snapshot.docs.map((doc) => ({
-                id: doc.id,
+                docId: doc.id,
                 ...doc.data(),
             }));
             setReviews(data);
@@ -35,18 +36,50 @@ const ReviewPanel = () => {
         }
     };
 
-    
-    const handleDeleteReview = async (id) => {
+
+    const handleDeleteReview = async (docId) => {
+        // Prevent multiple clicks while deleting
+        if (isDeleting) return;
+
         try {
-            debugger
-            const reviewDoc = doc(db, "reviews", id);
-            await deleteDoc(reviewDoc);
-            setReviews(reviews.filter((review) => review.id !== id));
-            setFilteredReviews(filteredReviews.filter((review) => review.id !== id));
+            setIsDeleting(true);
+
+            // Show confirmation dialog
+            if (!window.confirm("Are you sure you want to delete this review?")) {
+                setIsDeleting(false);
+                return;
+            }
+
+            // Get reference to the document
+            const reviewRef = doc(db, "reviews", docId);
+
+            // Delete the document
+            await deleteDoc(reviewRef);
+
+            // Update local state only after successful deletion
+            const updatedReviews = reviews.filter((review) => review.docId !== docId);
+            const updatedFilteredReviews = filteredReviews.filter((review) => review.docId !== docId);
+
+            setReviews(updatedReviews);
+            setFilteredReviews(updatedFilteredReviews);
+
+            // Show success message
             toast.success("Review deleted successfully!");
+
+            // If current page becomes empty, go to previous page
+            const currentPageItems = updatedFilteredReviews.slice(
+                (currentPage - 1) * entriesPerPage,
+                currentPage * entriesPerPage
+            );
+            if (currentPageItems.length === 0 && currentPage > 1) {
+                setCurrentPage(currentPage - 1);
+            }
+
         } catch (error) {
             console.error("Error deleting review:", error);
-            toast.error("Failed to delete review.");
+            toast.error("Failed to delete review. Please try again.");
+        } finally {
+            setIsDeleting(false);
         }
     };
 
@@ -90,6 +123,7 @@ const ReviewPanel = () => {
         }
 
         setFilteredReviews(filtered);
+        setCurrentPage(1);
 
         if (filtered.length > 0) {
             toast.success("Data filtered successfully!");
@@ -200,7 +234,7 @@ const ReviewPanel = () => {
                         <thead className="bg-[#5a4c3f] text-[#FAF4ED]">
                             <tr>
                                 {[
-                                    // "Action",
+                                    "Action",
                                     "Timestamp",
                                     "FirstName",
                                     "LastName",
@@ -216,7 +250,7 @@ const ReviewPanel = () => {
                                 ].map((header) => (
                                     <th
                                         key={header}
-                                        className="border border-[#36302A] px-4 md:px-4 py-2 md:py-6 text-left text-xs md:text-md md:text-base font-semibold"
+                                        className="border border-[#36302A] px-4 md:px-4 py-2 md:py-4 text-left text-xs md:text-md md:text-base font-semibold"
                                     >
                                         {header}
                                     </th>
@@ -226,16 +260,16 @@ const ReviewPanel = () => {
                         <tbody>
                             {displayedReviews.length > 0 ? (
                                 displayedReviews.map((review) => (
-                                    <tr key={review.id} className="hover:bg-[#F2EAE2]">
-                                        {/* <td className="border border-[#36302A] px-4 md:px-7 py-2 md:py-4 text-xs md:text-base">
+                                    <tr key={review.docId} className="hover:bg-[#F2EAE2]">
+                                        <td className="border border-[#36302A] px-4 md:px-7 py-2 md:py-2 text-xs md:text-base">
                                             <button
-                                                onClick={() => handleDeleteReview(review.id)}
+                                                onClick={() => handleDeleteReview(review.docId)}
                                                 className="text-red-500 hover:text-red-700 text-lg md:text-2xl"
-                                                title="Delete" 
+                                                title="Delete"
                                             >
                                                 <MdDeleteForever />
                                             </button>
-                                        </td> */}
+                                        </td>
                                         <td className="border border-[#36302A] px-4 py-2 font-serif text-sm md:text-base whitespace-nowrap">
                                             {review.movedToReviewAt
                                                 ? new Date(review.movedToReviewAt.seconds * 1000).toLocaleString()
@@ -305,32 +339,32 @@ const ReviewPanel = () => {
                             First
                         </button>
                         <button
-              onClick={() => handlePageChange(currentPage - 1)}
-              disabled={currentPage === 1}
-              className="px-4 py-2 text-[#FAF4ED] bg-[#36302A] rounded-md shadow-md hover:bg-[#2C2925] w-full md:w-auto"
-            >
-              Prev
-            </button>
-            <button
-              onClick={() => handlePageChange(currentPage + 1)}
-              disabled={currentPage === totalPages}
-              className="px-4 py-2 text-[#FAF4ED] bg-[#36302A] rounded-md shadow-md hover:bg-[#2C2925] w-full md:w-auto"
-            >
-              Next
-            </button>
-            <button
-              onClick={() => handlePageChange(totalPages)}
-              disabled={currentPage === totalPages}
-              className="px-4 py-2 text-[#FAF4ED] bg-[#36302A] rounded-md shadow-md hover:bg-[#2C2925] w-full md:w-auto"
-            >
-              Last
-            </button>
-          </div>
-        </div>
-      )}
+                            onClick={() => handlePageChange(currentPage - 1)}
+                            disabled={currentPage === 1}
+                            className="px-4 py-2 text-[#FAF4ED] bg-[#36302A] rounded-md shadow-md hover:bg-[#2C2925] w-full md:w-auto"
+                        >
+                            Prev
+                        </button>
+                        <button
+                            onClick={() => handlePageChange(currentPage + 1)}
+                            disabled={currentPage === totalPages}
+                            className="px-4 py-2 text-[#FAF4ED] bg-[#36302A] rounded-md shadow-md hover:bg-[#2C2925] w-full md:w-auto"
+                        >
+                            Next
+                        </button>
+                        <button
+                            onClick={() => handlePageChange(totalPages)}
+                            disabled={currentPage === totalPages}
+                            className="px-4 py-2 text-[#FAF4ED] bg-[#36302A] rounded-md shadow-md hover:bg-[#2C2925] w-full md:w-auto"
+                        >
+                            Last
+                        </button>
+                    </div>
+                </div>
+            )}
 
-    </div>
-  );
+        </div>
+    );
 };
 
 export default ReviewPanel;

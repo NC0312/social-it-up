@@ -116,6 +116,7 @@ const AdminPanel = () => {
   // Delete inquiry from Firestore
   const handleDeleteInquiry = async (id) => {
     try {
+      debugger
       const inquiryDoc = doc(db, "inquiries", id);
       await deleteDoc(inquiryDoc);
       setInquiries(inquiries.filter((inquiry) => inquiry.id !== id));
