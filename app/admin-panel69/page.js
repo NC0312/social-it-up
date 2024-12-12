@@ -12,6 +12,7 @@ const AdminPanel = () => {
   const [inquiries, setInquiries] = useState([]);
   const [filteredInquiries, setFilteredInquiries] = useState([]);
   const [selectedDate, setSelectedDate] = useState("");
+  const [signedUp, setSignedUp] = useState("")
   const [currentPage, setCurrentPage] = useState(1);
   const entriesPerPage = 20;
 
@@ -43,33 +44,104 @@ const AdminPanel = () => {
     setSelectedDate(e.target.value);
   };
 
+  const handleSignUpChange = (e) => {
+    setSignedUp(e.target.value);
+  };
+
   const handleFetchData = async () => {
-    if (!selectedDate) {
-      setFilteredInquiries(inquiries); // If no date is selected, reset filter
-      return;
+    let filtered = inquiries;
+  
+    // Apply date filter if selected
+    if (selectedDate) {
+      const selectedDateStart = new Date(selectedDate);
+      const selectedDateEnd = new Date(selectedDate);
+      selectedDateEnd.setHours(23, 59, 59, 999);
+  
+      filtered = filtered.filter(inquiry => {
+        const inquiryDate = new Date(inquiry.timestamp.seconds * 1000);
+        return inquiryDate >= selectedDateStart && inquiryDate <= selectedDateEnd;
+      });
     }
-
-    const selectedDateStart = new Date(selectedDate);
-    const selectedDateEnd = new Date(selectedDate);
-    selectedDateEnd.setHours(23, 59, 59, 999); // Include the entire day
-
-    try {
-      const q = query(
-        collection(db, "inquiries"),
-        where("timestamp", ">=", selectedDateStart),
-        where("timestamp", "<=", selectedDateEnd),
-        orderBy("timestamp", "desc") // Ensure the filtered data is also ordered
-      );
-      const snapshot = await getDocs(q);
-      const filteredData = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
-      setFilteredInquiries(filteredData);
-    } catch (error) {
-      console.error("Error filtering inquiries by date:", error);
+  
+    // Apply signup filter if selected
+    if (signedUp) {
+      filtered = filtered.filter(inquiry => {
+        if (signedUp === "Yes") {
+          return inquiry.isChecked === true;
+        } else if (signedUp === "No") {
+          return inquiry.isChecked === false;
+        }
+        return true;
+      });
+    }
+  
+    setFilteredInquiries(filtered);
+  
+    if (filtered.length > 0) {
+      toast.success("Data filtered successfully!");
+    } else {
+      toast.warning("No data matches the selected filters.");
     }
   };
+  // const handleFetchData = async () => {
+  //   debugger
+  //   let filtered = inquiries;
+
+  //   // Apply date filter if selected
+  //   if (selectedDate) {
+  //     const selectedDateStart = new Date(selectedDate);
+  //     const selectedDateEnd = new Date(selectedDate);
+  //     selectedDateEnd.setHours(23, 59, 59, 999);
+
+  //     filtered = filtered.filter(inquiry => {
+  //       const inquiryDate = new Date(inquiry.timestamp.seconds * 1000);
+  //       return inquiryDate >= selectedDateStart && inquiryDate <= selectedDateEnd;
+  //     });
+  //   }
+
+  //   // Apply signup filter if selected
+  //   if (signedUp) {
+  //     filtered = filtered.filter(inquiry => {
+  //       if (signedUp === "Yes") {
+  //         return inquiry.isChecked === true;
+  //       } else if (signedUp === "No") {
+  //         return inquiry.isChecked === false;
+  //       }
+  //       return true;
+  //     });
+  //   }
+
+  //   setFilteredInquiries(filtered);
+
+  //   if (filtered.length > 0) {
+  //     toast.success("Data filtered successfully!");
+  //   } else {
+  //     toast.warning("No data matches the selected filters.");
+  //   }
+
+
+
+  //   const selectedDateStart = new Date(selectedDate);
+  //   const selectedDateEnd = new Date(selectedDate);
+  //   selectedDateEnd.setHours(23, 59, 59, 999); // Include the entire day
+
+  //   try {
+  //     const q = query(
+  //       collection(db, "inquiries"),
+  //       where("timestamp", ">=", selectedDateStart),
+  //       where("timestamp", "<=", selectedDateEnd),
+  //       orderBy("timestamp", "desc") // Ensure the filtered data is also ordered
+  //     );
+  //     const snapshot = await getDocs(q);
+  //     const filteredData = snapshot.docs.map((doc) => ({
+  //       id: doc.id,
+  //       ...doc.data(),
+  //     }));
+  //     setFilteredInquiries(filteredData);
+  //   } catch (error) {
+  //     console.error("Error filtering inquiries by date:", error);
+  //   }
+  // };
 
   // Delete inquiry from Firestore
   const handleDeleteInquiry = async (id) => {
@@ -89,15 +161,15 @@ const AdminPanel = () => {
     try {
       const querySnapshot = await getDocs(collection(db, "inquiries"));
       const batch = writeBatch(db);
-  
+
       querySnapshot.forEach((doc) => {
         batch.delete(doc.ref);
       });
-  
+
       await batch.commit();
-  
+
       // setFormSubmitMessage("All entries deleted successfully!");
-  
+
       // Clear success message after 3 seconds
       setTimeout(() => {
         setFormSubmitMessage("");
@@ -105,7 +177,7 @@ const AdminPanel = () => {
     } catch (error) {
       console.error("Error deleting documents from Firestore: ", error);
       setFormSubmitMessage("Failed to delete entries. Please try again later.");
-  
+
       // Clear error message after 3 seconds
       setTimeout(() => {
         setFormSubmitMessage("");
@@ -166,13 +238,39 @@ const AdminPanel = () => {
         />
       </div>
 
+      <div className="mb-6">
+        <label
+          className="block text-sm md:text-lg font-medium mb-2"
+          htmlFor="signup-filter"
+        >
+          Filter by Signed Up:
+        </label>
+        <select
+          id="signup-filter"
+          value={signedUp}
+          onChange={handleSignUpChange}
+          className="w-full md:w-1/3 border border-gray-300 rounded-lg px-3 py-1 md:py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-[#36302A]"
+        >
+          <option value="">Has anyone signed up for news and updates?</option>
+          <option value="Yes">Yes</option>
+          <option value="No">No</option>
+        </select>
+      </div>
+
       <div className="mb-6 text-center flex justify-center items-center space-x-4">
         <button
           onClick={() => {
+            debugger
             if (selectedDate) { // Check if there is a filter selected
               handleFetchData();
               toast.success("Data fetched successfully!");
-            } else {
+            }
+            else if(signedUp)
+              {
+                handleFetchData();
+                toast.success("Data fetched successfully!");
+              } 
+              else {
               toast.error("No filter applied!");
             }
           }}
@@ -182,10 +280,11 @@ const AdminPanel = () => {
         </button>
         <button
           onClick={() => {
-            if (selectedDate) { // Only clear filter and show toast if there is a filter applied
-              setSelectedDate(""); // Clear the date input
-              setFilteredInquiries(inquiries); // Reset to show all inquiries
-              toast.success("Filter cleared!");
+            if (selectedDate || signedUp) {
+              setSelectedDate("");
+              setSignedUp("");
+              setFilteredInquiries(inquiries);
+              toast.success("Filters cleared!");
             } else {
               toast.error("No filter to clear!");
             }
