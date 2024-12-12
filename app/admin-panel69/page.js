@@ -10,6 +10,7 @@ import { useRouter } from "next/navigation";
 import { BsFillSave2Fill } from "react-icons/bs";
 import { CiSaveDown2 } from "react-icons/ci";
 import { MdOutlineSaveAlt } from "react-icons/md";
+import { FaArrowRight } from "react-icons/fa";
 
 
 const AdminPanel = () => {
@@ -126,34 +127,6 @@ const AdminPanel = () => {
     }
   };
 
-  // const handleDeleteAll = async () => {
-  //   try {
-  //     const querySnapshot = await getDocs(collection(db, "inquiries"));
-  //     const batch = writeBatch(db);
-  
-  //     querySnapshot.forEach((doc) => {
-  //       batch.delete(doc.ref);
-  //     });
-  
-  //     await batch.commit();
-  
-  //     // setFormSubmitMessage("All entries deleted successfully!");
-  
-  //     // Clear success message after 3 seconds
-  //     setTimeout(() => {
-  //       setFormSubmitMessage("");
-  //     }, 3000);
-  //   } catch (error) {
-  //     console.error("Error deleting documents from Firestore: ", error);
-  //     setFormSubmitMessage("Failed to delete entries. Please try again later.");
-  
-  //     // Clear error message after 3 seconds
-  //     setTimeout(() => {
-  //       setFormSubmitMessage("");
-  //     }, 3000);
-  //   }
-  // };
-
   const handleDeleteAll = async () => {
     try {
       debugger
@@ -218,8 +191,9 @@ const AdminPanel = () => {
             onClick={() => router.push('/review-panel69')}
             className="px-3 py-1 md:px-4 md:py-2 bg-green-600 text-[#FAF4ED] font-semibold rounded-lg shadow-md hover:bg-green-700 transition-colors duration-200 flex items-center space-x-1"
           >
-            <FaArrowLeft className="text-md md:text-xl" />
+
             <span>Review Panel</span>
+            <FaArrowRight className="text-md md:text-xl" />
           </button>
           <button
             onClick={() => {
@@ -339,7 +313,7 @@ const AdminPanel = () => {
                 ].map((header) => (
                   <th
                     key={header}
-                    className="border border-[#36302A] px-4 md:px-4 py-2 md:py-6 text-left text-xs md:text-md md:text-base  font-semibold"
+                    className="border border-[#36302A] px-4 md:px-4 py-2 md:py-4 text-left text-xs md:text-md md:text-base  font-semibold"
                   >
                     {header}
                   </th>
@@ -358,11 +332,11 @@ const AdminPanel = () => {
                         <MdDeleteForever />
                       </button>
                     </td> */}
-                     <td className="border border-[#36302A] px-4 md:px-7 py-2 md:py-4 text-xs md:text-base">
+                     <td className="border border-[#36302A] px-4 md:px-7 py-2 md:py-2 text-xs md:text-base">
                       <div className="flex space-x-2">
                         <button
                           onClick={() => handleSaveToReview(inquiry)}
-                          className="text-green-500 hover:text-green-700 text-md md:text-xl"
+                          className="text-green-500 hover:text-green-700 text-lg md:text-xl"
                           title="Save to Review"
                         >
                           {/* <BsFillSave2Fill /> */}

@@ -98,26 +98,6 @@ const ReviewPanel = () => {
         }
     };
 
-
-    const handleDeleteAll = async () => {
-        try {
-            const querySnapshot = await getDocs(collection(db, "reviews"));
-            const batch = writeBatch(db);
-
-            querySnapshot.forEach((doc) => {
-                batch.delete(doc.ref);
-            });
-
-            await batch.commit();
-            setReviews([]);
-            setFilteredReviews([]);
-            toast.success("All reviews deleted successfully!");
-        } catch (error) {
-            console.error("Error deleting reviews:", error);
-            toast.error("Failed to delete all reviews.");
-        }
-    };
-
     // Pagination logic
     const totalPages = Math.ceil(filteredReviews.length / entriesPerPage);
     const displayedReviews = filteredReviews.slice(
@@ -251,7 +231,7 @@ const ReviewPanel = () => {
                                             <button
                                                 onClick={() => handleDeleteReview(review.id)}
                                                 className="text-red-500 hover:text-red-700 text-lg md:text-2xl"
-                                                title="Delete"
+                                                title="Delete" 
                                             >
                                                 <MdDeleteForever />
                                             </button>
