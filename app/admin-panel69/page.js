@@ -8,6 +8,8 @@ import { MdDeleteForever } from "react-icons/md";
 import { FaArrowLeft , FaRegSave } from "react-icons/fa6";
 import { useRouter } from "next/navigation";
 import { BsFillSave2Fill } from "react-icons/bs";
+import { CiSaveDown2 } from "react-icons/ci";
+import { MdOutlineSaveAlt } from "react-icons/md";
 
 
 const AdminPanel = () => {
@@ -54,7 +56,7 @@ const AdminPanel = () => {
       setInquiries(inquiries.filter((item) => item.id !== inquiry.id));
       setFilteredInquiries(filteredInquiries.filter((item) => item.id !== inquiry.id));
       
-      toast.success("Moved to review successfully!");
+      toast.success("Moved to Review Panel!");
     } catch (error) {
       console.error("Error moving to review:", error);
       toast.error("Failed to move to review.");
@@ -124,8 +126,37 @@ const AdminPanel = () => {
     }
   };
 
+  // const handleDeleteAll = async () => {
+  //   try {
+  //     const querySnapshot = await getDocs(collection(db, "inquiries"));
+  //     const batch = writeBatch(db);
+  
+  //     querySnapshot.forEach((doc) => {
+  //       batch.delete(doc.ref);
+  //     });
+  
+  //     await batch.commit();
+  
+  //     // setFormSubmitMessage("All entries deleted successfully!");
+  
+  //     // Clear success message after 3 seconds
+  //     setTimeout(() => {
+  //       setFormSubmitMessage("");
+  //     }, 3000);
+  //   } catch (error) {
+  //     console.error("Error deleting documents from Firestore: ", error);
+  //     setFormSubmitMessage("Failed to delete entries. Please try again later.");
+  
+  //     // Clear error message after 3 seconds
+  //     setTimeout(() => {
+  //       setFormSubmitMessage("");
+  //     }, 3000);
+  //   }
+  // };
+
   const handleDeleteAll = async () => {
     try {
+      debugger
       const querySnapshot = await getDocs(collection(db, "inquiries"));
       const batch = writeBatch(db);
   
@@ -135,22 +166,17 @@ const AdminPanel = () => {
   
       await batch.commit();
   
-      setFormSubmitMessage("All entries deleted successfully!");
+      // Update local state
+      setInquiries([]);
+      setFilteredInquiries([]);
   
-      // Clear success message after 3 seconds
-      setTimeout(() => {
-        setFormSubmitMessage("");
-      }, 3000);
+      toast.success("All entries deleted successfully!");
     } catch (error) {
       console.error("Error deleting documents from Firestore: ", error);
-      setFormSubmitMessage("Failed to delete entries. Please try again later.");
-  
-      // Clear error message after 3 seconds
-      setTimeout(() => {
-        setFormSubmitMessage("");
-      }, 3000);
+      toast.error("Failed to delete entries. Please try again later.");
     }
   };
+  
 
   // Pagination logic
   const totalPages = Math.ceil(filteredInquiries.length / entriesPerPage);
@@ -199,8 +225,8 @@ const AdminPanel = () => {
             onClick={() => {
               if (window.confirm('Are you sure you want to delete all data? This action cannot be undone.')) {
                 handleDeleteAll();
-                window.location.reload();
-                toast.success("All data deleted successfully!");
+                // window.location.reload();
+                // toast.success("All data deleted successfully!");
               }
             }}
             className="px-4 py-2 bg-red-600 text-[#FAF4ED] font-semibold rounded-lg shadow-md hover:bg-red-700 transition-colors duration-200 flex items-center space-x-2"
@@ -336,10 +362,12 @@ const AdminPanel = () => {
                       <div className="flex space-x-2">
                         <button
                           onClick={() => handleSaveToReview(inquiry)}
-                          className="text-green-500 hover:text-green-700 text-md md:text-lg"
+                          className="text-green-500 hover:text-green-700 text-md md:text-xl"
                           title="Save to Review"
                         >
-                          <BsFillSave2Fill />
+                          {/* <BsFillSave2Fill /> */}
+                          {/* <CiSaveDown2 /> */}
+                          <MdOutlineSaveAlt />
                           {/* <FaRegSave /> */}
                           {/* save */}
                         </button>
