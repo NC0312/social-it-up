@@ -225,7 +225,7 @@ const AdminPanel = () => {
                 ].map((header) => (
                   <th
                     key={header}
-                    className="border border-[#36302A] px-4 md:px-4 py-2 md:py-6 text-left text-xs md:text-md md:text-base font-serif font-semibold"
+                    className="border border-[#36302A] px-4 md:px-4 py-2 md:py-6 text-left text-xs md:text-md md:text-base  font-semibold"
                   >
                     {header}
                   </th>
@@ -244,49 +244,49 @@ const AdminPanel = () => {
                         <MdDeleteForever />
                       </button>
                     </td>
-                    <td className="border border-[#36302A] px-4 py-2 text-sm md:text-base">
+                    <td className="border border-[#36302A] px-4 py-2 font-serif text-sm md:text-base">
                       {inquiry.timestamp
                         ? new Date(
                           inquiry.timestamp.seconds * 1000
                         ).toLocaleDateString()
                         : "N/A"}
                     </td>
-                    <td className="border border-[#36302A] px-4 py-2 text-sm md:text-base">
+                    <td className="border border-[#36302A] px-4 py-2 font-serif text-sm md:text-base">
                       {inquiry.firstName}
                     </td>
-                    <td className="border border-[#36302A] px-4 py-2 text-sm md:text-base">
+                    <td className="border border-[#36302A] px-4 py-2 font-serif text-sm md:text-base">
                       {inquiry.lastName}
                     </td>
-                    <td className="border border-[#36302A] px-4 py-2 text-sm md:text-base">
+                    <td className="border border-[#36302A] px-4 py-2 font-serif text-sm md:text-base">
                       {inquiry.email}
                     </td>
-                    <td className="border border-[#36302A] px-4 py-2 text-sm md:text-base">
+                    <td className="border border-[#36302A] px-4 py-2 font-serif text-sm md:text-base">
                       {inquiry.isChecked ? "Yes" : "No"}
                     </td>
 
-                    <td className="border border-[#36302A] px-4 py-2 text-sm md:text-base">
+                    <td className="border border-[#36302A] px-4 py-2 font-serif text-sm md:text-base">
                       {inquiry.phoneDialCode}
                     </td>
-                    <td className="border border-[#36302A] px-4 py-2 text-sm md:text-base">
+                    <td className="border border-[#36302A] px-4 py-2 font-serif text-sm md:text-base">
                       {inquiry.phoneNumber}
                     </td>
 
-                    <td className="border border-[#36302A] px-4 py-2 text-sm md:text-base">
+                    <td className="border border-[#36302A] px-4 py-2 font-serif text-sm md:text-base">
                       {inquiry.company}
                     </td>
 
-                    <td className="border border-[#36302A] px-4 py-2 text-sm md:text-base">
+                    <td className="border border-[#36302A] px-4 py-2 font-serif text-sm md:text-base">
                       {inquiry.services}
                     </td>
 
-                    <td className="border border-[#36302A] px-4 py-2 text-sm md:text-base">
+                    <td className="border border-[#36302A] px-4 py-2 font-serif text-sm md:text-base">
                       {inquiry.socials}
                     </td>
 
-                    <td className="border border-[#36302A] px-4 py-2 text-sm md:text-base">
+                    <td className="border border-[#36302A] px-4 py-2 font-serif text-sm md:text-base">
                       {inquiry.website}
                     </td>
-                    <td className="border border-[#36302A] px-4 py-2 text-sm md:text-base">
+                    <td className="border border-[#36302A] px-4 py-2 font-serif text-sm md:text-base">
                       {inquiry.messages}
                     </td>
                   </tr>
