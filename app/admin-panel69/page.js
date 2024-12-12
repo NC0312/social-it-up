@@ -1,14 +1,17 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { collection, getDocs, query, where, orderBy, deleteDoc, doc, writeBatch } from "firebase/firestore";
+import { collection, getDocs, query, where, orderBy, deleteDoc, doc, writeBatch, addDoc } from "firebase/firestore";
 import { db } from "../lib/firebase";
 import { toast } from "sonner";
 import { MdDeleteForever } from "react-icons/md";
-import { FaArrowLeft } from "react-icons/fa6";
+import { FaArrowLeft , FaRegSave } from "react-icons/fa6";
+import { useRouter } from "next/navigation";
+import { BsFillSave2Fill } from "react-icons/bs";
 
 
 const AdminPanel = () => {
+  const router = useRouter();
   const [inquiries, setInquiries] = useState([]);
   const [filteredInquiries, setFilteredInquiries] = useState([]);
   const [selectedDate, setSelectedDate] = useState("");
@@ -32,6 +35,29 @@ const AdminPanel = () => {
       setFilteredInquiries(data); // Initially display all inquiries
     } catch (error) {
       console.error("Error fetching inquiries:", error);
+    }
+  };
+
+  const handleSaveToReview = async (inquiry) => {
+    try {
+      // Add to review collection
+      await addDoc(collection(db, "reviews"), {
+        ...inquiry,
+        movedToReviewAt: new Date()
+      });
+
+      // Delete from inquiries
+      const inquiryDoc = doc(db, "inquiries", inquiry.id);
+      await deleteDoc(inquiryDoc);
+
+      // Update local state
+      setInquiries(inquiries.filter((item) => item.id !== inquiry.id));
+      setFilteredInquiries(filteredInquiries.filter((item) => item.id !== inquiry.id));
+      
+      toast.success("Moved to review successfully!");
+    } catch (error) {
+      console.error("Error moving to review:", error);
+      toast.error("Failed to move to review.");
     }
   };
 
@@ -206,7 +232,7 @@ const AdminPanel = () => {
         <h1 className="text-4xl md:text-6xl font-serif font-bold text-[#36302A] mb-4 md:mb-0">
           Admin Panel👨‍💻
         </h1>
-        <button
+        {/* <button
           onClick={() => {
             // Add your delete all confirmation logic here
             if (window.confirm('Are you sure you want to delete all data? This action cannot be undone.')) {
@@ -219,7 +245,29 @@ const AdminPanel = () => {
         >
           <MdDeleteForever className="text-xl" />
           <span>Delete All Data</span>
-        </button>
+        </button> */}
+        <div className="flex space-x-4">
+          <button
+            onClick={() => router.push('/review-panel69')}
+            className="px-3 py-1 md:px-4 md:py-2 bg-green-600 text-[#FAF4ED] font-semibold rounded-lg shadow-md hover:bg-green-700 transition-colors duration-200 flex items-center space-x-1"
+          >
+            <FaArrowLeft className="text-md md:text-xl" />
+            <span>Review Panel</span>
+          </button>
+          <button
+            onClick={() => {
+              if (window.confirm('Are you sure you want to delete all data? This action cannot be undone.')) {
+                handleDeleteAll();
+                window.location.reload();
+                toast.success("All data deleted successfully!");
+              }
+            }}
+            className="px-4 py-2 bg-red-600 text-[#FAF4ED] font-semibold rounded-lg shadow-md hover:bg-red-700 transition-colors duration-200 flex items-center space-x-2"
+          >
+            <MdDeleteForever className="text-xl" />
+            <span>Delete All Data</span>
+          </button>
+        </div>
       </div>
 
       <div className="mb-6">
@@ -335,13 +383,33 @@ const AdminPanel = () => {
               {displayedInquiries.length > 0 ? (
                 displayedInquiries.map((inquiry) => (
                   <tr key={inquiry.id} className="hover:bg-[#F2EAE2]">
-                    <td className="border border-[#36302A] px-4 md:px-7 py-2 md:py-4 text-xs md:text-base">
+                    {/* <td className="border border-[#36302A] px-4 md:px-7 py-2 md:py-4 text-xs md:text-base">
                       <button
                         onClick={() => handleDeleteInquiry(inquiry.id)}
                         className="text-red-500 hover:text-red-700 text-lg md:text-2xl"
                       >
                         <MdDeleteForever />
                       </button>
+                    </td> */}
+                     <td className="border border-[#36302A] px-4 md:px-7 py-2 md:py-4 text-xs md:text-base">
+                      <div className="flex space-x-2">
+                        <button
+                          onClick={() => handleSaveToReview(inquiry)}
+                          className="text-green-500 hover:text-green-700 text-md md:text-lg"
+                          title="Save to Review"
+                        >
+                          <BsFillSave2Fill />
+                          {/* <FaRegSave /> */}
+                          {/* save */}
+                        </button>
+                        <button
+                          onClick={() => handleDeleteInquiry(inquiry.id)}
+                          className="text-red-500 hover:text-red-700 text-lg md:text-2xl"
+                          title="Delete"
+                        >
+                          <MdDeleteForever />
+                        </button>
+                      </div>
                     </td>
                     <td className="border border-[#36302A] px-4 py-2 font-serif text-sm md:text-base">
                       {inquiry.timestamp
