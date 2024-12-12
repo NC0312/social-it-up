@@ -66,7 +66,7 @@ function Header() {
               isDevelopment ? "text-white" : "text-[#575553]"
             } ml-2 mt-20`}
           >
-            Made by{" "}
+            Version by{" "}
             <Link
               href="https://niketchawla.vercel.app/"
               target="_blank"
