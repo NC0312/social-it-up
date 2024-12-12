@@ -11,12 +11,26 @@ import LegacyCarousel from "./components/LegacyCarousel";
 import OurServices from "./components/OurServices";
 import QuoteSection from "./components/QuoteSection";
 
-const fadeInUp = {
-  hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
-};
+// const fadeInUp = {
+//   hidden: { opacity: 0, y: 20 },
+//   visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
+// };
 
 const Home = () => {
+  const fadeInLeft = {
+    hidden: { opacity: 0, x: -50 },
+    visible: { opacity: 1, x: 0, transition: { duration: 0.6 } },
+  };
+
+  const fadeInRight = {
+    hidden: { opacity: 0, x: 50 },
+    visible: { opacity: 1, x: 0, transition: { duration: 0.6 } },
+  };
+
+  const fadeInUp = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.8, delay: 0.2 } },
+  };
   const videoRef = useRef(null);
   const isVideoInView = useInView(videoRef, { once: true });
 

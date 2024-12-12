@@ -1,6 +1,22 @@
+'use client';
+import { motion } from 'framer-motion';
 import React from "react";
 
 const WorkPageGrid = () => {
+  const fadeInLeft = {
+    hidden: { opacity: 0, x: -50 },
+    visible: { opacity: 1, x: 0, transition: { duration: 0.6 } },
+  };
+
+  const fadeInRight = {
+    hidden: { opacity: 0, x: 50 },
+    visible: { opacity: 1, x: 0, transition: { duration: 0.6 } },
+  };
+
+  const fadeInUp = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.8, delay: 0.2 } },
+  };
   const works = [
     {
       src: "/work-images/image1.png",
@@ -45,7 +61,14 @@ const WorkPageGrid = () => {
   return (
     <section className="bg-[#ECE4DA] min-h-screen py-16">
       <div className="container mx-auto px-2 sm:px-4 md:px-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <motion.div
+                                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
+                                variants={fadeInUp}
+                                initial="hidden"
+                                whileInView="visible"
+                                viewport={{ once: true }}
+                            >
+        {/* <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"> */}
           {works.map((work, index) => (
             <div
               key={index}
@@ -60,7 +83,8 @@ const WorkPageGrid = () => {
               <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-opacity duration-300" />
             </div>
           ))}
-        </div>
+          </motion.div>
+        {/* </div> */}
       </div>
     </section>
   );

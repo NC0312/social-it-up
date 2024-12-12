@@ -5,6 +5,20 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, useAnimation, useMotionValue } from 'framer-motion';
 
 const ServicesInfiniteScroll = () => {
+  const fadeInLeft = {
+    hidden: { opacity: 0, x: -50 },
+    visible: { opacity: 1, x: 0, transition: { duration: 0.6 } },
+  };
+
+  const fadeInRight = {
+    hidden: { opacity: 0, x: 50 },
+    visible: { opacity: 1, x: 0, transition: { duration: 0.6 } },
+  };
+
+  const fadeInUp = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.8, delay: 0.2 } },
+  };
   const controls = useAnimation();
   const [isAnimationPaused, setIsAnimationPaused] = useState(false);
   const x = useMotionValue(0);
@@ -87,7 +101,14 @@ const ServicesInfiniteScroll = () => {
   }
 
   return (
-    <div className="relative w-full overflow-hidden bg-[#574C3F] py-40">
+    // <div className="relative w-full overflow-hidden bg-[#574C3F] py-40">
+    <motion.div
+    className="relative w-full overflow-hidden bg-[#574C3F] py-40"
+    variants={fadeInUp}
+    initial="hidden"
+    whileInView="visible"
+    viewport={{ once: true }}
+>
       <div className="flex whitespace-nowrap" ref={containerRef}>
         <motion.div
           className="flex"
@@ -113,7 +134,7 @@ const ServicesInfiniteScroll = () => {
           </button>
         </Link>
       </div>
-    </div>
+    </motion.div>
   );
 };
 

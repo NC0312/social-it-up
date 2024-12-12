@@ -4,6 +4,20 @@ import { AiOutlinePlus, AiOutlineMinus } from 'react-icons/ai';
 import { motion } from 'framer-motion';
 
 const ServicesWebsite = () => {
+    const fadeInLeft = {
+        hidden: { opacity: 0, x: -50 },
+        visible: { opacity: 1, x: 0, transition: { duration: 0.6 } },
+      };
+    
+      const fadeInRight = {
+        hidden: { opacity: 0, x: 50 },
+        visible: { opacity: 1, x: 0, transition: { duration: 0.6 } },
+      };
+    
+      const fadeInUp = {
+        hidden: { opacity: 0, y: 20 },
+        visible: { opacity: 1, y: 0, transition: { duration: 0.8, delay: 0.2 } },
+      };
     const [openSection, setOpenSection] = useState('');
 
     const sections = [
@@ -156,13 +170,28 @@ const ServicesWebsite = () => {
     return (
         <div className="w-full py-36 h-full bg-[#ECE4DA] text-[#36302A] mx-auto p-6 flex flex-col md:flex-row gap-8">
             {/* Branding Heading */}
-            <div className="md:w-1/3 py-20 flex items-center justify-center h-full">
+            {/* <div className="md:w-1/3 py-20 flex items-center justify-center h-full"> */}
+              <motion.div
+                                            className="md:w-1/3 py-20 flex items-center justify-center h-full"
+                                            variants={fadeInLeft}
+                                            initial="hidden"
+                                            whileInView="visible"
+                                            viewport={{ once: true }}
+                                        >
                 <h1 className="text-5xl md:text-6xl font-semibold font-serif">Website</h1>
-            </div>
+                </motion.div>
+            {/* </div> */}
 
             {/* List Section */}
             <div className="md:w-2/3 flex items-center justify-center h-full">
-                <div className="space-y-4 max-w-lg w-full mx-auto">
+                {/* <div className="space-y-4 max-w-lg w-full mx-auto"> */}
+                <motion.div
+                                className="space-y-4 max-w-lg w-full mx-auto"
+                                variants={fadeInRight}
+                                initial="hidden"
+                                whileInView="visible"
+                                viewport={{ once: true }}
+                            >
                     {sections.map((section, index) => (
                         <div
                             key={section.title}
@@ -204,7 +233,7 @@ const ServicesWebsite = () => {
 
                         </div>
                     ))}
-                </div>
+                </motion.div>
             </div>
         </div>
     );

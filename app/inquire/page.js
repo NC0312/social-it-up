@@ -8,6 +8,20 @@ import { db } from '../lib/firebase';
 
 
 const Inquire = () => {
+  const fadeInLeft = {
+    hidden: { opacity: 0, x: -50 },
+    visible: { opacity: 1, x: 0, transition: { duration: 0.6 } },
+  };
+
+  const fadeInRight = {
+    hidden: { opacity: 0, x: 50 },
+    visible: { opacity: 1, x: 0, transition: { duration: 0.6 } },
+  };
+
+  const fadeInUp = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.8, delay: 0.2 } },
+  };
   const [isChecked, setIsChecked] = useState(false);
   const [message, setMessage] = useState('');
   const [phoneDialCode, setPhoneDialCode] = useState('');
@@ -343,7 +357,14 @@ const Inquire = () => {
         </div>
 
         {/* Form Section */}
-        <div className="flex flex-col w-full md:w-1/2 relative">
+        {/* <div className="flex flex-col w-full md:w-1/2 relative"> */}
+        <motion.div
+                                className="flex flex-col w-full md:w-1/2 relative"
+                                variants={fadeInUp}
+                                initial="hidden"
+                                whileInView="visible"
+                                viewport={{ once: true }}
+                            >
           <div className="w-full overflow-hidden py-0 md:py-0">
             <div className="flex whitespace-nowrap items-center md:items-start" ref={containerRef}>
               <motion.div className="flex" animate={controls} style={{ x }}>
@@ -601,9 +622,11 @@ const Inquire = () => {
               />
             </motion.button>
           </form>
+          </motion.div>
         </div>
-      </div>
-    </div>
+        </div>
+      
+    
 
   );
 };
