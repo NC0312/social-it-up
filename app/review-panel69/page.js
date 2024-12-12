@@ -35,6 +35,21 @@ const ReviewPanel = () => {
         }
     };
 
+    
+    const handleDeleteReview = async (id) => {
+        try {
+            debugger
+            const reviewDoc = doc(db, "reviews", id);
+            await deleteDoc(reviewDoc);
+            setReviews(reviews.filter((review) => review.id !== id));
+            setFilteredReviews(filteredReviews.filter((review) => review.id !== id));
+            toast.success("Review deleted successfully!");
+        } catch (error) {
+            console.error("Error deleting review:", error);
+            toast.error("Failed to delete review.");
+        }
+    };
+
     useEffect(() => {
         fetchReviews();
     }, []);
@@ -83,18 +98,6 @@ const ReviewPanel = () => {
         }
     };
 
-    const handleDeleteReview = async (id) => {
-        try {
-            const reviewDoc = doc(db, "reviews", id);
-            await deleteDoc(reviewDoc);
-            setReviews(reviews.filter((review) => review.id !== id));
-            setFilteredReviews(filteredReviews.filter((review) => review.id !== id));
-            toast.success("Review deleted successfully!");
-        } catch (error) {
-            console.error("Error deleting review:", error);
-            toast.error("Failed to delete review.");
-        }
-    };
 
     const handleDeleteAll = async () => {
         try {
@@ -217,7 +220,7 @@ const ReviewPanel = () => {
                         <thead className="bg-[#5a4c3f] text-[#FAF4ED]">
                             <tr>
                                 {[
-                                    "Action",
+                                    // "Action",
                                     "Timestamp",
                                     "FirstName",
                                     "LastName",
@@ -244,7 +247,7 @@ const ReviewPanel = () => {
                             {displayedReviews.length > 0 ? (
                                 displayedReviews.map((review) => (
                                     <tr key={review.id} className="hover:bg-[#F2EAE2]">
-                                        <td className="border border-[#36302A] px-4 md:px-7 py-2 md:py-4 text-xs md:text-base">
+                                        {/* <td className="border border-[#36302A] px-4 md:px-7 py-2 md:py-4 text-xs md:text-base">
                                             <button
                                                 onClick={() => handleDeleteReview(review.id)}
                                                 className="text-red-500 hover:text-red-700 text-lg md:text-2xl"
@@ -252,7 +255,7 @@ const ReviewPanel = () => {
                                             >
                                                 <MdDeleteForever />
                                             </button>
-                                        </td>
+                                        </td> */}
                                         <td className="border border-[#36302A] px-4 py-2 font-serif text-sm md:text-base">
                                             {review.movedToReviewAt
                                                 ? new Date(review.movedToReviewAt.seconds * 1000).toLocaleDateString()

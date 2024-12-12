@@ -128,15 +128,15 @@ const AdminPanel = () => {
     try {
       const querySnapshot = await getDocs(collection(db, "inquiries"));
       const batch = writeBatch(db);
-
+  
       querySnapshot.forEach((doc) => {
         batch.delete(doc.ref);
       });
-
+  
       await batch.commit();
-
-      // setFormSubmitMessage("All entries deleted successfully!");
-
+  
+      setFormSubmitMessage("All entries deleted successfully!");
+  
       // Clear success message after 3 seconds
       setTimeout(() => {
         setFormSubmitMessage("");
@@ -144,7 +144,7 @@ const AdminPanel = () => {
     } catch (error) {
       console.error("Error deleting documents from Firestore: ", error);
       setFormSubmitMessage("Failed to delete entries. Please try again later.");
-
+  
       // Clear error message after 3 seconds
       setTimeout(() => {
         setFormSubmitMessage("");
