@@ -407,7 +407,7 @@ const AdminPanel = () => {
         <div className="flex flex-col md:flex-row justify-between items-center py-4">
           <div>
             <span className="text-sm md:text-lg text-[#36302A]">
-              Total Entries : {filteredInquiries.length} | Showing {startIndex} to {endIndex} of {filteredInquiries.length} entries
+              Total Records : {filteredInquiries.length} | Showing {startIndex} to {endIndex} of {filteredInquiries.length} records | DB Limit : 6500 records
             </span>
           </div>
           <div className="space-y-0 md:space-y-0 space-x-4 md:space-x-4 flex flex-row md:flex-row">
