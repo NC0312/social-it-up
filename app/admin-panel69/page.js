@@ -354,11 +354,11 @@ const AdminPanel = () => {
                         </button>
                       </div>
                     </td>
-                    <td className="border border-[#36302A] px-4 py-2 font-serif text-sm md:text-base">
+                    <td className="border border-[#36302A] px-4 py-2 font-serif text-sm md:text-base whitespace-nowrap">
                       {inquiry.timestamp
                         ? new Date(
                           inquiry.timestamp.seconds * 1000
-                        ).toLocaleDateString()
+                        ).toLocaleString()
                         : "N/A"}
                     </td>
                     <td className="border border-[#36302A] px-4 py-2 font-serif text-sm md:text-base">

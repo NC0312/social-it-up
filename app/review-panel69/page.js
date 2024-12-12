@@ -236,9 +236,9 @@ const ReviewPanel = () => {
                                                 <MdDeleteForever />
                                             </button>
                                         </td> */}
-                                        <td className="border border-[#36302A] px-4 py-2 font-serif text-sm md:text-base">
+                                        <td className="border border-[#36302A] px-4 py-2 font-serif text-sm md:text-base whitespace-nowrap">
                                             {review.movedToReviewAt
-                                                ? new Date(review.movedToReviewAt.seconds * 1000).toLocaleDateString()
+                                                ? new Date(review.movedToReviewAt.seconds * 1000).toLocaleString()
                                                 : "N/A"}
                                         </td>
                                         <td className="border border-[#36302A] px-4 py-2 font-serif text-sm md:text-base">
