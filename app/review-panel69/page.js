@@ -213,6 +213,13 @@ const ReviewPanel = () => {
                     Review Panel 📋
                 </h1>
                 <div className="flex space-x-4">
+                <button
+                        onClick={() => router.push('/admin-panel69')}
+                        className="px-4 py-2 bg-green-600 text-white font-semibold rounded-lg shadow-md hover:bg-green-700 transition-colors duration-200 flex items-center space-x-2"
+                    >
+                        <FaArrowLeft className="text-md md:text-xl" />
+                        <span>Back to Admin Panel</span>
+                    </button>
                     <button
                         onClick={handleDeleteAllReviews}
                         disabled={isDeletingAll}
@@ -221,13 +228,7 @@ const ReviewPanel = () => {
                         <MdDeleteForever className="text-xl" />
                         <span>Delete All</span>
                     </button>
-                    <button
-                        onClick={() => router.push('/admin-panel69')}
-                        className="px-4 py-2 bg-green-600 text-white font-semibold rounded-lg shadow-md hover:bg-green-700 transition-colors duration-200 flex items-center space-x-2"
-                    >
-                        <FaArrowLeft className="text-md md:text-xl" />
-                        <span>Back to Admin Panel</span>
-                    </button>
+                    
                 </div>
             </div>
             </motion.div>
