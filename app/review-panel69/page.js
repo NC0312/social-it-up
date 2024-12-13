@@ -6,8 +6,23 @@ import { toast } from "sonner";
 import { MdDeleteForever } from "react-icons/md";
 import { FaArrowLeft } from "react-icons/fa";
 import { useRouter } from 'next/navigation';
+import {motion} from "framer-motion";
 
 const ReviewPanel = () => {
+    const fadeInLeft = {
+        hidden: { opacity: 0, x: -50 },
+        visible: { opacity: 1, x: 0, transition: { duration: 0.6 } },
+    };
+
+    const fadeInRight = {
+        hidden: { opacity: 0, x: 50 },
+        visible: { opacity: 1, x: 0, transition: { duration: 0.6 } },
+    };
+
+    const fadeInUp = {
+        hidden: { opacity: 0, y: 20 },
+        visible: { opacity: 1, y: 0, transition: { duration: 0.8, delay: 0.2 } },
+    };
     const router = useRouter();
     const [reviews, setReviews] = useState([]);
     const [filteredReviews, setFilteredReviews] = useState([]);
@@ -187,6 +202,12 @@ const ReviewPanel = () => {
 
     return (
         <div className="p-4 md:p-6 bg-green-50 min-h-screen">
+            <motion.div
+        variants={fadeInLeft}
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true }}
+      >
             <div className="flex flex-col md:flex-row justify-between items-center border-b border-green-300 py-6 pb-4 mb-6">
                 <h1 className="text-4xl md:text-6xl font-serif font-bold text-green-800 mb-4 md:mb-0">
                     Review Panel 📋
@@ -209,7 +230,14 @@ const ReviewPanel = () => {
                     </button>
                 </div>
             </div>
+            </motion.div>
 
+            <motion.div
+        variants={fadeInRight}
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true }}
+      >
             <div className="mb-6">
                 <label className="block text-sm md:text-lg font-medium mb-2 text-green-800" htmlFor="date-filter">
                     Filter by Date:
@@ -238,7 +266,14 @@ const ReviewPanel = () => {
                     <option value="No">No</option>
                 </select>
             </div>
+            </motion.div>
 
+            <motion.div
+        variants={fadeInLeft}
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true }}
+      >
             <div className="mb-6 text-center flex justify-center items-center space-x-4">
                 <button
                     onClick={() => {
@@ -268,7 +303,14 @@ const ReviewPanel = () => {
                     <MdDeleteForever className="text-lg md:text-2xl" />
                 </button>
             </div>
+            </motion.div>
 
+            <motion.div
+        variants={fadeInUp}
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true }}
+      >
             <div className="relative w-full overflow-hidden bg-white shadow-md rounded-lg">
                 <div
                     className="overflow-x-auto scrollbar-hide"
@@ -369,6 +411,7 @@ const ReviewPanel = () => {
                     </table>
                 </div>
             </div>
+            </motion.div>
 
             {/* Pagination */}
             {filteredReviews.length > 0 && (
