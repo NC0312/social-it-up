@@ -392,10 +392,10 @@ const ReviewPanel = () => {
                                         <td className="border border-green-200 px-4 py-2 font-serif text-sm md:text-base">
                                             {review.socials}
                                         </td>
-                                        <td className="border border-[#36302A] px-4 py-2 font-serif text-sm md:text-base">
+                                        <td className="border border-green-200 px-4 py-2 font-serif text-sm md:text-base">
                                             {review.website}
                                         </td>
-                                        <td className="border border-[#36302A] px-4 py-2 font-serif text-sm md:text-base">
+                                        <td className="border border-green-200 px-4 py-2 font-serif text-sm md:text-base">
                                             {review.messages}
                                         </td>
                                     </tr>
