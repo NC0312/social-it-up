@@ -15,6 +15,7 @@ const ReviewPanel = () => {
     const [signedUp, setSignedUp] = useState("");
     const [currentPage, setCurrentPage] = useState(1);
     const [isDeleting, setIsDeleting] = useState(false);
+    const [isDeletingAll, setIsDeletingAll] = useState(false);
     const entriesPerPage = 20;
 
     const fetchReviews = async () => {
@@ -36,42 +37,83 @@ const ReviewPanel = () => {
         }
     };
 
+    const handleDeleteAllReviews = async () => {
+        if (isDeletingAll) return;
+
+        try {
+            setIsDeletingAll(true);
+
+            // Show confirmation dialog
+            if (!window.confirm("Are you sure you want to delete ALL reviews? This action cannot be undone!")) {
+                setIsDeletingAll(false);
+                return;
+            }
+
+            const reviewsCollection = collection(db, "reviews");
+            const snapshot = await getDocs(reviewsCollection);
+
+            // Use batched writes for better performance
+            const batchSize = 500;
+            let batch = writeBatch(db);
+            let count = 0;
+            let totalDeleted = 0;
+
+            for (const document of snapshot.docs) {
+                batch.delete(doc(db, "reviews", document.id));
+                count++;
+                totalDeleted++;
+
+                if (count >= batchSize) {
+                    await batch.commit();
+                    batch = writeBatch(db);
+                    count = 0;
+                }
+            }
+
+            // Commit any remaining deletes
+            if (count > 0) {
+                await batch.commit();
+            }
+
+            setReviews([]);
+            setFilteredReviews([]);
+            setCurrentPage(1);
+
+            toast.success(`Successfully deleted ${totalDeleted} reviews!`);
+
+        } catch (error) {
+            console.error("Error deleting all reviews:", error);
+            toast.error("Failed to delete all reviews. Please try again.");
+        } finally {
+            setIsDeletingAll(false);
+        }
+    };
 
     const handleDeleteReview = async (docId) => {
-        // Prevent multiple clicks while deleting
         if (isDeleting) return;
 
         try {
             setIsDeleting(true);
 
-            // Show confirmation dialog
             if (!window.confirm("Are you sure you want to delete this review?")) {
                 setIsDeleting(false);
                 return;
             }
 
-            // Get reference to the document
             const reviewRef = doc(db, "reviews", docId);
-
-            // Delete the document
             await deleteDoc(reviewRef);
 
-            // Update local state only after successful deletion
             const updatedReviews = reviews.filter((review) => review.docId !== docId);
             const updatedFilteredReviews = filteredReviews.filter((review) => review.docId !== docId);
 
             setReviews(updatedReviews);
             setFilteredReviews(updatedFilteredReviews);
-
-            // Show success message
             toast.success("Review deleted successfully!");
 
-            // If current page becomes empty, go to previous page
-            const currentPageItems = updatedFilteredReviews.slice(
+            if (currentPage > 1 && updatedFilteredReviews.slice(
                 (currentPage - 1) * entriesPerPage,
                 currentPage * entriesPerPage
-            );
-            if (currentPageItems.length === 0 && currentPage > 1) {
+            ).length === 0) {
                 setCurrentPage(currentPage - 1);
             }
 
@@ -98,7 +140,6 @@ const ReviewPanel = () => {
     const handleFetchData = () => {
         let filtered = reviews;
 
-        // Apply date filter if selected
         if (selectedDate) {
             const selectedDateStart = new Date(selectedDate);
             const selectedDateEnd = new Date(selectedDate);
@@ -110,7 +151,6 @@ const ReviewPanel = () => {
             });
         }
 
-        // Apply signup filter if selected
         if (signedUp) {
             filtered = filtered.filter(review => {
                 if (signedUp === "Yes") {
@@ -132,7 +172,6 @@ const ReviewPanel = () => {
         }
     };
 
-    // Pagination logic
     const totalPages = Math.ceil(filteredReviews.length / entriesPerPage);
     const displayedReviews = filteredReviews.slice(
         (currentPage - 1) * entriesPerPage,
@@ -143,27 +182,36 @@ const ReviewPanel = () => {
         setCurrentPage(page);
     };
 
-    // Calculate current range
     const startIndex = (currentPage - 1) * entriesPerPage + 1;
     const endIndex = Math.min(currentPage * entriesPerPage, filteredReviews.length);
 
     return (
-        <div className="p-4 md:p-6 bg-[#FAF4ED] min-h-screen">
-            <div className="flex flex-col md:flex-row justify-between items-center border-b border-gray-300 py-6 pb-4 mb-6">
-                <h1 className="text-4xl md:text-6xl font-serif font-bold text-[#36302A] mb-4 md:mb-0">
+        <div className="p-4 md:p-6 bg-green-50 min-h-screen">
+            <div className="flex flex-col md:flex-row justify-between items-center border-b border-green-300 py-6 pb-4 mb-6">
+                <h1 className="text-4xl md:text-6xl font-serif font-bold text-green-800 mb-4 md:mb-0">
                     Review Panel 📋
                 </h1>
-                <button
-                    onClick={() => router.push('/admin-panel69')}
-                    className="px-4 py-2 bg-green-600 text-[#FAF4ED] font-semibold rounded-lg shadow-md hover:bg-green-700 transition-colors duration-200 flex items-center space-x-2"
-                >
-                    <FaArrowLeft className="text-md md:text-xl" />
-                    <span>Back to Admin Panel</span>
-                </button>
+                <div className="flex space-x-4">
+                    <button
+                        onClick={handleDeleteAllReviews}
+                        disabled={isDeletingAll}
+                        className="px-4 py-2 bg-red-600 text-white font-semibold rounded-lg shadow-md hover:bg-red-700 transition-colors duration-200 flex items-center space-x-2"
+                    >
+                        <MdDeleteForever className="text-xl" />
+                        <span>Delete All</span>
+                    </button>
+                    <button
+                        onClick={() => router.push('/admin-panel69')}
+                        className="px-4 py-2 bg-green-600 text-white font-semibold rounded-lg shadow-md hover:bg-green-700 transition-colors duration-200 flex items-center space-x-2"
+                    >
+                        <FaArrowLeft className="text-md md:text-xl" />
+                        <span>Back to Admin Panel</span>
+                    </button>
+                </div>
             </div>
 
             <div className="mb-6">
-                <label className="block text-sm md:text-lg font-medium mb-2" htmlFor="date-filter">
+                <label className="block text-sm md:text-lg font-medium mb-2 text-green-800" htmlFor="date-filter">
                     Filter by Date:
                 </label>
                 <input
@@ -171,19 +219,19 @@ const ReviewPanel = () => {
                     type="date"
                     value={selectedDate}
                     onChange={handleDateChange}
-                    className="w-full md:w-1/3 border border-gray-300 rounded-lg px-3 py-1 md:py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-[#36302A]"
+                    className="w-full md:w-1/3 border border-green-300 rounded-lg px-3 py-1 md:py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500"
                 />
             </div>
 
             <div className="mb-6">
-                <label className="block text-sm md:text-lg font-medium mb-2" htmlFor="signup-filter">
+                <label className="block text-sm md:text-lg font-medium mb-2 text-green-800" htmlFor="signup-filter">
                     Filter by Signed Up:
                 </label>
                 <select
                     id="signup-filter"
                     value={signedUp}
                     onChange={handleSignUpChange}
-                    className="w-full md:w-1/3 border border-gray-300 rounded-lg px-3 py-1 md:py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-[#36302A]"
+                    className="w-full md:w-1/3 border border-green-300 rounded-lg px-3 py-1 md:py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500"
                 >
                     <option value="">Has anyone signed up for news and updates?</option>
                     <option value="Yes">Yes</option>
@@ -200,7 +248,7 @@ const ReviewPanel = () => {
                             toast.error("No filter applied!");
                         }
                     }}
-                    className="px-8 py-2 md:py-3 bg-[#36302A] text-[#FAF4ED] font-semibold rounded-md md:rounded-lg shadow-md hover:bg-[#2C2925] focus:outline-none focus:ring-2 focus:ring-[#36302A] w-full md:w-auto"
+                    className="px-8 py-2 md:py-3 bg-green-600 text-white font-semibold rounded-md md:rounded-lg shadow-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 w-full md:w-auto"
                 >
                     Apply Filter
                 </button>
@@ -215,13 +263,13 @@ const ReviewPanel = () => {
                             toast.error("No filter to clear!");
                         }
                     }}
-                    className="px-5 py-2 md:py-3 bg-red-600 text-[#FAF4ED] font-semibold rounded-md md:rounded-lg shadow-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-600 md:w-auto"
+                    className="px-5 py-2 md:py-3 bg-red-600 text-white font-semibold rounded-md md:rounded-lg shadow-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-600 md:w-auto"
                 >
                     <MdDeleteForever className="text-lg md:text-2xl" />
                 </button>
             </div>
 
-            <div className="relative w-full overflow-hidden bg-[#FAF4ED] shadow-md">
+            <div className="relative w-full overflow-hidden bg-white shadow-md rounded-lg">
                 <div
                     className="overflow-x-auto scrollbar-hide"
                     style={{
@@ -230,8 +278,8 @@ const ReviewPanel = () => {
                         WebkitOverflowScrolling: "touch",
                     }}
                 >
-                    <table className="min-w-full table-auto border-collapse border border-gray-200">
-                        <thead className="bg-[#5a4c3f] text-[#FAF4ED]">
+                    <table className="min-w-full table-auto border-collapse border border-green-200">
+                        <thead className="bg-green-600 text-white">
                             <tr>
                                 {[
                                     "Action",
@@ -250,7 +298,7 @@ const ReviewPanel = () => {
                                 ].map((header) => (
                                     <th
                                         key={header}
-                                        className="border border-[#36302A] px-4 md:px-4 py-2 md:py-4 text-left text-xs md:text-md md:text-base font-semibold"
+                                        className="border border-green-500 px-4 md:px-4 py-2 md:py-4 text-left text-xs md:text-md md:text-base font-semibold"
                                     >
                                         {header}
                                     </th>
@@ -260,8 +308,8 @@ const ReviewPanel = () => {
                         <tbody>
                             {displayedReviews.length > 0 ? (
                                 displayedReviews.map((review) => (
-                                    <tr key={review.docId} className="hover:bg-[#F2EAE2]">
-                                        <td className="border border-[#36302A] px-4 md:px-7 py-2 md:py-2 text-xs md:text-base">
+                                    <tr key={review.docId} className="hover:bg-green-50">
+                                        <td className="border border-green-200 px-4 md:px-7 py-2 md:py-2 text-xs md:text-base">
                                             <button
                                                 onClick={() => handleDeleteReview(review.docId)}
                                                 className="text-red-500 hover:text-red-700 text-lg md:text-2xl"
@@ -270,36 +318,36 @@ const ReviewPanel = () => {
                                                 <MdDeleteForever />
                                             </button>
                                         </td>
-                                        <td className="border border-[#36302A] px-4 py-2 font-serif text-sm md:text-base whitespace-nowrap">
+                                        <td className="border border-green-200 px-4 py-2 font-serif text-sm md:text-base whitespace-nowrap">
                                             {review.movedToReviewAt
                                                 ? new Date(review.movedToReviewAt.seconds * 1000).toLocaleString()
                                                 : "N/A"}
                                         </td>
-                                        <td className="border border-[#36302A] px-4 py-2 font-serif text-sm md:text-base">
+                                        <td className="border border-green-200 px-4 py-2 font-serif text-sm md:text-base">
                                             {review.firstName}
                                         </td>
-                                        <td className="border border-[#36302A] px-4 py-2 font-serif text-sm md:text-base">
+                                        <td className="border border-green-200 px-4 py-2 font-serif text-sm md:text-base">
                                             {review.lastName}
                                         </td>
-                                        <td className="border border-[#36302A] px-4 py-2 font-serif text-sm md:text-base">
+                                        <td className="border border-green-200 px-4 py-2 font-serif text-sm md:text-base">
                                             {review.email}
                                         </td>
-                                        <td className="border border-[#36302A] px-4 py-2 font-serif text-sm md:text-base">
+                                        <td className="border border-green-200 px-4 py-2 font-serif text-sm md:text-base">
                                             {review.isChecked ? "Yes" : "No"}
                                         </td>
-                                        <td className="border border-[#36302A] px-4 py-2 font-serif text-sm md:text-base">
+                                        <td className="border border-green-200 px-4 py-2 font-serif text-sm md:text-base">
                                             {review.phoneDialCode}
                                         </td>
-                                        <td className="border border-[#36302A] px-4 py-2 font-serif text-sm md:text-base">
+                                        <td className="border border-green-200 px-4 py-2 font-serif text-sm md:text-base">
                                             {review.phoneNumber}
                                         </td>
-                                        <td className="border border-[#36302A] px-4 py-2 font-serif text-sm md:text-base">
+                                        <td className="border border-green-200 px-4 py-2 font-serif text-sm md:text-base">
                                             {review.company}
                                         </td>
-                                        <td className="border border-[#36302A] px-4 py-2 font-serif text-sm md:text-base">
+                                        <td className="border border-green-200 px-4 py-2 font-serif text-sm md:text-base">
                                             {review.services}
                                         </td>
-                                        <td className="border border-[#36302A] px-4 py-2 font-serif text-sm md:text-base">
+                                        <td className="border border-green-200 px-4 py-2 font-serif text-sm md:text-base">
                                             {review.socials}
                                         </td>
                                         <td className="border border-[#36302A] px-4 py-2 font-serif text-sm md:text-base">
@@ -326,7 +374,7 @@ const ReviewPanel = () => {
             {filteredReviews.length > 0 && (
                 <div className="flex flex-col md:flex-row justify-between items-center py-4">
                     <div>
-                        <span className="text-sm md:text-lg text-[#36302A]">
+                        <span className="text-sm md:text-lg text-green-700">
                             Total Records: {filteredReviews.length} | Showing {startIndex} to {endIndex} of {filteredReviews.length} records | DB Limit: 6500 records
                         </span>
                     </div>
@@ -334,28 +382,28 @@ const ReviewPanel = () => {
                         <button
                             onClick={() => handlePageChange(1)}
                             disabled={currentPage === 1}
-                            className="px-4 py-2 text-[#FAF4ED] bg-[#36302A] rounded-md shadow-md hover:bg-[#2C2925] w-full md:w-auto"
+                            className="px-4 py-2 text-[#FAF4ED] bg-green-600 rounded-md shadow-md hover:bg-green-700 w-full md:w-auto"
                         >
                             First
                         </button>
                         <button
                             onClick={() => handlePageChange(currentPage - 1)}
                             disabled={currentPage === 1}
-                            className="px-4 py-2 text-[#FAF4ED] bg-[#36302A] rounded-md shadow-md hover:bg-[#2C2925] w-full md:w-auto"
+                            className="px-4 py-2 text-[#FAF4ED] bg-green-600 rounded-md shadow-md hover:bg-green-700 w-full md:w-auto"
                         >
                             Prev
                         </button>
                         <button
                             onClick={() => handlePageChange(currentPage + 1)}
                             disabled={currentPage === totalPages}
-                            className="px-4 py-2 text-[#FAF4ED] bg-[#36302A] rounded-md shadow-md hover:bg-[#2C2925] w-full md:w-auto"
+                            className="px-4 py-2 text-[#FAF4ED] bg-green-600 rounded-md shadow-md hover:bg-green-700 w-full md:w-auto"
                         >
                             Next
                         </button>
                         <button
                             onClick={() => handlePageChange(totalPages)}
                             disabled={currentPage === totalPages}
-                            className="px-4 py-2 text-[#FAF4ED] bg-[#36302A] rounded-md shadow-md hover:bg-[#2C2925] w-full md:w-auto"
+                            className="px-4 py-2 text-[#FAF4ED] bg-green-600 rounded-md shadow-md hover:bg-green-700 w-full md:w-auto"
                         >
                             Last
                         </button>

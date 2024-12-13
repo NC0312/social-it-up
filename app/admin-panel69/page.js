@@ -190,7 +190,7 @@ const AdminPanel = () => {
         <div className="flex space-x-4">
           <button
             onClick={() => router.push('/review-panel69')}
-            className="px-3 py-1 md:px-4 md:py-2 bg-green-600 text-[#FAF4ED] font-semibold rounded-lg shadow-md hover:bg-green-700 transition-colors duration-200 flex items-center space-x-1"
+            className="px-3 py-1 md:px-4 md:py-2 bg-[#36302A] text-[#FAF4ED] font-semibold rounded-lg shadow-md hover:bg-[#27231f] transition-colors duration-200 flex items-center space-x-1"
           >
 
             <span>Review Panel</span>
