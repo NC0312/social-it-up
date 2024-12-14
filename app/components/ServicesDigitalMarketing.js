@@ -173,7 +173,7 @@ const ServicesDigitalMarketing = () => {
             {/* List Section */}
             <motion.div
                                 className="md:w-2/3 flex items-center justify-center h-full md:pr-64"
-                                variants={fadeInLeft}
+                                variants={fadeInUp}
                                 initial="hidden"
                                 whileInView="visible"
                                 viewport={{ once: true }}
@@ -225,7 +225,7 @@ const ServicesDigitalMarketing = () => {
             
             <motion.div
                                 className="md:w-1/3 py-28 flex items-center justify-center h-full md:pr-96"
-                                variants={fadeInRight}
+                                variants={fadeInUp}
                                 initial="hidden"
                                 whileInView="visible"
                                 viewport={{ once: true }}

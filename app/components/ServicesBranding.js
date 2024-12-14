@@ -144,7 +144,7 @@ const ServicesBranding = () => {
             {/* Branding Heading */}
             <motion.div
                                 className="md:w-1/3 py-20 flex items-center justify-center h-full"
-                                variants={fadeInLeft}
+                                variants={fadeInUp}
                                 initial="hidden"
                                 whileInView="visible"
                                 viewport={{ once: true }}
@@ -156,7 +156,7 @@ const ServicesBranding = () => {
             <div className="md:w-2/3 flex items-center justify-center h-full">
                 <motion.div
                                 className="space-y-4 max-w-lg w-full mx-auto"
-                                variants={fadeInRight}
+                                variants={fadeInUp}
                                 initial="hidden"
                                 whileInView="visible"
                                 viewport={{ once: true }}
