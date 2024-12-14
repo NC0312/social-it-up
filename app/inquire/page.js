@@ -296,7 +296,7 @@ const Inquire = () => {
 
 
   return (
-    <div className="relative w-full h-auto">
+    <div className="relative w-full h-auto" style={{userSelect:"none"}}>
       <div className="flex flex-col md:flex-row items-stretch h-auto">
         {/* Image Section */}
         <div className="w-full md:w-1/2 md:absolute md:right-0 md:top-0 md:bottom-0 z-10">
