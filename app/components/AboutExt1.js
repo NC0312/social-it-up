@@ -22,7 +22,7 @@ function AboutExt1() {
 
     return (
         <>
-            <section className="bg-[rgb(250,244,237)] text-[#36302A] py-12 px-6 md:px-16">
+            <section className="bg-[rgb(250,244,237)] text-[#36302A] py-12 px-6 md:px-16" style={{userSelect:"none"}}>
                 <div className="container mx-auto flex flex-col md:flex-row items-start md:gap-12">
                     {/* Left Section - Heading and Description */}
                     <motion.div
@@ -84,7 +84,7 @@ function AboutExt1() {
                     </motion.div>
                 </div>
             </section>
-            <div className="w-screen h-[300px] mb-6 relative">
+            <div className="w-screen h-[300px] mb-6 relative" style={{userSelect:"none"}}>
                 <img
                     src="/strip-image.jpeg" // Replace with your image path
                     alt="Strip Image"
@@ -99,7 +99,7 @@ function AboutExt1() {
                 ></div>
             </div>
 
-            <div className="container text-[#36302A] py-8  mx-auto flex flex-col md:flex-row items-start md:gap-12 px-6 md:px-16">
+            <div className="container text-[#36302A] py-8  mx-auto flex flex-col md:flex-row items-start md:gap-12 px-6 md:px-16" style={{userSelect:"none"}}>
                 {/* Left Section - Heading */}
                 <motion.div
                     className="w-full md:w-1/3 text-center md:text-left"

@@ -24,7 +24,7 @@ const About = () => {
   return (
     <>
       {/* Main About Section */}
-      <section className="bg-[#ECE4DA] text-[#36302A] py-24 px-6 md:px-16">
+      <section className="bg-[#ECE4DA] text-[#36302A] py-24 px-6 md:px-16" style={{userSelect:"none"}}>
         <div className="container mx-auto flex flex-col md:flex-row items-center md:items-start">
           {/* Left Section - Heading */}
           <motion.div
