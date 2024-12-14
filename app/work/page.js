@@ -21,7 +21,7 @@ function work() {
   };
   return (
     <>
-      <section className="text-center py-16 overflow-x-hidden">
+      <section className="text-center py-16 overflow-x-hidden" style={{userSelect:"none"}}>
         <motion.div
                                 className="container mx-auto"
                                 variants={fadeInLeft}

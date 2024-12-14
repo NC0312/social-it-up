@@ -59,7 +59,7 @@ const WorkPageGrid = () => {
   ];
 
   return (
-    <section className="bg-[#ECE4DA] min-h-screen py-16">
+    <section className="bg-[#ECE4DA] min-h-screen py-16" style={{userSelect:"none"}}>
       <div className="container mx-auto px-2 sm:px-4 md:px-6">
       <motion.div
                                 className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
