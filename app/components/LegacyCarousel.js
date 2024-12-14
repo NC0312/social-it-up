@@ -7,7 +7,6 @@ const LegacyCarousel = () => {
         { image: "/legacy-carousel/boxongo.png", alt: "Boxongo", name: "Boxongo" },
         { image: "/legacy-carousel/ecojet.png", alt: "Airplane Design", name: "Ecojet" },
         { image: "/legacy-carousel/taiga-2.png", alt: "TAIGA 2", name: "TAIGA 2" },
-        // { image: "/legacy-carousel/cbse.png", alt: "CBSE", name: "CBSE" },
         {image:"/work-images/image3.png",alt:"indo canadian",name:"Indo Canadian"},
         { image: "/legacy-carousel/taiga.png", alt: "TAIGA - Across Horizon", name: "TAIGA - Across Horizon" },
     ];

@@ -171,7 +171,6 @@ const ServicesDigitalMarketing = () => {
     return (
         <div className="w-full py-36 h-full text-[#36302A] mx-auto p-6 flex flex-col-reverse md:flex-row gap-8">
             {/* List Section */}
-            {/* <div className="md:w-2/3 flex items-center justify-center h-full md:pr-64"> */}
             <motion.div
                                 className="md:w-2/3 flex items-center justify-center h-full md:pr-64"
                                 variants={fadeInLeft}
@@ -224,9 +223,6 @@ const ServicesDigitalMarketing = () => {
                     </div>
                 </motion.div>
             
-
-
-            {/* <div className="md:w-1/3 py-28 flex items-center justify-center h-full md:pr-96"> */}
             <motion.div
                                 className="md:w-1/3 py-28 flex items-center justify-center h-full md:pr-96"
                                 variants={fadeInRight}
@@ -236,8 +232,6 @@ const ServicesDigitalMarketing = () => {
                             >
                 <h1 className="text-4xl md:text-5xl font-semibold font-serif whitespace-nowrap">Digital Marketing</h1>
                 </motion.div>
-            {/* </div> */}
-
         </div>
     );
 };

@@ -105,8 +105,6 @@ export default function HomeExt1() {
                         className="rounded-3xl shadow-md"
                         style={{
                             userSelect:"none",
-                            // maxWidth: '850px', // Max width for larger screens
-                            // maxHeight: '850px', // Max height for larger screens
                             width: '100%',  // Set to full width for mobile screens
                             height: 'auto', // Adjust height proportionally for mobile screens
                             objectFit: 'cover',
@@ -132,18 +130,13 @@ export default function HomeExt1() {
                         businesses articulate their unique identity and resonate with their
                         target audience, ultimately driving growth and success.
                     </p>
-                    {/* <button className="bg-[#36302A] text-[#F6F3EE] px-6 py-3 rounded-xl transition px-20 py-6 mt-5">
-                        Our Services
-                    </button> */}
 
                     <Link href='/services'>
                         <motion.button
                             className="bg-[#36302A] text-[#F6F3EE] px-20 py-3 md:px-20 md:py-6 rounded-md md:rounded-xl transition-all mt-5"
                             initial={{ scale: 1 }}
                             whileHover={{
-                                //   scale: 1.05, // Slightly increase size on hover
                                 backgroundColor: '#4A3F31', // Slight color change on hover
-                                // transition: { duration: 0.3 },
                             }}
                             whileTap={{
                                 scale: 0.98, // Shrink the button slightly when clicked to simulate pressing

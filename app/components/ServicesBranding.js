@@ -142,7 +142,6 @@ const ServicesBranding = () => {
     return (
         <div className="w-full py-36 h-full bg-[#ECE4DA] text-[#36302A] mx-auto p-6 flex flex-col md:flex-row gap-8">
             {/* Branding Heading */}
-            {/* <div className="md:w-1/3 py-20 flex items-center justify-center h-full"> */}
             <motion.div
                                 className="md:w-1/3 py-20 flex items-center justify-center h-full"
                                 variants={fadeInLeft}
@@ -152,11 +151,9 @@ const ServicesBranding = () => {
                             >
                 <h1 className="text-5xl md:text-6xl font-semibold font-serif">Branding</h1>
                 </motion.div>
-            {/* </div> */}
 
             {/* List Section */}
             <div className="md:w-2/3 flex items-center justify-center h-full">
-                {/* <div className="space-y-4 max-w-lg w-full mx-auto"> */}
                 <motion.div
                                 className="space-y-4 max-w-lg w-full mx-auto"
                                 variants={fadeInRight}

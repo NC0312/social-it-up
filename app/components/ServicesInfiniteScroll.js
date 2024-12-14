@@ -101,7 +101,6 @@ const ServicesInfiniteScroll = () => {
   }
 
   return (
-    // <div className="relative w-full overflow-hidden bg-[#574C3F] py-40">
     <motion.div
     className="relative w-full overflow-hidden bg-[#574C3F] py-40"
     variants={fadeInUp}

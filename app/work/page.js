@@ -22,7 +22,6 @@ function work() {
   return (
     <>
       <section className="text-center py-16 overflow-x-hidden">
-        {/* <div className="container mx-auto"> */}
         <motion.div
                                 className="container mx-auto"
                                 variants={fadeInLeft}

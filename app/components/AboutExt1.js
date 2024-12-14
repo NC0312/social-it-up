@@ -25,7 +25,6 @@ function AboutExt1() {
             <section className="bg-[rgb(250,244,237)] text-[#36302A] py-12 px-6 md:px-16">
                 <div className="container mx-auto flex flex-col md:flex-row items-start md:gap-12">
                     {/* Left Section - Heading and Description */}
-                    {/* <div className="w-full md:w-2/3 mb-5 text-center md:text-left"> */}
                     <motion.div
                         className="w-full md:w-2/3 mb-5 text-center md:text-left"
                         variants={fadeInLeft}
@@ -59,7 +58,6 @@ function AboutExt1() {
                     </motion.div>
 
                     {/* Right Section - Images */}
-                    {/* <div className="relative w-full pt-28 md:w-1/3 flex justify-end items-center mt-8 md:mt-0"> */}
                     <motion.div
                         className="relative w-full pt-28 md:w-1/3 flex justify-end items-center mt-8 md:mt-0"
                         variants={fadeInRight}
@@ -103,7 +101,6 @@ function AboutExt1() {
 
             <div className="container text-[#36302A] py-8  mx-auto flex flex-col md:flex-row items-start md:gap-12 px-6 md:px-16">
                 {/* Left Section - Heading */}
-                {/* <div className="w-full md:w-1/3 text-center md:text-left"> */}
                 <motion.div
                     className="w-full md:w-1/3 text-center md:text-left"
                     variants={fadeInLeft}
@@ -121,7 +118,6 @@ function AboutExt1() {
                 </motion.div>
 
                 {/* Right Section - Paragraphs */}
-                {/* <div className="w-full md:w-2/3"> */}
                 <motion.div
                     className="w-full md:w-2/3"
                     variants={fadeInRight}

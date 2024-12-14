@@ -94,11 +94,6 @@ const Inquire = () => {
     }, 3000);
   };
 
-  // const handlePhoneChange = (event) => {
-  //   const value = event.target.value;
-  //   setPhoneNumber(value);
-  //   if (phoneError) setPhoneError('');
-  // };
 
   const handlePhoneChange = (event) => {
     // Only allow digits, no special characters
@@ -213,50 +208,6 @@ const Inquire = () => {
     return true;
   };
 
-  // const handleSubmit = async (e) => {
-  //   e.preventDefault();
-  //   setIsSubmitting(true);
-
-  //   const isPhoneValid = validatePhoneNumber();
-  //   const isEmailValid = validateEmail();
-  //   const isFirstNameValid = validateFirstName();
-  //   const isCompanyValid = validateCompany();
-  //   const isWebsiteValid = validateWebsite();
-  //   const isPhoneCodeValid = validatePhoneCode();
-  //   const isSocialsValid = validateSocials();
-  //   const isServicesValid = validateServices();
-  //   const isMessagesValid = validateMessages();
-
-  //   if (isPhoneValid && isEmailValid && isFirstNameValid && isCompanyValid && isWebsiteValid && isPhoneCodeValid && isSocialsValid && isServicesValid && isMessagesValid) {
-  //     // Simulate form submission delay
-  //     setTimeout(() => {
-  //       // Reset all fields
-  //       setFirstName('');
-  //       setLastName('');
-  //       setEmail('');
-  //       setPhoneNumber('');
-  //       setCompany('');
-  //       setWebsite('');
-  //       setPhoneDialCode('');
-  //       setMessages('');
-  //       setSocials('');
-  //       setServices('');
-  //       setIsChecked(false);
-
-  //       // Show success message
-  //       setFormSubmitMessage('Form submitted successfully!');
-
-  //       // Clear success message after 3 seconds
-  //       setTimeout(() => {
-  //         setFormSubmitMessage('');
-  //       }, 3000);
-
-  //       setIsSubmitting(false);
-  //     }, 1000);
-  //   } else {
-  //     setIsSubmitting(false);
-  //   }
-  // };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -357,7 +308,6 @@ const Inquire = () => {
         </div>
 
         {/* Form Section */}
-        {/* <div className="flex flex-col w-full md:w-1/2 relative"> */}
         <motion.div
                                 className="flex flex-col w-full md:w-1/2 relative"
                                 variants={fadeInUp}

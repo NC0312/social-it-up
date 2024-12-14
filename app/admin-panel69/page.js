@@ -5,10 +5,7 @@ import { collection, getDocs, query, where, orderBy, deleteDoc, doc, writeBatch,
 import { db } from "../lib/firebase";
 import { toast } from "sonner";
 import { MdDeleteForever } from "react-icons/md";
-import { FaArrowLeft, FaRegSave } from "react-icons/fa6";
 import { useRouter } from "next/navigation";
-import { BsFillSave2Fill } from "react-icons/bs";
-import { CiSaveDown2 } from "react-icons/ci";
 import { MdOutlineSaveAlt } from "react-icons/md";
 import { FaArrowRight } from "react-icons/fa";
 import { motion } from "framer-motion";
@@ -146,7 +143,6 @@ const AdminPanel = () => {
 
   const handleDeleteAll = async () => {
     try {
-      debugger
       const querySnapshot = await getDocs(collection(db, "inquiries"));
       const batch = writeBatch(db);
 
@@ -351,14 +347,6 @@ const AdminPanel = () => {
                 {displayedInquiries.length > 0 ? (
                   displayedInquiries.map((inquiry) => (
                     <tr key={inquiry.id} className="hover:bg-[#F2EAE2]">
-                      {/* <td className="border border-[#36302A] px-4 md:px-7 py-2 md:py-4 text-xs md:text-base">
-                      <button
-                        onClick={() => handleDeleteInquiry(inquiry.id)}
-                        className="text-red-500 hover:text-red-700 text-lg md:text-2xl"
-                      >
-                        <MdDeleteForever />
-                      </button>
-                    </td> */}
                       <td className="border border-[#36302A] px-4 md:px-7 py-2 md:py-2 text-xs md:text-base">
                         <div className="flex space-x-2">
                           <button
@@ -366,11 +354,7 @@ const AdminPanel = () => {
                             className="text-green-500 hover:text-green-700 text-lg md:text-xl"
                             title="Save to Review"
                           >
-                            {/* <BsFillSave2Fill /> */}
-                            {/* <CiSaveDown2 /> */}
                             <MdOutlineSaveAlt />
-                            {/* <FaRegSave /> */}
-                            {/* save */}
                           </button>
                           <button
                             onClick={() => handleDeleteInquiry(inquiry.id)}
