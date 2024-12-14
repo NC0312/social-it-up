@@ -36,7 +36,7 @@ const Services = () => {
   };
 
   return (
-    <main className="w-full" style={{userSelect:"none"}}>
+    <main className="w-full overflow-x-hidden" style={{userSelect:"none"}}>
       {/* Hero Section */}
       <motion.section
         initial={{ opacity: 0 }}

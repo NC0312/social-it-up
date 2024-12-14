@@ -1,9 +1,9 @@
+// AboutExt1.jsx
 "use client";
 
 import React from "react";
 import { motion } from "framer-motion";
 
-// How We Started Section for About
 function AboutExt1() {
     const fadeInLeft = {
         hidden: { opacity: 0, x: -50 },
@@ -22,45 +22,47 @@ function AboutExt1() {
 
     return (
         <>
-            <section className="bg-[rgb(250,244,237)] text-[#36302A] py-12 px-6 md:px-16" style={{userSelect:"none"}}>
+            <section className="bg-[rgb(250,244,237)] text-[#36302A] py-12 px-4 md:px-16 max-w-full" style={{userSelect:"none"}}>
                 <div className="container mx-auto flex flex-col md:flex-row items-start md:gap-12">
                     {/* Left Section - Heading and Description */}
                     <motion.div
                         className="w-full md:w-2/3 mb-5 text-center md:text-left"
-                        variants={fadeInLeft}
+                        variants={fadeInUp}
                         initial="hidden"
                         whileInView="visible"
                         viewport={{ once: true }}
                     >
                         <h1
-                            className="text-3xl md:text-[70px] lg:text-[70px] pt-40 md:pl-10 pb-12 font-bold"
+                            className="text-3xl md:text-[70px] lg:text-[70px] pt-40 md:pl-10 pb-12 font-bold break-words"
                             style={{ fontFamily: "'Noto Serif Display', serif" }}
                         >
                             How we Started...
                         </h1>
-                        <p className="text-base md:text-md leading-relaxed mt-4 md:pr-72  md:pl-10">
-                            Our journey began a few years ago when we—fueled by a shared passion
-                            for creativity—decided to break free from the constraints of
-                            traditional corporate life.
-                        </p>
-                        <p className="text-base md:text-md leading-relaxed mt-4 md:pr-72 md:pl-10">
-                            Coming from backgrounds in the creative industry, we recognized the
-                            potential to create something special together. This realization
-                            sparked the birth of Social It Up, a family business where our
-                            collective expertise converges to create extraordinary marketing
-                            strategies and branding experiences.
-                        </p>
-                        <p className="text-base md:text-md leading-relaxed mt-4 md:pr-72 md:pl-10">
-                            Our shared vision was simple: to create a space where creativity
-                            thrives, and brands can express their true identity without
-                            compromise.
-                        </p>
+                        <div className="px-4 md:px-0">
+                            <p className="text-base md:text-md leading-relaxed mt-4 md:pr-72 md:pl-10">
+                                Our journey began a few years ago when we—fueled by a shared passion
+                                for creativity—decided to break free from the constraints of
+                                traditional corporate life.
+                            </p>
+                            <p className="text-base md:text-md leading-relaxed mt-4 md:pr-72 md:pl-10">
+                                Coming from backgrounds in the creative industry, we recognized the
+                                potential to create something special together. This realization
+                                sparked the birth of Social It Up, a family business where our
+                                collective expertise converges to create extraordinary marketing
+                                strategies and branding experiences.
+                            </p>
+                            <p className="text-base md:text-md leading-relaxed mt-4 md:pr-72 md:pl-10">
+                                Our shared vision was simple: to create a space where creativity
+                                thrives, and brands can express their true identity without
+                                compromise.
+                            </p>
+                        </div>
                     </motion.div>
 
                     {/* Right Section - Images */}
                     <motion.div
-                        className="relative w-full pt-28 md:w-1/3 flex justify-end items-center mt-8 md:mt-0"
-                        variants={fadeInRight}
+                        className="relative w-full pt-28 md:w-1/3 flex justify-center md:justify-end items-center mt-8 md:mt-0"
+                        variants={fadeInUp}
                         initial="hidden"
                         whileInView="visible"
                         viewport={{ once: true }}
@@ -84,22 +86,21 @@ function AboutExt1() {
                     </motion.div>
                 </div>
             </section>
-            <div className="w-screen h-[300px] mb-6 relative" style={{userSelect:"none"}}>
+            <div className="w-full h-[300px] mb-6 relative" style={{userSelect:"none"}}>
                 <img
-                    src="/strip-image.jpeg" // Replace with your image path
+                    src="/strip-image.jpeg"
                     alt="Strip Image"
                     className="w-full h-full object-cover"
                 />
-                {/* Improved Brownish Fade Overlay */}
                 <div
                     className="absolute inset-0"
                     style={{
-                        background: "linear-gradient(rgba(165, 123, 76, 0.3), rgba(165, 123, 76, 0.3))", // Uniform brownish fade
+                        background: "linear-gradient(rgba(165, 123, 76, 0.3), rgba(165, 123, 76, 0.3))",
                     }}
                 ></div>
             </div>
 
-            <div className="container text-[#36302A] py-8  mx-auto flex flex-col md:flex-row items-start md:gap-12 px-6 md:px-16" style={{userSelect:"none"}}>
+            <div className="container text-[#36302A] py-8 mx-auto flex flex-col md:flex-row items-start md:gap-12 px-4 md:px-16" style={{userSelect:"none"}}>
                 {/* Left Section - Heading */}
                 <motion.div
                     className="w-full md:w-1/3 text-center md:text-left"
@@ -109,7 +110,7 @@ function AboutExt1() {
                     viewport={{ once: true }}
                 >
                     <h1
-                        className="text-3xl md:text-[50px] lg:text-[50px] font-bold leading-tight mb-6"
+                        className="text-3xl md:text-[50px] lg:text-[50px] font-bold leading-tight mb-6 break-words"
                         style={{ fontFamily: "'Noto Serif Display', serif" }}
                     >
                         What the <br />
@@ -120,7 +121,7 @@ function AboutExt1() {
                 {/* Right Section - Paragraphs */}
                 <motion.div
                     className="w-full md:w-2/3"
-                    variants={fadeInRight}
+                    variants={fadeInUp}
                     initial="hidden"
                     whileInView="visible"
                     viewport={{ once: true }}
@@ -130,12 +131,10 @@ function AboutExt1() {
                     </p>
                     <p className="text-base md:text-md leading-relaxed">
                         At Social It Up, we believe that every collaboration is an opportunity to create something unforgettable, and we can&apos;t wait to embark on this journey with you. Together, let&apos;s create the extraordinary and redefine what&apos;s possible!
-
                     </p>
                 </motion.div>
             </div>
         </>
-
     );
 }
 
