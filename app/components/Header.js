@@ -50,7 +50,7 @@ function Header() {
         }`}
       >
         {/* Logo */}
-        <div className="flex flex-row left-0 md:pl-5">
+        <div className="flex flex-row left-0 md:pl-5" style={{userSelect:"none"}}>
           <Link href="/" passHref>
             <Image
               src="/logo.png"
@@ -81,7 +81,7 @@ function Header() {
         </div>
 
         {/* Menu Items (Desktop View) */}
-        <div className="hidden md:flex pr-12">
+        <div className="hidden md:flex pr-12" style={{userSelect:"none"}}>
           <ul className="relative flex space-x-12 items-center">
             {["Home", "About", "Work", "Services", "Inquire"].map((item) => (
               <li
@@ -131,13 +131,13 @@ function Header() {
 
         {/* Development Mode Text */}
         {isDevelopment && (
-          <div className="absolute left-1/4 transform -translate-x-1/2 text-white font-semibold">
+          <div className="absolute left-1/4 transform -translate-x-1/2 text-white font-semibold" style={{userSelect:"none"}}>
             Development Mode ⌨
           </div>
         )}
 
         {/* Hamburger Icon (Mobile View) */}
-        <div className="md:hidden pr-5 relative z-50">
+        <div className="md:hidden pr-5 relative z-50" style={{userSelect:"none"}}>
           <FaBars
             className="text-[#575553] text-2xl cursor-pointer"
             onClick={handleMenuToggle}
@@ -154,6 +154,7 @@ function Header() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={handleMenuToggle}
+            style={{userSelect:"none"}}
           />
         )}
       </AnimatePresence>
@@ -167,16 +168,17 @@ function Header() {
             animate={{ x: 0 }}
             exit={{ x: "-100%" }}
             transition={{ type: "spring", stiffness: 300, damping: 30 }}
+            style={{userSelect:"none"}}
           >
             {/* Close Button */}
-            <div className="absolute top-4 right-4">
+            <div className="absolute top-4 right-4" style={{userSelect:"none"}}>
               <FaTimes
                 className="text-[#575553] text-2xl cursor-pointer"
                 onClick={handleMenuToggle}
               />
             </div>
 
-            <div className="p-5">
+            <div className="p-5" style={{userSelect:"none"}}>
               <div>
                 <Image
                   src="/logo.png"
@@ -187,7 +189,7 @@ function Header() {
               </div>
             </div>
 
-            <ul className="flex flex-col items-center space-y-6 pt-10">
+            <ul className="flex flex-col items-center space-y-6 pt-10" style={{userSelect:"none"}}>
               {["Home", "About", "Work", "Services", "Inquire"].map((item) => (
                 <li
                   key={item}

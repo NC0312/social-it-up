@@ -2,7 +2,7 @@ import { motion } from 'framer-motion';
 import Link from 'next/link';
 const OurServices = () => {
     return (
-        <div className="w-full min-h-screen bg-[#FAF4ED]">
+        <div className="w-full min-h-screen bg-[#FAF4ED]" style={{userSelect:"none"}}>
             <div className="container mx-auto relative">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 items-center min-h-[600px]">
                     {/* Left Image Section */}

@@ -102,7 +102,7 @@ const Endorsements = () => {
     };
 
     return (
-        <div className="bg-[#ECE4DA] py-16 overflow-x-hidden">
+        <div className="bg-[#ECE4DA] py-16 overflow-x-hidden" style={{userSelect:"none"}}>
             <h2 className="text-center text-[30px] md:text-[45px] leading-[67px] text-[#36302A] font-serif font-bold mb-12">
                 Our Endorsements
             </h2>

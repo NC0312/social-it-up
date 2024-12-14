@@ -3,7 +3,7 @@ import React from "react";
 
 const HeroSection = () => {
   return (
-    <div className="flex flex-col items-center justify-center mt-28 h-96 bg-[#ECE4DA]">
+    <div className="flex flex-col items-center justify-center mt-28 h-96 bg-[#ECE4DA]" style={{userSelect:"none"}}>
       <h1 className="text-4xl md:text-6xl font-serif font-semibold text-center text-[#36302A] mb-8">
         Let&apos;s build our future together
       </h1>

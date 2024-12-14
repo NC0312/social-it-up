@@ -28,7 +28,8 @@ const FAQs = () => {
     ];
 
     return (
-        <div className="w-full py-10 h-full bg-[#FAF4ED] text-[#36302A] mx-auto p-6 flex flex-col md:flex-row gap-5 md:gap-48">
+        <div className="w-full py-10 h-full bg-[#FAF4ED] text-[#36302A] mx-auto p-6 flex flex-col md:flex-row gap-5 md:gap-48" 
+        style={{userSelect:"none"}}>
             {/* FAQS HEADING */}
             <div className="md:w-1/3 py-20 flex items-center justify-center h-full">
                 <h1 className="text-5xl md:text-6xl font-[700] leading-[60px] text-[rgb(54,48,42)] font-serif">FAQs</h1> {/* Title with specified font settings */}
