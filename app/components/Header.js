@@ -1,5 +1,4 @@
-"use client";
-
+'use client';
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { FaBars, FaTimes } from "react-icons/fa";
@@ -11,6 +10,7 @@ import { usePathname } from "next/navigation";
 function Header() {
   const pathname = usePathname();
   const [active, setActive] = useState("Home");
+  const [hoveredItem, setHoveredItem] = useState(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   useEffect(() => {
@@ -89,6 +89,8 @@ function Header() {
                 className={`relative cursor-pointer ${
                   isDevelopment ? "text-white" : "text-[#575553]"
                 } text-md font-medium`}
+                onMouseEnter={() => setHoveredItem(item)}
+                onMouseLeave={() => setHoveredItem(null)}
               >
                 <Link
                   href={item === "Home" ? "/" : `/${item.toLowerCase()}`}
@@ -99,17 +101,21 @@ function Header() {
                 </Link>
 
                 {/* Animated Underline */}
-                {active === item && (
+                {(active === item || hoveredItem === item) && (
                   <motion.div
-                    layoutId="underline"
+                    layoutId={active === item ? "activeUnderline" : "hoverUnderline"}
                     className={`absolute bottom-0 left-0 ${
                       isDevelopment ? "bg-white" : "bg-[#575553]"
                     }`}
-                    style={{ height: "2px", width: "100%" }}
+                    style={{ 
+                      height: "2px", 
+                      width: "100%",
+                      opacity: hoveredItem === item && active !== item ? 0.6 : 1 
+                    }}
                     initial={{ width: "0%" }}
                     animate={{ width: "100%" }}
                     exit={{ width: "0%" }}
-                    transition={{ duration: 0.4 }}
+                    transition={{ duration: 0.2 }}
                   />
                 )}
               </li>
@@ -129,6 +135,7 @@ function Header() {
           </ul>
         </div>
 
+        {/* Rest of the component remains the same */}
         {/* Development Mode Text */}
         {isDevelopment && (
           <div className="absolute left-1/4 transform -translate-x-1/2 ml-36 md:ml-0 text-white text-xs md:text-lg font-light md:font-semibold" style={{userSelect:"none"}}>
@@ -136,7 +143,7 @@ function Header() {
           </div>
         )}
 
-        {/* Hamburger Icon (Mobile View) */}
+        {/* Mobile view components remain the same */}
         <div className="md:hidden pr-5 relative z-50" style={{userSelect:"none"}}>
           <FaBars
             className="text-[#575553] text-2xl cursor-pointer"
@@ -145,7 +152,7 @@ function Header() {
         </div>
       </nav>
 
-      {/* Dark Overlay */}
+      {/* Mobile menu components remain the same */}
       <AnimatePresence>
         {isMenuOpen && (
           <motion.div
@@ -159,7 +166,6 @@ function Header() {
         )}
       </AnimatePresence>
 
-      {/* Sidebar Menu (Mobile View) */}
       <AnimatePresence>
         {isMenuOpen && (
           <motion.div
@@ -170,7 +176,6 @@ function Header() {
             transition={{ type: "spring", stiffness: 300, damping: 30 }}
             style={{userSelect:"none"}}
           >
-            {/* Close Button */}
             <div className="absolute top-4 right-4" style={{userSelect:"none"}}>
               <FaTimes
                 className="text-[#575553] text-2xl cursor-pointer"
@@ -210,7 +215,6 @@ function Header() {
                 </li>
               ))}
 
-              {/* Admin Panel Button (Mobile View, Visible in Development Only) */}
               {isDevelopment && (
                 <li className="pt-6">
                   <Link
