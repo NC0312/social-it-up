@@ -7,6 +7,8 @@ import { motion } from "framer-motion";
 import { AnimatePresence } from "framer-motion";
 import { usePathname } from "next/navigation";
 
+const REVIEW_PANEL_ROUTE = "/review-panel69";
+
 function Header() {
   const pathname = usePathname();
   const [active, setActive] = useState("Home");
@@ -46,7 +48,7 @@ function Header() {
     <div className="border-b border-[#575553] relative">
       <nav
         className={`flex items-center justify-between px-12 py-1 md:py-2 relative z-20 ${
-          isDevelopment ? "bg-green-600" : ""
+          isDevelopment || pathname === REVIEW_PANEL_ROUTE ? "bg-green-600" : ""
         }`}
       >
         {/* Logo */}
@@ -63,7 +65,7 @@ function Header() {
 
           <p
             className={`text-[10px] md:text-xs ${
-              isDevelopment ? "text-white" : "text-[#575553]"
+              isDevelopment || pathname === REVIEW_PANEL_ROUTE ? "text-white" : "text-[#575553]"
             } ml-2 mt-20`}
           >
             Version by{" "}
@@ -72,7 +74,7 @@ function Header() {
               target="_blank"
               rel="noopener noreferrer"
               className={`${
-                isDevelopment ? "text-white" : "text-[#575553]"
+                isDevelopment || pathname === REVIEW_PANEL_ROUTE ? "text-white" : "text-[#575553]"
               } underline`}
             >
               Niket Chawla
@@ -87,7 +89,7 @@ function Header() {
               <li
                 key={item}
                 className={`relative cursor-pointer ${
-                  isDevelopment ? "text-white" : "text-[#575553]"
+                  isDevelopment || pathname === REVIEW_PANEL_ROUTE ? "text-white" : "text-[#575553]"
                 } text-md font-medium`}
                 onMouseEnter={() => setHoveredItem(item)}
                 onMouseLeave={() => setHoveredItem(null)}
@@ -105,7 +107,7 @@ function Header() {
                   <motion.div
                     layoutId={active === item ? "activeUnderline" : "hoverUnderline"}
                     className={`absolute bottom-0 left-0 ${
-                      isDevelopment ? "bg-white" : "bg-[#575553]"
+                      isDevelopment || pathname === REVIEW_PANEL_ROUTE ? "bg-white" : "bg-[#575553]"
                     }`}
                     style={{ 
                       height: "2px", 
@@ -146,7 +148,9 @@ function Header() {
         {/* Mobile view components remain the same */}
         <div className="md:hidden pr-5 relative z-50" style={{userSelect:"none"}}>
           <FaBars
-            className="text-[#575553] text-2xl cursor-pointer"
+            className={`${
+              isDevelopment || pathname === REVIEW_PANEL_ROUTE ? "text-white" : "text-[#575553]"
+            } text-2xl cursor-pointer`}
             onClick={handleMenuToggle}
           />
         </div>
@@ -235,3 +239,4 @@ function Header() {
 }
 
 export default Header;
+
