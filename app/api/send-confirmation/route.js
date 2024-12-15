@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import nodemailer from 'nodemailer';
+import path from 'path';
 
 export async function POST(req) {
     try {
@@ -50,8 +51,9 @@ export async function POST(req) {
   `,
             attachments: [{
                 filename: 'logo.png',
-                path: './logo.png',
-                cid: 'logo' ,
+                // path: './public/logo.png',
+                path:path.join(process.cwd(),'public','logo.png'),
+                cid: 'logo' , 
             }]
         };
 
