@@ -179,26 +179,83 @@ const AdminPanel = () => {
   const startIndex = (currentPage - 1) * entriesPerPage + 1;
   const endIndex = Math.min(currentPage * entriesPerPage, filteredInquiries.length);
 
-  const CopyableText = ({ text, type }) => {
-    const handleCopy = async () => {
-      try {
-        await navigator.clipboard.writeText(text);
-        toast.success(`${type} copied to clipboard!`);
-      } catch (err) {
-        toast.error('Failed to copy to clipboard');
-      }
-    };
+  // const CopyableText = ({ text, type }) => {
+  //   const handleCopy = async () => {
+  //     try {
+  //       await navigator.clipboard.writeText(text);
+  //       toast.success(`${type} copied to clipboard!`);
+  //     } catch (err) {
+  //       toast.error('Failed to copy to clipboard');
+  //     }
+  //   };
 
-    return (
-      <div
-        className="flex items-center space-x-2 cursor-pointer hover:text-[#36302A] group"
-        onClick={handleCopy}
-      >
-        <span className="group-hover:underline">{text}</span>
-        <MdContentCopy className="opacity-0 group-hover:opacity-100 transition-opacity" />
-      </div>
-    );
-  };
+  //   return (
+  //     <div
+  //       className="flex items-center space-x-2 cursor-pointer hover:text-[#36302A] group"
+  //       onClick={handleCopy}
+  //     >
+  //       <span className="group-hover:underline">{text}</span>
+  //       <MdContentCopy className="opacity-0 group-hover:opacity-100 transition-opacity" />
+  //     </div>
+  //   );
+  // };
+
+  const CopyableText = ({ text, type }) => {
+          const handleCopy = (e) => {
+              e.stopPropagation();
+              navigator.clipboard.writeText(text)
+                  .then(() => toast.success(`${type} copied to clipboard!`))
+                  .catch(() => toast.error('Failed to copy to clipboard'));
+          };
+  
+          const handleEmailRedirect = (e) => {
+              e.stopPropagation();
+              window.open(`https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(text)}`, '_blank');
+          };
+  
+          return (
+              <div className="flex items-center space-x-2 group">
+                  <span
+                      className="group-hover:underline cursor-pointer"
+                      onClick={handleCopy}
+                  >
+                      {text}
+                  </span>
+                  {type === "Email" ? (
+                      <div className="flex flex-row justify-between items-center space-x-2">
+                          <div className="relative group/tooltip">
+                              <FaExternalLinkAlt
+                                  className="opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer hover:text-[#36302A]"
+                                  onClick={handleEmailRedirect}
+                              />
+                              <span className="absolute hidden group-hover/tooltip:block bg-[#36302A] text-white text-sm rounded px-2 py-1 -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap">
+                                  Open in Gmail
+                              </span>
+                          </div>
+                          <div className="relative group/tooltip">
+                              <MdContentCopy
+                                  className="opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer hover:text-[#36302A]"
+                                  onClick={handleCopy}
+                              />
+                              <span className="absolute hidden group-hover/tooltip:block bg-[#36302A] text-white text-sm rounded px-2 py-1 -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap">
+                                  Copy to clipboard
+                              </span>
+                          </div>
+                      </div>
+                  ) : (
+                      <div className="relative group/tooltip">
+                          <MdContentCopy
+                              className="opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer hover:text-[#36302A]"
+                              onClick={handleCopy}
+                          />
+                          <span className="absolute hidden group-hover/tooltip:block bg-[#36302A] text-white text-sm rounded px-2 py-1 -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap">
+                              Copy to clipboard
+                          </span>
+                      </div>
+                  )}
+              </div>
+          );
+      };
 
   // Clickable link component
   const ExternalLink = ({ url }) => {

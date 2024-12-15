@@ -4,9 +4,9 @@ import { collection, getDocs, query, orderBy, deleteDoc, doc, writeBatch } from 
 import { db } from "../lib/firebase";
 import { toast } from "sonner";
 import { MdDeleteForever, MdContentCopy } from "react-icons/md";
-import { FaArrowLeft,FaExternalLinkAlt  } from "react-icons/fa";
+import { FaArrowLeft, FaExternalLinkAlt } from "react-icons/fa";
 import { useRouter } from 'next/navigation';
-import {motion} from "framer-motion";
+import { motion } from "framer-motion";
 
 const ReviewPanel = () => {
     const fadeInLeft = {
@@ -200,41 +200,134 @@ const ReviewPanel = () => {
     const startIndex = (currentPage - 1) * entriesPerPage + 1;
     const endIndex = Math.min(currentPage * entriesPerPage, filteredReviews.length);
 
+    // const CopyableText = ({ text, type }) => {
+    //     const handleCopy = async () => {
+    //         try {
+    //             await navigator.clipboard.writeText(text);
+    //             toast.success(`${type} copied to clipboard!`);
+    //         } catch (err) {
+    //             toast.error('Failed to copy to clipboard');
+    //         }
+    //     };
+
+    //     return (
+    //         <div 
+    //             className="flex items-center space-x-2 cursor-pointer hover:text-green-600 group"
+    //             onClick={handleCopy}
+    //         >
+    //             <span className="group-hover:underline">{text}</span>
+    //             <MdContentCopy className="opacity-0 group-hover:opacity-100 transition-opacity" />
+    //         </div>
+    //     );
+    // };
+
+    // const CopyableText = ({ text, type }) => {
+    //     const handleClick = () => {
+    //         if (type === "Email") {
+    //             window.open(`https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(text)}`, '_blank');
+    //             navigator.clipboard.writeText(text)
+    //                 .then(() => toast.success(`${type} copied to clipboard!`))
+    //                 .catch(() => toast.error('Failed to copy to clipboard'));
+    //         } else {
+    //             // Keep the existing copy to clipboard functionality for other types
+    //             navigator.clipboard.writeText(text)
+    //                 .then(() => toast.success(`${type} copied to clipboard!`))
+    //                 .catch(() => toast.error('Failed to copy to clipboard'));
+    //         }
+    //     };
+
+    //     return (
+    //         <div
+    //             className="flex items-center space-x-2 cursor-pointer hover:text-green-600 group"
+    //             onClick={handleClick}
+    //         >
+    //             <span className="group-hover:underline">{text}</span>
+    //             {type === "Email" ? (
+    //                 <div className="flex flex-row justify-between items-center">
+    //                     <FaExternalLinkAlt className="opacity-0 group-hover:opacity-100 transition-opacity" />
+    //                     <MdContentCopy className="opacity-0 group-hover:opacity-100 transition-opacity" />
+    //                 </div>
+    //             ) : (
+    //                 <MdContentCopy className="opacity-0 group-hover:opacity-100 transition-opacity" />
+    //             )}
+    //         </div>
+    //     );
+    // };
+
     const CopyableText = ({ text, type }) => {
-        const handleCopy = async () => {
-            try {
-                await navigator.clipboard.writeText(text);
-                toast.success(`${type} copied to clipboard!`);
-            } catch (err) {
-                toast.error('Failed to copy to clipboard');
-            }
+        const handleCopy = (e) => {
+            e.stopPropagation();
+            navigator.clipboard.writeText(text)
+                .then(() => toast.success(`${type} copied to clipboard!`))
+                .catch(() => toast.error('Failed to copy to clipboard'));
         };
-    
+
+        const handleEmailRedirect = (e) => {
+            e.stopPropagation();
+            window.open(`https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(text)}`, '_blank');
+        };
+
         return (
-            <div 
-                className="flex items-center space-x-2 cursor-pointer hover:text-green-600 group"
-                onClick={handleCopy}
-            >
-                <span className="group-hover:underline">{text}</span>
-                <MdContentCopy className="opacity-0 group-hover:opacity-100 transition-opacity" />
+            <div className="flex items-center space-x-2 group">
+                <span
+                    className="group-hover:underline cursor-pointer"
+                    onClick={handleCopy}
+                >
+                    {text}
+                </span>
+                {type === "Email" ? (
+                    <div className="flex flex-row justify-between items-center space-x-2">
+                        <div className="relative group/tooltip">
+                            <FaExternalLinkAlt
+                                className="opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer hover:text-green-600"
+                                onClick={handleEmailRedirect}
+                            />
+                            <span className="absolute hidden group-hover/tooltip:block bg-gray-800 text-white text-sm rounded px-2 py-1 -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap">
+                                Open in Gmail
+                            </span>
+                        </div>
+                        <div className="relative group/tooltip">
+                            <MdContentCopy
+                                className="opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer hover:text-green-600"
+                                onClick={handleCopy}
+                            />
+                            <span className="absolute hidden group-hover/tooltip:block bg-gray-800 text-white text-sm rounded px-2 py-1 -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap">
+                                Copy to clipboard
+                            </span>
+                        </div>
+                    </div>
+                ) : (
+                    <div className="relative group/tooltip">
+                        <MdContentCopy
+                            className="opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer hover:text-green-600"
+                            onClick={handleCopy}
+                        />
+                        <span className="absolute hidden group-hover/tooltip:block bg-gray-800 text-white text-sm rounded px-2 py-1 -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap">
+                            Copy to clipboard
+                        </span>
+                    </div>
+                )}
             </div>
         );
     };
-    
+
+
+
     // Clickable link component
     const ExternalLink = ({ url }) => {
         const handleClick = () => {
             if (!url) return;
-            
+    
             // Add http:// if not present
             const finalUrl = url.startsWith('http') ? url : `http://${url}`;
             window.open(finalUrl, '_blank', 'noopener,noreferrer');
         };
     
         return url ? (
-            <div 
+            <div
                 className="flex items-center space-x-2 cursor-pointer hover:text-green-600 group"
                 onClick={handleClick}
+                title="Open in new tab"
             >
                 <span className="group-hover:underline">{url}</span>
                 <FaExternalLinkAlt className="opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -243,240 +336,241 @@ const ReviewPanel = () => {
     };
     
 
+
     return (
         <div className="p-4 md:p-6 bg-green-50 min-h-screen">
             <motion.div
-        variants={fadeInLeft}
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true }}
-      >
-            <div className="flex flex-col md:flex-row justify-between items-center border-b border-green-300 py-6 pb-4 mb-6">
-                <h1 className="text-4xl md:text-6xl font-serif font-bold text-green-800 mb-4 md:mb-0">
-                    Review Panel 📋
-                </h1>
-                <div className="flex space-x-4">
-                <button
-                        onClick={() => router.push('/admin-panel69')}
-                        className="px-4 py-2 bg-green-600 text-white font-semibold rounded-lg shadow-md hover:bg-green-700 transition-colors duration-200 flex items-center space-x-2"
+                variants={fadeInLeft}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true }}
+            >
+                <div className="flex flex-col md:flex-row justify-between items-center border-b border-green-300 py-6 pb-4 mb-6">
+                    <h1 className="text-4xl md:text-6xl font-serif font-bold text-green-800 mb-4 md:mb-0">
+                        Review Panel 📋
+                    </h1>
+                    <div className="flex space-x-4">
+                        <button
+                            onClick={() => router.push('/admin-panel69')}
+                            className="px-4 py-2 bg-green-600 text-white font-semibold rounded-lg shadow-md hover:bg-green-700 transition-colors duration-200 flex items-center space-x-2"
+                        >
+                            <FaArrowLeft className="text-md md:text-xl" />
+                            <span>Back to Admin Panel</span>
+                        </button>
+                        <button
+                            onClick={handleDeleteAllReviews}
+                            disabled={isDeletingAll}
+                            className="px-4 py-2 bg-red-600 text-white font-semibold rounded-lg shadow-md hover:bg-red-700 transition-colors duration-200 flex items-center space-x-2"
+                        >
+                            <MdDeleteForever className="text-xl" />
+                            <span>Delete All</span>
+                        </button>
+
+                    </div>
+                </div>
+            </motion.div>
+
+            <motion.div
+                variants={fadeInRight}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true }}
+            >
+                <div className="mb-6">
+                    <label className="block text-sm md:text-lg font-medium mb-2 text-green-800" htmlFor="date-filter">
+                        Filter by Date:
+                    </label>
+                    <input
+                        id="date-filter"
+                        type="date"
+                        value={selectedDate}
+                        onChange={handleDateChange}
+                        className="w-full md:w-1/3 border border-green-300 rounded-lg px-3 py-1 md:py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                    />
+                </div>
+
+                <div className="mb-6">
+                    <label className="block text-sm md:text-lg font-medium mb-2 text-green-800" htmlFor="signup-filter">
+                        Filter by Signed Up:
+                    </label>
+                    <select
+                        id="signup-filter"
+                        value={signedUp}
+                        onChange={handleSignUpChange}
+                        className="w-full md:w-1/3 border border-green-300 rounded-lg px-3 py-1 md:py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500"
                     >
-                        <FaArrowLeft className="text-md md:text-xl" />
-                        <span>Back to Admin Panel</span>
+                        <option value="">Has anyone signed up for news and updates?</option>
+                        <option value="Yes">Yes</option>
+                        <option value="No">No</option>
+                    </select>
+                </div>
+            </motion.div>
+
+            <motion.div
+                variants={fadeInLeft}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true }}
+            >
+                <div className="mb-6 text-center flex justify-center items-center space-x-4">
+                    <button
+                        onClick={() => {
+                            if (selectedDate || signedUp) {
+                                handleFetchData();
+                            } else {
+                                toast.error("No filter applied!");
+                            }
+                        }}
+                        className="px-8 py-2 md:py-3 bg-green-600 text-white font-semibold rounded-md md:rounded-lg shadow-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 w-full md:w-auto"
+                    >
+                        Apply Filter
                     </button>
                     <button
-                        onClick={handleDeleteAllReviews}
-                        disabled={isDeletingAll}
-                        className="px-4 py-2 bg-red-600 text-white font-semibold rounded-lg shadow-md hover:bg-red-700 transition-colors duration-200 flex items-center space-x-2"
+                        onClick={() => {
+                            if (selectedDate || signedUp) {
+                                setSelectedDate("");
+                                setSignedUp("");
+                                setFilteredReviews(reviews);
+                                toast.success("Filters cleared!");
+                            } else {
+                                toast.error("No filter to clear!");
+                            }
+                        }}
+                        className="px-5 py-2 md:py-3 bg-red-600 text-white font-semibold rounded-md md:rounded-lg shadow-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-600 md:w-auto"
                     >
-                        <MdDeleteForever className="text-xl" />
-                        <span>Delete All</span>
+                        <MdDeleteForever className="text-lg md:text-2xl" />
                     </button>
-                    
                 </div>
-            </div>
             </motion.div>
 
             <motion.div
-        variants={fadeInRight}
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true }}
-      >
-            <div className="mb-6">
-                <label className="block text-sm md:text-lg font-medium mb-2 text-green-800" htmlFor="date-filter">
-                    Filter by Date:
-                </label>
-                <input
-                    id="date-filter"
-                    type="date"
-                    value={selectedDate}
-                    onChange={handleDateChange}
-                    className="w-full md:w-1/3 border border-green-300 rounded-lg px-3 py-1 md:py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500"
-                />
-            </div>
-
-            <div className="mb-6">
-                <label className="block text-sm md:text-lg font-medium mb-2 text-green-800" htmlFor="signup-filter">
-                    Filter by Signed Up:
-                </label>
-                <select
-                    id="signup-filter"
-                    value={signedUp}
-                    onChange={handleSignUpChange}
-                    className="w-full md:w-1/3 border border-green-300 rounded-lg px-3 py-1 md:py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500"
-                >
-                    <option value="">Has anyone signed up for news and updates?</option>
-                    <option value="Yes">Yes</option>
-                    <option value="No">No</option>
-                </select>
-            </div>
-            </motion.div>
-
-            <motion.div
-        variants={fadeInLeft}
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true }}
-      >
-            <div className="mb-6 text-center flex justify-center items-center space-x-4">
-                <button
-                    onClick={() => {
-                        if (selectedDate || signedUp) {
-                            handleFetchData();
-                        } else {
-                            toast.error("No filter applied!");
-                        }
-                    }}
-                    className="px-8 py-2 md:py-3 bg-green-600 text-white font-semibold rounded-md md:rounded-lg shadow-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 w-full md:w-auto"
-                >
-                    Apply Filter
-                </button>
-                <button
-                    onClick={() => {
-                        if (selectedDate || signedUp) {
-                            setSelectedDate("");
-                            setSignedUp("");
-                            setFilteredReviews(reviews);
-                            toast.success("Filters cleared!");
-                        } else {
-                            toast.error("No filter to clear!");
-                        }
-                    }}
-                    className="px-5 py-2 md:py-3 bg-red-600 text-white font-semibold rounded-md md:rounded-lg shadow-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-600 md:w-auto"
-                >
-                    <MdDeleteForever className="text-lg md:text-2xl" />
-                </button>
-            </div>
-            </motion.div>
-
-            <motion.div
-        variants={fadeInUp}
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true }}
-      >
-            <div className="relative w-full overflow-hidden bg-white shadow-md rounded-lg">
-                <div
-                    className="overflow-x-auto scrollbar-hide"
-                    style={{
-                        scrollbarWidth: "none",
-                        msOverflowStyle: "none",
-                        WebkitOverflowScrolling: "touch",
-                    }}
-                >
-                    <table className="min-w-full table-auto border-collapse border border-green-200">
-                        <thead className="bg-green-600 text-white">
-                            <tr>
-                                {[
-                                    "Action",
-                                    "Timestamp",
-                                    "FirstName",
-                                    "LastName",
-                                    "Email",
-                                    "SignedUp",
-                                    "DialCode",
-                                    "PhoneNumber",
-                                    "BrandName",
-                                    // "Company/Brand",
-                                    "Services",
-                                    "Socials",
-                                    "Website",
-                                    "Messages",
-                                ].map((header) => (
-                                    <th
-                                        key={header}
-                                        className="border border-green-500 px-4 md:px-4 py-2 md:py-4 text-left text-xs md:text-md md:text-base font-semibold"
-                                    >
-                                        {header}
-                                    </th>
-                                ))}
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {displayedReviews.length > 0 ? (
-                                displayedReviews.map((review) => (
-                                    <tr key={review.docId} className="hover:bg-green-50">
-                                        <td className="border border-green-200 px-4 md:px-7 py-2 md:py-2 text-xs md:text-base">
-                                            <button
-                                                onClick={() => handleDeleteReview(review.docId)}
-                                                className="text-red-500 hover:text-red-700 text-lg md:text-2xl"
-                                                title="Delete"
-                                            >
-                                                <MdDeleteForever />
-                                            </button>
-                                        </td>
-                                        <td className="border border-green-200 px-4 py-2 font-serif text-sm md:text-base whitespace-nowrap">
-                                            {review.movedToReviewAt
-                                                ? new Date(review.movedToReviewAt.seconds * 1000).toLocaleString()
-                                                : "N/A"}
-                                        </td>
-                                        <td className="border border-green-200 px-4 py-2 font-serif text-sm md:text-base">
-                                            {review.firstName}
-                                        </td>
-                                        <td className="border border-green-200 px-4 py-2 font-serif text-sm md:text-base">
-                                            {review.lastName}
-                                        </td>
-                                        {/* <td className="border border-green-200 px-4 py-2 font-serif text-sm md:text-base">
+                variants={fadeInUp}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true }}
+            >
+                <div className="relative w-full overflow-hidden bg-white shadow-md rounded-lg">
+                    <div
+                        className="overflow-x-auto scrollbar-hide"
+                        style={{
+                            scrollbarWidth: "none",
+                            msOverflowStyle: "none",
+                            WebkitOverflowScrolling: "touch",
+                        }}
+                    >
+                        <table className="min-w-full table-auto border-collapse border border-green-200">
+                            <thead className="bg-green-600 text-white">
+                                <tr>
+                                    {[
+                                        "Action",
+                                        "Timestamp",
+                                        "FirstName",
+                                        "LastName",
+                                        "Email",
+                                        "SignedUp",
+                                        "DialCode",
+                                        "PhoneNumber",
+                                        "BrandName",
+                                        // "Company/Brand",
+                                        "Services",
+                                        "Socials",
+                                        "Website",
+                                        "Messages",
+                                    ].map((header) => (
+                                        <th
+                                            key={header}
+                                            className="border border-green-500 px-4 md:px-4 py-2 md:py-4 text-left text-xs md:text-md md:text-base font-semibold"
+                                        >
+                                            {header}
+                                        </th>
+                                    ))}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {displayedReviews.length > 0 ? (
+                                    displayedReviews.map((review) => (
+                                        <tr key={review.docId} className="hover:bg-green-50">
+                                            <td className="border border-green-200 px-4 md:px-7 py-2 md:py-2 text-xs md:text-base">
+                                                <button
+                                                    onClick={() => handleDeleteReview(review.docId)}
+                                                    className="text-red-500 hover:text-red-700 text-lg md:text-2xl"
+                                                    title="Delete"
+                                                >
+                                                    <MdDeleteForever />
+                                                </button>
+                                            </td>
+                                            <td className="border border-green-200 px-4 py-2 font-serif text-sm md:text-base whitespace-nowrap">
+                                                {review.movedToReviewAt
+                                                    ? new Date(review.movedToReviewAt.seconds * 1000).toLocaleString()
+                                                    : "N/A"}
+                                            </td>
+                                            <td className="border border-green-200 px-4 py-2 font-serif text-sm md:text-base">
+                                                {review.firstName}
+                                            </td>
+                                            <td className="border border-green-200 px-4 py-2 font-serif text-sm md:text-base">
+                                                {review.lastName}
+                                            </td>
+                                            {/* <td className="border border-green-200 px-4 py-2 font-serif text-sm md:text-base">
                                             {review.email}
                                         </td> */}
-                                         <td className="border border-green-200 px-4 py-2 font-serif text-sm md:text-base" style={{userSelect:"none"}}>
+                                            <td className="border border-green-200 px-4 py-2 font-serif text-sm md:text-base" style={{ userSelect: "none" }}>
                                                 <CopyableText text={review.email} type="Email" />
                                             </td>
-                                        <td className="border border-green-200 px-4 py-2 font-serif text-sm md:text-base">
-                                            {review.isChecked ? "Yes" : "No"}
-                                        </td>
-                                        <td className="border border-green-200 px-4 py-2 font-serif text-sm md:text-base">
-                                            {review.phoneDialCode}
-                                        </td>
-                                        {/* <td className="border border-green-200 px-4 py-2 font-serif text-sm md:text-base">
+                                            <td className="border border-green-200 px-4 py-2 font-serif text-sm md:text-base">
+                                                {review.isChecked ? "Yes" : "No"}
+                                            </td>
+                                            <td className="border border-green-200 px-4 py-2 font-serif text-sm md:text-base">
+                                                {review.phoneDialCode}
+                                            </td>
+                                            {/* <td className="border border-green-200 px-4 py-2 font-serif text-sm md:text-base">
                                             {review.phoneNumber}
                                         </td> */}
-                                         <td className="border border-green-200 px-4 py-2 font-serif text-sm md:text-base" style={{userSelect:"none"}}>
-                                                <CopyableText 
-                                                    text={`${review.phoneNumber}`} 
-                                                    type="Phone number" 
+                                            <td className="border border-green-200 px-4 py-2 font-serif text-sm md:text-base" style={{ userSelect: "none" }}>
+                                                <CopyableText
+                                                    text={`${review.phoneNumber}`}
+                                                    type="Phone number"
                                                 />
                                             </td>
-                                        {/* <td className="border border-green-200 px-4 py-2 font-serif text-sm md:text-base">
+                                            {/* <td className="border border-green-200 px-4 py-2 font-serif text-sm md:text-base">
                                             {review.company}
                                         </td> */}
-                                        <td className="border border-green-200 px-4 py-2 font-serif text-sm md:text-base" style={{userSelect:"none"}}>
-                                                <CopyableText 
-                                                    text={`${review.company}`} 
+                                            <td className="border border-green-200 px-4 py-2 font-serif text-sm md:text-base" style={{ userSelect: "none" }}>
+                                                <CopyableText
+                                                    text={`${review.company}`}
                                                     type="Brand Name"
                                                 />
                                             </td>
-                                        <td className="border border-green-200 px-4 py-2 font-serif text-sm md:text-base">
-                                            {review.services}
-                                        </td>
-                                        {/* <td className="border border-green-200 px-4 py-2 font-serif text-sm md:text-base">
+                                            <td className="border border-green-200 px-4 py-2 font-serif text-sm md:text-base">
+                                                {review.services}
+                                            </td>
+                                            {/* <td className="border border-green-200 px-4 py-2 font-serif text-sm md:text-base">
                                             {review.socials}
                                         </td> */}
-                                        <td className="border border-green-200 px-4 py-2 font-serif text-sm md:text-base">
+                                            <td className="border border-green-200 px-4 py-2 font-serif text-sm md:text-base">
                                                 <ExternalLink url={review.socials} />
                                             </td>
-                                        {/* <td className="border border-green-200 px-4 py-2 font-serif text-sm md:text-base">
+                                            {/* <td className="border border-green-200 px-4 py-2 font-serif text-sm md:text-base">
                                             {review.website}
                                         </td> */}
-                                          <td className="border border-green-200 px-4 py-2 font-serif text-sm md:text-base">
+                                            <td className="border border-green-200 px-4 py-2 font-serif text-sm md:text-base">
                                                 <ExternalLink url={review.website} />
                                             </td>
-                                        <td className="border border-green-200 px-4 py-2 font-serif text-sm md:text-base">
-                                            {review.messages}
+                                            <td className="border border-green-200 px-4 py-2 font-serif text-sm md:text-base">
+                                                {review.messages}
+                                            </td>
+                                        </tr>
+                                    ))
+                                ) : (
+                                    <tr>
+                                        <td colSpan="13" className="text-center py-4">
+                                            No data available
                                         </td>
                                     </tr>
-                                ))
-                            ) : (
-                                <tr>
-                                    <td colSpan="13" className="text-center py-4">
-                                        No data available
-                                    </td>
-                                </tr>
-                            )}
-                        </tbody>
-                    </table>
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
-            </div>
             </motion.div>
 
             {/* Pagination */}
