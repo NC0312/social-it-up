@@ -418,7 +418,7 @@ const ReviewPanel = () => {
                                         {/* <td className="border border-green-200 px-4 py-2 font-serif text-sm md:text-base">
                                             {review.email}
                                         </td> */}
-                                         <td className="border border-green-200 px-4 py-2 font-serif text-sm md:text-base">
+                                         <td className="border border-green-200 px-4 py-2 font-serif text-sm md:text-base" style={{userSelect:"none"}}>
                                                 <CopyableText text={review.email} type="Email" />
                                             </td>
                                         <td className="border border-green-200 px-4 py-2 font-serif text-sm md:text-base">
