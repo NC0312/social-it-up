@@ -270,7 +270,7 @@ const ReviewPanel = () => {
         return (
             <div className="flex items-center space-x-2 group">
                 <span
-                    className="group-hover:underline cursor-pointer"
+                    className="group-hover:underline hover:text-green-500 cursor-pointer"
                     onClick={handleCopy}
                 >
                     {text}
@@ -279,19 +279,19 @@ const ReviewPanel = () => {
                     <div className="flex flex-row justify-between items-center space-x-2">
                         <div className="relative group/tooltip">
                             <FaExternalLinkAlt
-                                className="opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer hover:text-green-600"
+                                className="opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer text-green-600 hover:text-green-600"
                                 onClick={handleEmailRedirect}
                             />
-                            <span className="absolute hidden group-hover/tooltip:block bg-gray-800 text-white text-sm rounded px-2 py-1 -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap">
+                            <span className="absolute hidden group-hover/tooltip:block bg-green-700 text-white text-sm rounded px-2 py-1 -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap">
                                 Open in Gmail
                             </span>
                         </div>
                         <div className="relative group/tooltip">
                             <MdContentCopy
-                                className="opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer hover:text-green-600"
+                                className="opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer  text-green-600 hover:text-green-600"
                                 onClick={handleCopy}
                             />
-                            <span className="absolute hidden group-hover/tooltip:block bg-gray-800 text-white text-sm rounded px-2 py-1 -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap">
+                            <span className="absolute hidden group-hover/tooltip:block bg-green-700 text-white text-sm rounded px-2 py-1 -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap">
                                 Copy to clipboard
                             </span>
                         </div>
@@ -299,10 +299,10 @@ const ReviewPanel = () => {
                 ) : (
                     <div className="relative group/tooltip">
                         <MdContentCopy
-                            className="opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer hover:text-green-600"
+                            className="opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer text-green-500 hover:text-green-600"
                             onClick={handleCopy}
                         />
-                        <span className="absolute hidden group-hover/tooltip:block bg-gray-800 text-white text-sm rounded px-2 py-1 -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap">
+                        <span className="absolute hidden group-hover/tooltip:block bg-green-700 text-white text-sm rounded px-2 py-1 -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap">
                             Copy to clipboard
                         </span>
                     </div>
