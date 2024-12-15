@@ -370,7 +370,8 @@ const AdminPanel = () => {
                     "SignedUp",
                     "DialCode",
                     "PhoneNumber",
-                    "Company/Brand",
+                    // "Company/Brand",
+                    "BrandName",
                     "Services",
                     "Socials",
                     "Website",
@@ -443,8 +444,14 @@ const AdminPanel = () => {
                         />
                       </td>
 
-                      <td className="border border-[#36302A] px-4 py-2 font-serif text-sm md:text-base">
+                      {/* <td className="border border-[#36302A] px-4 py-2 font-serif text-sm md:text-base">
                         {inquiry.company}
+                      </td> */}
+                      <td className="border border-[#36302A] px-4 py-2 font-serif text-sm md:text-base" style={{userSelect:"none"}}>
+                        <CopyableText
+                          text={`${inquiry.company}`}
+                          type="Brand Name"
+                        />
                       </td>
 
                       <td className="border border-[#36302A] px-4 py-2 font-serif text-sm md:text-base">

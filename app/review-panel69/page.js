@@ -376,7 +376,8 @@ const ReviewPanel = () => {
                                     "SignedUp",
                                     "DialCode",
                                     "PhoneNumber",
-                                    "Company/Brand",
+                                    "BrandName",
+                                    // "Company/Brand",
                                     "Services",
                                     "Socials",
                                     "Website",
@@ -436,9 +437,15 @@ const ReviewPanel = () => {
                                                     type="Phone number" 
                                                 />
                                             </td>
-                                        <td className="border border-green-200 px-4 py-2 font-serif text-sm md:text-base">
+                                        {/* <td className="border border-green-200 px-4 py-2 font-serif text-sm md:text-base">
                                             {review.company}
-                                        </td>
+                                        </td> */}
+                                        <td className="border border-green-200 px-4 py-2 font-serif text-sm md:text-base" style={{userSelect:"none"}}>
+                                                <CopyableText 
+                                                    text={`${review.company}`} 
+                                                    type="Brand Name"
+                                                />
+                                            </td>
                                         <td className="border border-green-200 px-4 py-2 font-serif text-sm md:text-base">
                                             {review.services}
                                         </td>
