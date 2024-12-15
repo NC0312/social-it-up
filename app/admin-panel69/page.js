@@ -436,7 +436,7 @@ const AdminPanel = () => {
                       {/* <td className="border border-[#36302A] px-4 py-2 font-serif text-sm md:text-base">
                         {inquiry.phoneNumber}
                       </td> */}
-                      <td className="border border-[#36302A] px-4 py-2 font-serif text-sm md:text-base">
+                      <td className="border border-[#36302A] px-4 py-2 font-serif text-sm md:text-base" style={{userSelect:"none"}}>
                         <CopyableText
                           text={`${inquiry.phoneNumber}`}
                           type="Phone number"
