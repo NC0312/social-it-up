@@ -3,8 +3,8 @@ import React, { useEffect, useState } from "react";
 import { collection, getDocs, query, orderBy, deleteDoc, doc, writeBatch } from "firebase/firestore";
 import { db } from "../lib/firebase";
 import { toast } from "sonner";
-import { MdDeleteForever } from "react-icons/md";
-import { FaArrowLeft } from "react-icons/fa";
+import { MdDeleteForever, MdContentCopy } from "react-icons/md";
+import { FaArrowLeft,FaExternalLinkAlt  } from "react-icons/fa";
 import { useRouter } from 'next/navigation';
 import {motion} from "framer-motion";
 
@@ -200,6 +200,49 @@ const ReviewPanel = () => {
     const startIndex = (currentPage - 1) * entriesPerPage + 1;
     const endIndex = Math.min(currentPage * entriesPerPage, filteredReviews.length);
 
+    const CopyableText = ({ text, type }) => {
+        const handleCopy = async () => {
+            try {
+                await navigator.clipboard.writeText(text);
+                toast.success(`${type} copied to clipboard!`);
+            } catch (err) {
+                toast.error('Failed to copy to clipboard');
+            }
+        };
+    
+        return (
+            <div 
+                className="flex items-center space-x-2 cursor-pointer hover:text-green-600 group"
+                onClick={handleCopy}
+            >
+                <span className="group-hover:underline">{text}</span>
+                <MdContentCopy className="opacity-0 group-hover:opacity-100 transition-opacity" />
+            </div>
+        );
+    };
+    
+    // Clickable link component
+    const ExternalLink = ({ url }) => {
+        const handleClick = () => {
+            if (!url) return;
+            
+            // Add http:// if not present
+            const finalUrl = url.startsWith('http') ? url : `http://${url}`;
+            window.open(finalUrl, '_blank', 'noopener,noreferrer');
+        };
+    
+        return url ? (
+            <div 
+                className="flex items-center space-x-2 cursor-pointer hover:text-green-600 group"
+                onClick={handleClick}
+            >
+                <span className="group-hover:underline">{url}</span>
+                <FaExternalLinkAlt className="opacity-0 group-hover:opacity-100 transition-opacity" />
+            </div>
+        ) : "N/A";
+    };
+    
+
     return (
         <div className="p-4 md:p-6 bg-green-50 min-h-screen">
             <motion.div
@@ -372,30 +415,45 @@ const ReviewPanel = () => {
                                         <td className="border border-green-200 px-4 py-2 font-serif text-sm md:text-base">
                                             {review.lastName}
                                         </td>
-                                        <td className="border border-green-200 px-4 py-2 font-serif text-sm md:text-base">
+                                        {/* <td className="border border-green-200 px-4 py-2 font-serif text-sm md:text-base">
                                             {review.email}
-                                        </td>
+                                        </td> */}
+                                         <td className="border border-green-200 px-4 py-2 font-serif text-sm md:text-base">
+                                                <CopyableText text={review.email} type="Email" />
+                                            </td>
                                         <td className="border border-green-200 px-4 py-2 font-serif text-sm md:text-base">
                                             {review.isChecked ? "Yes" : "No"}
                                         </td>
                                         <td className="border border-green-200 px-4 py-2 font-serif text-sm md:text-base">
                                             {review.phoneDialCode}
                                         </td>
-                                        <td className="border border-green-200 px-4 py-2 font-serif text-sm md:text-base">
+                                        {/* <td className="border border-green-200 px-4 py-2 font-serif text-sm md:text-base">
                                             {review.phoneNumber}
-                                        </td>
+                                        </td> */}
+                                         <td className="border border-green-200 px-4 py-2 font-serif text-sm md:text-base">
+                                                <CopyableText 
+                                                    text={`${review.phoneNumber}`} 
+                                                    type="Phone number" 
+                                                />
+                                            </td>
                                         <td className="border border-green-200 px-4 py-2 font-serif text-sm md:text-base">
                                             {review.company}
                                         </td>
                                         <td className="border border-green-200 px-4 py-2 font-serif text-sm md:text-base">
                                             {review.services}
                                         </td>
-                                        <td className="border border-green-200 px-4 py-2 font-serif text-sm md:text-base">
+                                        {/* <td className="border border-green-200 px-4 py-2 font-serif text-sm md:text-base">
                                             {review.socials}
-                                        </td>
+                                        </td> */}
                                         <td className="border border-green-200 px-4 py-2 font-serif text-sm md:text-base">
+                                                <ExternalLink url={review.socials} />
+                                            </td>
+                                        {/* <td className="border border-green-200 px-4 py-2 font-serif text-sm md:text-base">
                                             {review.website}
-                                        </td>
+                                        </td> */}
+                                          <td className="border border-green-200 px-4 py-2 font-serif text-sm md:text-base">
+                                                <ExternalLink url={review.website} />
+                                            </td>
                                         <td className="border border-green-200 px-4 py-2 font-serif text-sm md:text-base">
                                             {review.messages}
                                         </td>

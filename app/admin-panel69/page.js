@@ -4,10 +4,10 @@ import React, { useEffect, useState } from "react";
 import { collection, getDocs, query, where, orderBy, deleteDoc, doc, writeBatch, addDoc } from "firebase/firestore";
 import { db } from "../lib/firebase";
 import { toast } from "sonner";
-import { MdDeleteForever } from "react-icons/md";
+import { MdDeleteForever, MdContentCopy } from "react-icons/md";
 import { useRouter } from "next/navigation";
 import { MdOutlineSaveAlt } from "react-icons/md";
-import { FaArrowRight } from "react-icons/fa";
+import { FaArrowRight, FaExternalLinkAlt } from "react-icons/fa";
 import { motion } from "framer-motion";
 
 
@@ -178,6 +178,48 @@ const AdminPanel = () => {
   // Calculate current range
   const startIndex = (currentPage - 1) * entriesPerPage + 1;
   const endIndex = Math.min(currentPage * entriesPerPage, filteredInquiries.length);
+
+  const CopyableText = ({ text, type }) => {
+    const handleCopy = async () => {
+      try {
+        await navigator.clipboard.writeText(text);
+        toast.success(`${type} copied to clipboard!`);
+      } catch (err) {
+        toast.error('Failed to copy to clipboard');
+      }
+    };
+
+    return (
+      <div
+        className="flex items-center space-x-2 cursor-pointer hover:text-[#36302A] group"
+        onClick={handleCopy}
+      >
+        <span className="group-hover:underline">{text}</span>
+        <MdContentCopy className="opacity-0 group-hover:opacity-100 transition-opacity" />
+      </div>
+    );
+  };
+
+  // Clickable link component
+  const ExternalLink = ({ url }) => {
+    const handleClick = () => {
+      if (!url) return;
+
+      // Add http:// if not present
+      const finalUrl = url.startsWith('http') ? url : `http://${url}`;
+      window.open(finalUrl, '_blank', 'noopener,noreferrer');
+    };
+
+    return url ? (
+      <div
+        className="flex items-center space-x-2 cursor-pointer hover:text-[#36302A] group"
+        onClick={handleClick}
+      >
+        <span className="group-hover:underline">{url}</span>
+        <FaExternalLinkAlt className="opacity-0 group-hover:opacity-100 transition-opacity" />
+      </div>
+    ) : "N/A";
+  };
 
   return (
     <div className="p-4 md:p-6 bg-[#FAF4ED] min-h-screen">
@@ -378,8 +420,11 @@ const AdminPanel = () => {
                       <td className="border border-[#36302A] px-4 py-2 font-serif text-sm md:text-base">
                         {inquiry.lastName}
                       </td>
-                      <td className="border border-[#36302A] px-4 py-2 font-serif text-sm md:text-base">
+                      {/* <td className="border border-[#36302A] px-4 py-2 font-serif text-sm md:text-base">
                         {inquiry.email}
+                      </td> */}
+                      <td className="border border-[#36302A] px-4 py-2 font-serif text-sm md:text-base">
+                        <CopyableText text={inquiry.email} type="Email" />
                       </td>
                       <td className="border border-[#36302A] px-4 py-2 font-serif text-sm md:text-base">
                         {inquiry.isChecked ? "Yes" : "No"}
@@ -388,8 +433,14 @@ const AdminPanel = () => {
                       <td className="border border-[#36302A] px-4 py-2 font-serif text-sm md:text-base">
                         {inquiry.phoneDialCode}
                       </td>
-                      <td className="border border-[#36302A] px-4 py-2 font-serif text-sm md:text-base">
+                      {/* <td className="border border-[#36302A] px-4 py-2 font-serif text-sm md:text-base">
                         {inquiry.phoneNumber}
+                      </td> */}
+                      <td className="border border-[#36302A] px-4 py-2 font-serif text-sm md:text-base">
+                        <CopyableText
+                          text={`${inquiry.phoneNumber}`}
+                          type="Phone number"
+                        />
                       </td>
 
                       <td className="border border-[#36302A] px-4 py-2 font-serif text-sm md:text-base">
@@ -400,12 +451,18 @@ const AdminPanel = () => {
                         {inquiry.services}
                       </td>
 
-                      <td className="border border-[#36302A] px-4 py-2 font-serif text-sm md:text-base">
+                      {/* <td className="border border-[#36302A] px-4 py-2 font-serif text-sm md:text-base">
                         {inquiry.socials}
+                      </td> */}
+                      <td className="border border-[#36302A] px-4 py-2 font-serif text-sm md:text-base">
+                        <ExternalLink url={inquiry.socials} />
                       </td>
 
-                      <td className="border border-[#36302A] px-4 py-2 font-serif text-sm md:text-base">
+                      {/* <td className="border border-[#36302A] px-4 py-2 font-serif text-sm md:text-base">
                         {inquiry.website}
+                      </td> */}
+                      <td className="border border-[#36302A] px-4 py-2 font-serif text-sm md:text-base">
+                        <ExternalLink url={inquiry.website} />
                       </td>
                       <td className="border border-[#36302A] px-4 py-2 font-serif text-sm md:text-base">
                         {inquiry.messages}
@@ -423,48 +480,48 @@ const AdminPanel = () => {
             </table>
           </div>
         </div>
-        </motion.div>
+      </motion.div>
 
-        {/* Pagination */}
-        {filteredInquiries.length > 0 && (
-          <div className="flex flex-col md:flex-row justify-between items-center py-4">
-            <div>
-              <span className="text-sm md:text-lg text-[#36302A]">
-                Total Records : {filteredInquiries.length} | Showing {startIndex} to {endIndex} of {filteredInquiries.length} records | DB Limit : 6500 records
-              </span>
-            </div>
-            <div className="space-y-0 md:space-y-0 space-x-4 md:space-x-4 flex flex-row md:flex-row">
-              <button
-                onClick={() => handlePageChange(1)}
-                disabled={currentPage === 1}
-                className="px-4 py-2 text-[#FAF4ED] bg-[#36302A] rounded-md shadow-md hover:bg-[#2C2925] w-full md:w-auto"
-              >
-                First
-              </button>
-              <button
-                onClick={() => handlePageChange(currentPage - 1)}
-                disabled={currentPage === 1}
-                className="px-4 py-2 text-[#FAF4ED] bg-[#36302A] rounded-md shadow-md hover:bg-[#2C2925] w-full md:w-auto"
-              >
-                Prev
-              </button>
-              <button
-                onClick={() => handlePageChange(currentPage + 1)}
-                disabled={currentPage === totalPages}
-                className="px-4 py-2 text-[#FAF4ED] bg-[#36302A] rounded-md shadow-md hover:bg-[#2C2925] w-full md:w-auto"
-              >
-                Next
-              </button>
-              <button
-                onClick={() => handlePageChange(totalPages)}
-                disabled={currentPage === totalPages}
-                className="px-4 py-2 text-[#FAF4ED] bg-[#36302A] rounded-md shadow-md hover:bg-[#2C2925] w-full md:w-auto"
-              >
-                Last
-              </button>
-            </div>
+      {/* Pagination */}
+      {filteredInquiries.length > 0 && (
+        <div className="flex flex-col md:flex-row justify-between items-center py-4">
+          <div>
+            <span className="text-sm md:text-lg text-[#36302A]">
+              Total Records : {filteredInquiries.length} | Showing {startIndex} to {endIndex} of {filteredInquiries.length} records | DB Limit : 6500 records
+            </span>
           </div>
-        )}
+          <div className="space-y-0 md:space-y-0 space-x-4 md:space-x-4 flex flex-row md:flex-row">
+            <button
+              onClick={() => handlePageChange(1)}
+              disabled={currentPage === 1}
+              className="px-4 py-2 text-[#FAF4ED] bg-[#36302A] rounded-md shadow-md hover:bg-[#2C2925] w-full md:w-auto"
+            >
+              First
+            </button>
+            <button
+              onClick={() => handlePageChange(currentPage - 1)}
+              disabled={currentPage === 1}
+              className="px-4 py-2 text-[#FAF4ED] bg-[#36302A] rounded-md shadow-md hover:bg-[#2C2925] w-full md:w-auto"
+            >
+              Prev
+            </button>
+            <button
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={currentPage === totalPages}
+              className="px-4 py-2 text-[#FAF4ED] bg-[#36302A] rounded-md shadow-md hover:bg-[#2C2925] w-full md:w-auto"
+            >
+              Next
+            </button>
+            <button
+              onClick={() => handlePageChange(totalPages)}
+              disabled={currentPage === totalPages}
+              className="px-4 py-2 text-[#FAF4ED] bg-[#36302A] rounded-md shadow-md hover:bg-[#2C2925] w-full md:w-auto"
+            >
+              Last
+            </button>
+          </div>
+        </div>
+      )}
 
     </div>
   );
