@@ -1,5 +1,5 @@
 'use client';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { motion, useAnimation, useMotionValue, AnimatePresence } from 'framer-motion';
 import CountrySelector from '../components/CountrySelector';
 import { FaInfoCircle } from "react-icons/fa";
@@ -209,91 +209,112 @@ const Inquire = () => {
   };
 
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = useCallback(async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
+    
+    // Validate all fields
+    const isValid = 
+      validatePhoneNumber() &&
+      validateEmail() &&
+      validateFirstName() &&
+      validateCompany() &&
+      validateWebsite() &&
+      validatePhoneCode() &&
+      validateSocials() &&
+      validateServices() &&
+      validateMessages();
   
-    const isPhoneValid = validatePhoneNumber();
-    const isEmailValid = validateEmail();
-    const isFirstNameValid = validateFirstName();
-    const isCompanyValid = validateCompany();
-    const isWebsiteValid = validateWebsite();
-    const isPhoneCodeValid = validatePhoneCode();
-    const isSocialsValid = validateSocials();
-    const isServicesValid = validateServices();
-    const isMessagesValid = validateMessages();
-  
-    if (
-      isPhoneValid &&
-      isEmailValid &&
-      isFirstNameValid &&
-      isCompanyValid &&
-      isWebsiteValid &&
-      isPhoneCodeValid &&
-      isSocialsValid &&
-      isServicesValid &&
-      isMessagesValid
-    ) {
-      try {
-        // Store form data in Firestore
-        // for(let i=0;i<50;i++)
-        // {
-          await addDoc(collection(db, "inquiries"), {
-            firstName,
-            lastName,
-            email,
-            phoneNumber,
-            company,
-            website,
-            phoneDialCode,
-            messages,
-            socials,
-            services,
-            isChecked,
-            timestamp: new Date(), // Add a timestamp for tracking
-          });
-        // }
-
-        
-        // Reset all fields
-        setFirstName("");
-        setLastName("");
-        setEmail("");
-        setPhoneNumber("");
-        setCompany("");
-        setWebsite("");
-        setPhoneDialCode("");
-        setMessages("");
-        setSocials("");
-        setServices("");
-        setIsChecked(false);
-  
-        // Show success message
-        setFormSubmitMessage("Form submitted successfully!");
-  
-        // Clear success message after 3 seconds
-        setTimeout(() => {
-          setFormSubmitMessage("");
-        }, 3000);
-      } catch (error) {
-        console.error("Error adding document to Firestore: ", error);
-        setFormSubmitMessage("Failed to submit the form. Please try again later.");
-        
-        // Clear error message after 3 seconds
-        setTimeout(() => {
-          setFormSubmitMessage("");
-        }, 3000);
-      } finally {
-        setIsSubmitting(false);
-      }
-    } else {
+    if (!isValid) {
       setIsSubmitting(false);
+      return;
     }
-  };
-
- 
   
-
+    try {
+      // Store form data in Firestore
+      await addDoc(collection(db, "inquiries"), {
+        firstName,
+        lastName,
+        email,
+        phoneNumber,
+        company,
+        website,
+        phoneDialCode,
+        messages,
+        socials,
+        services,
+        isChecked,
+        timestamp: new Date(),
+      });
+  
+      // Send confirmation email
+      const response = await fetch('/api/send-confirmation', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, firstName }),
+      });
+  
+      const data = await response.json();
+  
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to send confirmation email');
+      }
+  
+      // Reset form
+      [
+        setFirstName,
+        setLastName,
+        setEmail,
+        setPhoneNumber,
+        setCompany,
+        setWebsite,
+        setPhoneDialCode,
+        setMessages,
+        setSocials,
+        setServices,
+      ].forEach(setter => setter(""));
+      setIsChecked(false);
+  
+      // Show success message
+      setFormSubmitMessage("Form submitted successfully! Check your email for confirmation.");
+    } catch (error) {
+      console.error("Error submitting form or sending email: ", error);
+      setFormSubmitMessage(
+        error.message || "Failed to submit the form. Please try again later."
+      );
+    } finally {
+      setIsSubmitting(false);
+      // Clear message after 5 seconds
+      setTimeout(() => setFormSubmitMessage(""), 5000);
+    }
+  }, [
+    validatePhoneNumber,
+    validateEmail,
+    validateFirstName,
+    validateCompany,
+    validateWebsite,
+    validatePhoneCode,
+    validateSocials,
+    validateServices,
+    validateMessages,
+    firstName,
+    lastName,
+    email,
+    phoneNumber,
+    company,
+    website,
+    phoneDialCode,
+    messages,
+    socials,
+    services,
+    isChecked,
+  ]);
+  
+  useEffect(() => {
+    // Any existing code...
+  }, [handleSubmit]);
 
   return (
     <div className="relative w-full h-auto" style={{userSelect:"none"}}>
@@ -572,13 +593,12 @@ const Inquire = () => {
               />
             </motion.button>
           </form>
-          </motion.div>
-        </div>
-        </div>
-      
-    
+        </motion.div>
+      </div>
+    </div>
 
   );
 };
 
 export default Inquire;
+
