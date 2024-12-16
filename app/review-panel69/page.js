@@ -434,7 +434,7 @@ const ReviewPanel = () => {
                             type="date"
                             value={selectedDate}
                             onChange={handleDateChange}
-                            className="w-full border border-green-300 rounded-lg px-3 py-1 md:py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                            className="w-full border border-green-300 rounded-lg px-3 py-1 md:py-1.5 shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500"
                         />
                     </div>
 
