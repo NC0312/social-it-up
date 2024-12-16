@@ -1,16 +1,16 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import { collection, getDocs, query, orderBy, deleteDoc, doc, writeBatch } from "firebase/firestore";
+import { collection, getDocs, query, orderBy, deleteDoc, doc, writeBatch, updateDoc } from "firebase/firestore";
 import { db } from "../lib/firebase";
 import { toast } from "sonner";
 import { MdDeleteForever, MdContentCopy } from "react-icons/md";
-import { FaArrowLeft, FaExternalLinkAlt, FaFileDownload } from "react-icons/fa";
+import { FaArrowLeft, FaExternalLinkAlt, FaFileDownload, FaFileExcel } from "react-icons/fa";
 import { IoMdSend } from "react-icons/io";
 import { useRouter } from 'next/navigation';
 import { motion } from "framer-motion";
 import { BsFillSendFill } from "react-icons/bs";
-import { FaFileExcel } from "react-icons/fa6";
 import { HiBellAlert } from "react-icons/hi2";
+import PriorityDisplay from "../components/PriorityDisplay";
 
 const ReviewPanel = () => {
     const fadeInLeft = {
@@ -32,6 +32,7 @@ const ReviewPanel = () => {
     const [filteredReviews, setFilteredReviews] = useState([]);
     const [selectedDate, setSelectedDate] = useState("");
     const [signedUp, setSignedUp] = useState("");
+    const [selectedPriority, setSelectedPriority] = useState("");
     const [currentPage, setCurrentPage] = useState(1);
     const [isDeleting, setIsDeleting] = useState(false);
     const [isDeletingAll, setIsDeletingAll] = useState(false);
@@ -48,6 +49,7 @@ const ReviewPanel = () => {
             const data = snapshot.docs.map((doc) => ({
                 docId: doc.id,
                 ...doc.data(),
+                priority: doc.data().priority || "low" // Default to low if not set
             }));
             setReviews(data);
             setFilteredReviews(data);
@@ -154,6 +156,10 @@ const ReviewPanel = () => {
         setSignedUp(e.target.value);
     };
 
+    const handlePriorityChange = (e) => {
+        setSelectedPriority(e.target.value);
+    };
+
     const handleFetchData = () => {
         let filtered = reviews;
 
@@ -177,6 +183,10 @@ const ReviewPanel = () => {
                 }
                 return true;
             });
+        }
+
+        if (selectedPriority) {
+            filtered = filtered.filter(review => review.priority === selectedPriority);
         }
 
         setFilteredReviews(filtered);
@@ -310,7 +320,7 @@ const ReviewPanel = () => {
     };
 
     const convertToCSV = (data) => {
-        const headers = ["Timestamp", "FirstName", "LastName", "Email", "SignedUp", "DialCode", "PhoneNumber", "BrandName", "Services", "Socials", "Website", "Messages"];
+        const headers = ["Timestamp", "FirstName", "LastName", "Email", "SignedUp", "DialCode", "PhoneNumber", "BrandName", "Services", "Socials", "Website", "Messages", "Priority"];
         const csvRows = [headers.join(',')];
 
         for (const review of data) {
@@ -320,13 +330,14 @@ const ReviewPanel = () => {
                 review.lastName,
                 review.email,
                 review.isChecked ? "Yes" : "No",
-                // review.phoneDialCode,
+                review.phoneDialCode,
                 `"${review.phoneNumber}"`, 
                 review.company,
                 review.services,
                 review.socials,
                 review.website,
-                review.messages
+                review.messages,
+                review.priority
             ];
             csvRows.push(row.map(field => `"${field}"`).join(','));
         }
@@ -346,6 +357,25 @@ const ReviewPanel = () => {
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
+        }
+    };
+
+    const handlePriorityUpdate = async (docId, newPriority) => {
+        try {
+            const reviewRef = doc(db, "reviews", docId);
+            await updateDoc(reviewRef, { priority: newPriority });
+            
+            // Update local state
+            const updatedReviews = reviews.map(review => 
+                review.docId === docId ? { ...review, priority: newPriority } : review
+            );
+            setReviews(updatedReviews);
+            setFilteredReviews(updatedReviews);
+            
+            toast.success("Priority updated successfully!");
+        } catch (error) {
+            console.error("Error updating priority:", error);
+            toast.error("Failed to update priority. Please try again.");
         }
     };
 
@@ -377,7 +407,13 @@ const ReviewPanel = () => {
                             <MdDeleteForever className="text-xl" />
                             <span>Delete All</span>
                         </button>
-                        
+                        {/* <button
+                            onClick={handleDownloadCSV}
+                            className="px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 transition-colors duration-200 flex items-center space-x-2"
+                        >
+                            <FaFileDownload className="text-xl" />
+                            <span>Download CSV</span>
+                        </button> */}
                     </div>
                 </div>
             </motion.div>
@@ -388,33 +424,53 @@ const ReviewPanel = () => {
                 whileInView="visible"
                 viewport={{ once: true }}
             >
-                <div className="mb-6">
-                    <label className="block text-sm md:text-lg font-medium mb-2 text-green-800" htmlFor="date-filter">
-                        Filter by Date:
-                    </label>
-                    <input
-                        id="date-filter"
-                        type="date"
-                        value={selectedDate}
-                        onChange={handleDateChange}
-                        className="w-full md:w-1/3 border border-green-300 rounded-lg px-3 py-1 md:py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500"
-                    />
-                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                    <div>
+                        <label className="block text-sm md:text-lg font-medium mb-2 text-green-800" htmlFor="date-filter">
+                            Filter by Date:
+                        </label>
+                        <input
+                            id="date-filter"
+                            type="date"
+                            value={selectedDate}
+                            onChange={handleDateChange}
+                            className="w-full border border-green-300 rounded-lg px-3 py-1 md:py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                        />
+                    </div>
 
-                <div className="mb-6">
-                    <label className="block text-sm md:text-lg font-medium mb-2 text-green-800" htmlFor="signup-filter">
-                        Filter by Signed Up:
-                    </label>
-                    <select
-                        id="signup-filter"
-                        value={signedUp}
-                        onChange={handleSignUpChange}
-                        className="w-full md:w-1/3 border border-green-300 rounded-lg px-3 py-1 md:py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500"
-                    >
-                        <option value="">Has anyone signed up for news and updates?</option>
-                        <option value="Yes">Yes</option>
-                        <option value="No">No</option>
-                    </select>
+                    <div>
+                        <label className="block text-sm md:text-lg font-medium mb-2 text-green-800" htmlFor="signup-filter">
+                            Filter by Signed Up:
+                        </label>
+                        <select
+                            id="signup-filter"
+                            value={signedUp}
+                            onChange={handleSignUpChange}
+                            className="w-full border border-green-300 rounded-lg px-3 py-1 md:py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                        >
+                            <option value="">Has anyone signed up for news and updates?</option>
+                            <option value="Yes">Yes</option>
+                            <option value="No">No</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label className="block text-sm md:text-lg font-medium mb-2 text-green-800" htmlFor="priority-filter">
+                            Filter by Priority:
+                        </label>
+                        <select
+                            id="priority-filter"
+                            value={selectedPriority}
+                            onChange={handlePriorityChange}
+                            className="w-full border border-green-300 rounded-lg px-3 py-1 md:py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                        >
+                            <option value="">Select Priority</option>
+                            <option value="low">Low</option>
+                            <option value="medium">Medium</option>
+                            <option value="high">High</option>
+                            <option value="highest">Highest</option>
+                        </select>
+                    </div>
                 </div>
             </motion.div>
 
@@ -426,34 +482,23 @@ const ReviewPanel = () => {
             >
                 <div className="mb-6 text-center flex justify-center items-center space-x-4">
                     <button
-                        onClick={() => {
-                            if (selectedDate || signedUp) {
-                                handleFetchData();
-                            } else {
-                                toast.error("No filter applied!");
-                            }
-                        }}
+                        onClick={handleFetchData}
                         className="px-8 py-2 md:py-3 bg-green-600 text-white font-semibold rounded-md md:rounded-lg shadow-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 w-full md:w-auto"
                     >
                         Apply Filter
                     </button>
                     <button
                         onClick={() => {
-                            if (selectedDate || signedUp) {
-                                setSelectedDate("");
-                                setSignedUp("");
-                                setFilteredReviews(reviews);
-                                toast.success("Filters cleared!");
-                            } else {
-                                toast.error("No filter to clear!");
-                            }
+                            setSelectedDate("");
+                            setSignedUp("");
+                            setSelectedPriority("");
+                            setFilteredReviews(reviews);
+                            toast.success("Filters cleared!");
                         }}
                         className="px-5 py-2 md:py-3 bg-red-600 text-white font-semibold rounded-md md:rounded-lg shadow-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-600 md:w-auto"
                     >
                         <MdDeleteForever className="text-lg md:text-2xl" />
                     </button>
-
-                  
                 </div>
             </motion.div>
 
@@ -463,14 +508,15 @@ const ReviewPanel = () => {
                 whileInView="visible"
                 viewport={{ once: true }}
             >
-            <button
-                            onClick={handleDownloadCSV}
-                            className="px-3 md:px-4 py-2 md:py-3 bg-green-600 text-white font-semibold rounded-lg shadow-md hover:bg-green-700 transition-colors duration-200 flex items-center space-x-2 mb-2 ml-0 md:mb-5 md:ml-5"
-                        >
-                            <FaFileExcel className="text-xl" />
-                            {/* <span>Download CSV</span> */}
-                        </button>
-                        </motion.div>
+                <button
+                    onClick={handleDownloadCSV}
+                    className="px-3 md:px-4 py-2 md:py-3 bg-green-600 text-white font-semibold rounded-lg shadow-md hover:bg-green-700 transition-colors duration-200 flex items-center space-x-2 mb-2 ml-0 md:mb-5 md:ml-5"
+                >
+                    <FaFileExcel className="text-xl" />
+                    {/* <span className="hidden md:inline">Download CSV</span> */}
+                </button>
+            </motion.div>
+
             <motion.div
                 variants={fadeInUp}
                 initial="hidden"
@@ -491,6 +537,8 @@ const ReviewPanel = () => {
                                 <tr>
                                     {[
                                         "Action",
+                                        "Priority",
+                                        "ChangePriority",
                                         "Timestamp",
                                         "FirstName",
                                         "LastName",
@@ -527,6 +575,21 @@ const ReviewPanel = () => {
                                                     <MdDeleteForever />
                                                 </button>
                                             </td>
+                                            <td className="border border-green-200 px-4 py-2 text-sm md:text-base">
+                                                <PriorityDisplay priority={review.priority} />
+                                            </td>
+                                            <td className="border border-green-200 px-4 py-2 text-sm md:text-base">
+                                                <select
+                                                    value={review.priority}
+                                                    onChange={(e) => handlePriorityUpdate(review.docId, e.target.value)}
+                                                    className="w-full border border-green-300 rounded-lg px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 bg-white"
+                                                >
+                                                    <option value="low">Low</option>
+                                                    <option value="medium">Medium</option>
+                                                    <option value="high">High</option>
+                                                    <option value="highest">Highest</option>
+                                                </select>
+                                            </td>
                                             <td className="border border-green-200 px-4 py-2 font-serif text-sm md:text-base whitespace-nowrap">
                                                 {review.movedToReviewAt
                                                     ? new Date(review.movedToReviewAt.seconds * 1000).toLocaleString()
@@ -551,7 +614,7 @@ const ReviewPanel = () => {
                                                     {loadingNotifications[review.docId] ? (
                                                         <span className="animate-spin">⌛</span>
                                                     ) : (
-                                                        <HiBellAlert  className="text-sm md:text-base" />
+                                                        <HiBellAlert className="text-sm md:text-base" />
                                                     )}
                                                     <span className="hidden md:inline">
                                                         {loadingNotifications[review.docId] ? 'Sending...' : 'Notify'}
@@ -570,7 +633,6 @@ const ReviewPanel = () => {
                                                     type="Phone number"
                                                 />
                                             </td>
-                                           
                                             <td className="border border-green-200 px-4 py-2 font-serif text-sm md:text-base" style={{ userSelect: "none" }}>
                                                 <CopyableText
                                                     text={`${review.company}`}
@@ -593,7 +655,7 @@ const ReviewPanel = () => {
                                     ))
                                 ) : (
                                     <tr>
-                                        <td colSpan="14" className="text-center py-4">
+                                        <td colSpan="16" className="text-center py-4">
                                             No data available
                                         </td>
                                     </tr>
