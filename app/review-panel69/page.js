@@ -10,6 +10,7 @@ import { useRouter } from 'next/navigation';
 import { motion } from "framer-motion";
 import { BsFillSendFill } from "react-icons/bs";
 import { FaFileExcel } from "react-icons/fa6";
+import { HiBellAlert } from "react-icons/hi2";
 
 const ReviewPanel = () => {
     const fadeInLeft = {
@@ -550,7 +551,7 @@ const ReviewPanel = () => {
                                                     {loadingNotifications[review.docId] ? (
                                                         <span className="animate-spin">⌛</span>
                                                     ) : (
-                                                        <BsFillSendFill className="text-sm md:text-base" />
+                                                        <HiBellAlert  className="text-sm md:text-base" />
                                                     )}
                                                     <span className="hidden md:inline">
                                                         {loadingNotifications[review.docId] ? 'Sending...' : 'Notify'}
