@@ -456,6 +456,12 @@ const ReviewPanel = () => {
                 </div>
             </motion.div>
 
+            <motion.div
+                variants={fadeInUp}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true }}
+            >
             <button
                             onClick={handleDownloadCSV}
                             className="px-3 md:px-4 py-2 md:py-3 bg-green-600 text-white font-semibold rounded-lg shadow-md hover:bg-green-700 transition-colors duration-200 flex items-center space-x-2 mb-2 ml-0 md:mb-5 md:ml-5"
@@ -463,6 +469,7 @@ const ReviewPanel = () => {
                             <FaFileExcel className="text-xl" />
                             {/* <span>Download CSV</span> */}
                         </button>
+                        </motion.div>
             <motion.div
                 variants={fadeInUp}
                 initial="hidden"
