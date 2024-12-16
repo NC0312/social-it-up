@@ -5,8 +5,10 @@ import { db } from "../lib/firebase";
 import { toast } from "sonner";
 import { MdDeleteForever, MdContentCopy } from "react-icons/md";
 import { FaArrowLeft, FaExternalLinkAlt } from "react-icons/fa";
+import { IoMdSend } from "react-icons/io";
 import { useRouter } from 'next/navigation';
 import { motion } from "framer-motion";
+import { BsFillSendFill } from "react-icons/bs";
 
 const ReviewPanel = () => {
     const fadeInLeft = {
@@ -31,6 +33,7 @@ const ReviewPanel = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const [isDeleting, setIsDeleting] = useState(false);
     const [isDeletingAll, setIsDeletingAll] = useState(false);
+    const [loadingNotifications, setLoadingNotifications] = useState({});
     const entriesPerPage = 20;
 
     const fetchReviews = async () => {
@@ -58,7 +61,6 @@ const ReviewPanel = () => {
         try {
             setIsDeletingAll(true);
 
-            // Show confirmation dialog
             if (!window.confirm("Are you sure you want to delete ALL reviews? This action cannot be undone!")) {
                 setIsDeletingAll(false);
                 return;
@@ -67,7 +69,6 @@ const ReviewPanel = () => {
             const reviewsCollection = collection(db, "reviews");
             const snapshot = await getDocs(reviewsCollection);
 
-            // Use batched writes for better performance
             const batchSize = 500;
             let batch = writeBatch(db);
             let count = 0;
@@ -85,7 +86,6 @@ const ReviewPanel = () => {
                 }
             }
 
-            // Commit any remaining deletes
             if (count > 0) {
                 await batch.commit();
             }
@@ -200,60 +200,6 @@ const ReviewPanel = () => {
     const startIndex = (currentPage - 1) * entriesPerPage + 1;
     const endIndex = Math.min(currentPage * entriesPerPage, filteredReviews.length);
 
-    // const CopyableText = ({ text, type }) => {
-    //     const handleCopy = async () => {
-    //         try {
-    //             await navigator.clipboard.writeText(text);
-    //             toast.success(`${type} copied to clipboard!`);
-    //         } catch (err) {
-    //             toast.error('Failed to copy to clipboard');
-    //         }
-    //     };
-
-    //     return (
-    //         <div 
-    //             className="flex items-center space-x-2 cursor-pointer hover:text-green-600 group"
-    //             onClick={handleCopy}
-    //         >
-    //             <span className="group-hover:underline">{text}</span>
-    //             <MdContentCopy className="opacity-0 group-hover:opacity-100 transition-opacity" />
-    //         </div>
-    //     );
-    // };
-
-    // const CopyableText = ({ text, type }) => {
-    //     const handleClick = () => {
-    //         if (type === "Email") {
-    //             window.open(`https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(text)}`, '_blank');
-    //             navigator.clipboard.writeText(text)
-    //                 .then(() => toast.success(`${type} copied to clipboard!`))
-    //                 .catch(() => toast.error('Failed to copy to clipboard'));
-    //         } else {
-    //             // Keep the existing copy to clipboard functionality for other types
-    //             navigator.clipboard.writeText(text)
-    //                 .then(() => toast.success(`${type} copied to clipboard!`))
-    //                 .catch(() => toast.error('Failed to copy to clipboard'));
-    //         }
-    //     };
-
-    //     return (
-    //         <div
-    //             className="flex items-center space-x-2 cursor-pointer hover:text-green-600 group"
-    //             onClick={handleClick}
-    //         >
-    //             <span className="group-hover:underline">{text}</span>
-    //             {type === "Email" ? (
-    //                 <div className="flex flex-row justify-between items-center">
-    //                     <FaExternalLinkAlt className="opacity-0 group-hover:opacity-100 transition-opacity" />
-    //                     <MdContentCopy className="opacity-0 group-hover:opacity-100 transition-opacity" />
-    //                 </div>
-    //             ) : (
-    //                 <MdContentCopy className="opacity-0 group-hover:opacity-100 transition-opacity" />
-    //             )}
-    //         </div>
-    //     );
-    // };
-
     const CopyableText = ({ text, type }) => {
         const handleCopy = (e) => {
             e.stopPropagation();
@@ -311,14 +257,10 @@ const ReviewPanel = () => {
         );
     };
 
-
-
-    // Clickable link component
     const ExternalLink = ({ url }) => {
         const handleClick = () => {
             if (!url) return;
     
-            // Add http:// if not present
             const finalUrl = url.startsWith('http') ? url : `http://${url}`;
             window.open(finalUrl, '_blank', 'noopener,noreferrer');
         };
@@ -334,8 +276,36 @@ const ReviewPanel = () => {
             </div>
         ) : "N/A";
     };
-    
 
+    const handleSendNotification = async (email, firstName, docId) => {
+        if (loadingNotifications[docId]) return; // Prevent multiple clicks
+
+        try {
+            setLoadingNotifications(prev => ({ ...prev, [docId]: true }));
+
+            const response = await fetch('/api/send-notification-email', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    email,
+                    firstName,
+                }),
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to send notification email');
+            }
+
+            toast.success('Notification email sent successfully!');
+        } catch (error) {
+            console.error('Error sending notification email:', error);
+            toast.error('Failed to send notification email. Please try again.');
+        } finally {
+            setLoadingNotifications(prev => ({ ...prev, [docId]: false }));
+        }
+    };
 
     return (
         <div className="p-4 md:p-6 bg-green-50 min-h-screen">
@@ -365,7 +335,6 @@ const ReviewPanel = () => {
                             <MdDeleteForever className="text-xl" />
                             <span>Delete All</span>
                         </button>
-
                     </div>
                 </div>
             </motion.div>
@@ -467,11 +436,11 @@ const ReviewPanel = () => {
                                         "FirstName",
                                         "LastName",
                                         "Email",
+                                        "Notify",
                                         "SignedUp",
                                         "DialCode",
                                         "PhoneNumber",
                                         "BrandName",
-                                        // "Company/Brand",
                                         "Services",
                                         "Socials",
                                         "Website",
@@ -510,11 +479,25 @@ const ReviewPanel = () => {
                                             <td className="border border-green-200 px-4 py-2 font-serif text-sm md:text-base">
                                                 {review.lastName}
                                             </td>
-                                            {/* <td className="border border-green-200 px-4 py-2 font-serif text-sm md:text-base">
-                                            {review.email}
-                                        </td> */}
                                             <td className="border border-green-200 px-4 py-2 font-serif text-sm md:text-base" style={{ userSelect: "none" }}>
                                                 <CopyableText text={review.email} type="Email" />
+                                            </td>
+                                            <td className="border border-green-200 px-4 py-2 text-sm md:text-base">
+                                                <button
+                                                    onClick={() => handleSendNotification(review.email, review.firstName, review.docId)}
+                                                    className="px-2 py-1 bg-green-500 text-white rounded-md hover:bg-green-600 transition-colors duration-200 flex items-center space-x-1"
+                                                    title="Send Notification"
+                                                    disabled={loadingNotifications[review.docId]}
+                                                >
+                                                    {loadingNotifications[review.docId] ? (
+                                                        <span className="animate-spin">⌛</span>
+                                                    ) : (
+                                                        <BsFillSendFill className="text-sm md:text-base" />
+                                                    )}
+                                                    <span className="hidden md:inline">
+                                                        {loadingNotifications[review.docId] ? 'Sending...' : 'Notify'}
+                                                    </span>
+                                                </button>
                                             </td>
                                             <td className="border border-green-200 px-4 py-2 font-serif text-sm md:text-base">
                                                 {review.isChecked ? "Yes" : "No"}
@@ -522,18 +505,12 @@ const ReviewPanel = () => {
                                             <td className="border border-green-200 px-4 py-2 font-serif text-sm md:text-base">
                                                 {review.phoneDialCode}
                                             </td>
-                                            {/* <td className="border border-green-200 px-4 py-2 font-serif text-sm md:text-base">
-                                            {review.phoneNumber}
-                                        </td> */}
                                             <td className="border border-green-200 px-4 py-2 font-serif text-sm md:text-base" style={{ userSelect: "none" }}>
                                                 <CopyableText
                                                     text={`${review.phoneNumber}`}
                                                     type="Phone number"
                                                 />
                                             </td>
-                                            {/* <td className="border border-green-200 px-4 py-2 font-serif text-sm md:text-base">
-                                            {review.company}
-                                        </td> */}
                                             <td className="border border-green-200 px-4 py-2 font-serif text-sm md:text-base" style={{ userSelect: "none" }}>
                                                 <CopyableText
                                                     text={`${review.company}`}
@@ -543,15 +520,9 @@ const ReviewPanel = () => {
                                             <td className="border border-green-200 px-4 py-2 font-serif text-sm md:text-base">
                                                 {review.services}
                                             </td>
-                                            {/* <td className="border border-green-200 px-4 py-2 font-serif text-sm md:text-base">
-                                            {review.socials}
-                                        </td> */}
                                             <td className="border border-green-200 px-4 py-2 font-serif text-sm md:text-base">
                                                 <ExternalLink url={review.socials} />
                                             </td>
-                                            {/* <td className="border border-green-200 px-4 py-2 font-serif text-sm md:text-base">
-                                            {review.website}
-                                        </td> */}
                                             <td className="border border-green-200 px-4 py-2 font-serif text-sm md:text-base">
                                                 <ExternalLink url={review.website} />
                                             </td>
@@ -562,7 +533,7 @@ const ReviewPanel = () => {
                                     ))
                                 ) : (
                                     <tr>
-                                        <td colSpan="13" className="text-center py-4">
+                                        <td colSpan="14" className="text-center py-4">
                                             No data available
                                         </td>
                                     </tr>
@@ -613,9 +584,9 @@ const ReviewPanel = () => {
                     </div>
                 </div>
             )}
-
         </div>
     );
 };
 
 export default ReviewPanel;
+
