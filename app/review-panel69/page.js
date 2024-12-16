@@ -4,11 +4,12 @@ import { collection, getDocs, query, orderBy, deleteDoc, doc, writeBatch } from 
 import { db } from "../lib/firebase";
 import { toast } from "sonner";
 import { MdDeleteForever, MdContentCopy } from "react-icons/md";
-import { FaArrowLeft, FaExternalLinkAlt } from "react-icons/fa";
+import { FaArrowLeft, FaExternalLinkAlt, FaFileDownload } from "react-icons/fa";
 import { IoMdSend } from "react-icons/io";
 import { useRouter } from 'next/navigation';
 import { motion } from "framer-motion";
 import { BsFillSendFill } from "react-icons/bs";
+import { FaFileExcel } from "react-icons/fa6";
 
 const ReviewPanel = () => {
     const fadeInLeft = {
@@ -307,6 +308,46 @@ const ReviewPanel = () => {
         }
     };
 
+    const convertToCSV = (data) => {
+        const headers = ["Timestamp", "FirstName", "LastName", "Email", "SignedUp", "DialCode", "PhoneNumber", "BrandName", "Services", "Socials", "Website", "Messages"];
+        const csvRows = [headers.join(',')];
+
+        for (const review of data) {
+            const row = [
+                new Date(review.movedToReviewAt.seconds * 1000).toLocaleString(),
+                review.firstName,
+                review.lastName,
+                review.email,
+                review.isChecked ? "Yes" : "No",
+                // review.phoneDialCode,
+                `"${review.phoneNumber}"`, 
+                review.company,
+                review.services,
+                review.socials,
+                review.website,
+                review.messages
+            ];
+            csvRows.push(row.map(field => `"${field}"`).join(','));
+        }
+
+        return csvRows.join('\n');
+    };
+
+    const handleDownloadCSV = () => {
+        const csvContent = convertToCSV(filteredReviews);
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement("a");
+        if (link.download !== undefined) {
+            const url = URL.createObjectURL(blob);
+            link.setAttribute("href", url);
+            link.setAttribute("download", "reviews.csv");
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    };
+
     return (
         <div className="p-4 md:p-6 bg-green-50 min-h-screen">
             <motion.div
@@ -335,6 +376,7 @@ const ReviewPanel = () => {
                             <MdDeleteForever className="text-xl" />
                             <span>Delete All</span>
                         </button>
+                        
                     </div>
                 </div>
             </motion.div>
@@ -409,9 +451,18 @@ const ReviewPanel = () => {
                     >
                         <MdDeleteForever className="text-lg md:text-2xl" />
                     </button>
+
+                  
                 </div>
             </motion.div>
 
+            <button
+                            onClick={handleDownloadCSV}
+                            className="px-3 md:px-4 py-2 md:py-3 bg-green-600 text-white font-semibold rounded-lg shadow-md hover:bg-green-700 transition-colors duration-200 flex items-center space-x-2 mb-2 ml-0 md:mb-5 md:ml-5"
+                        >
+                            <FaFileExcel className="text-xl" />
+                            {/* <span>Download CSV</span> */}
+                        </button>
             <motion.div
                 variants={fadeInUp}
                 initial="hidden"
@@ -511,6 +562,7 @@ const ReviewPanel = () => {
                                                     type="Phone number"
                                                 />
                                             </td>
+                                           
                                             <td className="border border-green-200 px-4 py-2 font-serif text-sm md:text-base" style={{ userSelect: "none" }}>
                                                 <CopyableText
                                                     text={`${review.company}`}
