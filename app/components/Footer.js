@@ -5,11 +5,13 @@ import { AiOutlineInstagram } from 'react-icons/ai';
 import { HiLocationMarker } from 'react-icons/hi';
 import { BsTelephoneFill } from 'react-icons/bs';
 import { MdEmail } from 'react-icons/md';
+import { usePathname } from "next/navigation";
 
 const REVIEW_PANEL_ROUTE = "/review-panel69";
 // const isDevelopment = process.env.NEXT_PUBLIC_ENV === "development";
 
 const Footer = () => {
+  const pathname = usePathname();
   return (
     <footer
       className={`flex flex-col items-center justify-center py-8 px-4 ${pathname === REVIEW_PANEL_ROUTE ? "bg-green-600" : ""}`}
