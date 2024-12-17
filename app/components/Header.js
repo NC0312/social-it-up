@@ -141,7 +141,7 @@ function Header() {
         {/* Development Mode Text */}
         {isDevelopment && (
           <div className="absolute left-1/4 transform -translate-x-1/2 ml-36 md:ml-0 text-white text-xs md:text-lg font-light md:font-semibold" style={{userSelect:"none"}}>
-            Development Mode ⌨
+            Hi,Admin!👋 
           </div>
         )}
 
