@@ -5,6 +5,7 @@ import CountrySelector from '../components/CountrySelector';
 import { FaInfoCircle } from "react-icons/fa";
 import { addDoc, collection } from 'firebase/firestore';
 import { db } from '../lib/firebase';
+import ReCAPTCHA from "react-google-recaptcha";
 
 
 const Inquire = () => {
@@ -33,10 +34,10 @@ const Inquire = () => {
   const [website, setWebsite] = useState('');
   const [socials, setSocials] = useState('');
   const [socialsError, setSocialsError] = useState('');
-  const [services,setServices] = useState('');
-  const [servicesError , setServicesError] = useState('');
-  const [messages,setMessages] = useState('');
-  const [messagesError,setMessagesError] = useState('');
+  const [services, setServices] = useState('');
+  const [servicesError, setServicesError] = useState('');
+  const [messages, setMessages] = useState('');
+  const [messagesError, setMessagesError] = useState('');
   const [websiteError, setWebsiteError] = useState('');
   const [companyError, setCompanyError] = useState('');
   const [emailError, setEmailError] = useState('');
@@ -45,6 +46,7 @@ const Inquire = () => {
   const [lastName, setLastName] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formSubmitMessage, setFormSubmitMessage] = useState('');
+  const [recaptchaValue, setRecaptchaValue] = useState(null);
 
   const controls = useAnimation();
   const x = useMotionValue(0);
@@ -162,8 +164,8 @@ const Inquire = () => {
     return true;
   }
 
-  const validateMessages = () =>{
-    if(!messages.trim()){
+  const validateMessages = () => {
+    if (!messages.trim()) {
       setMessagesError('Message is required');
       return false;
     }
@@ -180,9 +182,8 @@ const Inquire = () => {
     return true;
   }
 
-  const validateServices = () =>{
-    if(!services.trim())
-    {
+  const validateServices = () => {
+    if (!services.trim()) {
       setServicesError('This field is required');
       return false;
     }
@@ -208,29 +209,72 @@ const Inquire = () => {
     return true;
   };
 
+  const handleRecaptchaChange = (value) => {
+    setRecaptchaValue(value);
+  };
 
   const handleSubmit = useCallback(async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
-    
-    // Validate all fields
-    const isValid = 
-      validatePhoneNumber() &&
-      validateEmail() &&
-      validateFirstName() &&
-      validateCompany() &&
-      validateWebsite() &&
-      validatePhoneCode() &&
-      validateSocials() &&
-      validateServices() &&
-      validateMessages();
-  
+
+    debugger;
+    // Run all validations and store their results
+    const phoneNumberValid = validatePhoneNumber();
+    const emailValid = validateEmail();
+    const firstNameValid = validateFirstName();
+    const companyValid = validateCompany();
+    const websiteValid = validateWebsite();
+    const phoneCodeValid = validatePhoneCode();
+    const socialsValid = validateSocials();
+    const servicesValid = validateServices();
+    const messagesValid = validateMessages();
+
+    // Check if all validations passed
+    const isValid =
+      phoneNumberValid &&
+      emailValid &&
+      firstNameValid &&
+      companyValid &&
+      websiteValid &&
+      phoneCodeValid &&
+      socialsValid &&
+      servicesValid &&
+      messagesValid;
+
+    // If any validation failed, stop submission and show errors
     if (!isValid) {
       setIsSubmitting(false);
       return;
     }
-  
+
+    // Check reCAPTCHA only if form validation passed
+    if (!recaptchaValue) {
+      setFormSubmitMessage("Please complete the reCAPTCHA.");
+      setIsSubmitting(false);
+      return;
+    }
+
     try {
+      // Verify reCAPTCHA
+      const recaptchaResponse = await fetch('/api/verify-recaptcha', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ recaptchaValue }),
+      });
+
+      if (!recaptchaResponse.ok) {
+        const errorData = await recaptchaResponse.json();
+        throw new Error(errorData.error || 'reCAPTCHA verification failed');
+      }
+
+      const recaptchaData = await recaptchaResponse.json();
+
+      if (!recaptchaData.success) {
+        throw new Error('reCAPTCHA verification failed');
+      }
+
       // Store form data in Firestore
       await addDoc(collection(db, "inquiries"), {
         firstName,
@@ -246,7 +290,7 @@ const Inquire = () => {
         isChecked,
         timestamp: new Date(),
       });
-  
+
       // Send confirmation email
       const response = await fetch('/api/send-confirmation', {
         method: 'POST',
@@ -255,13 +299,13 @@ const Inquire = () => {
         },
         body: JSON.stringify({ email, firstName }),
       });
-  
+
       const data = await response.json();
-  
+
       if (!response.ok) {
         throw new Error(data.error || 'Failed to send confirmation email');
       }
-  
+
       // Reset form
       [
         setFirstName,
@@ -276,11 +320,17 @@ const Inquire = () => {
         setServices,
       ].forEach(setter => setter(""));
       setIsChecked(false);
-  
+
+      // Reset reCAPTCHA
+      if (typeof window !== 'undefined' && window.grecaptcha) {
+        window.grecaptcha.reset();
+      }
+      setRecaptchaValue(null);
+
       // Show success message
       setFormSubmitMessage("Form submitted successfully! Check your email for confirmation.");
     } catch (error) {
-      console.error("Error submitting form or sending email: ", error);
+      console.error("Error submitting form or verifying reCAPTCHA: ", error);
       setFormSubmitMessage(
         error.message || "Failed to submit the form. Please try again later."
       );
@@ -310,14 +360,16 @@ const Inquire = () => {
     socials,
     services,
     isChecked,
+    recaptchaValue,
   ]);
-  
+
+
   useEffect(() => {
     // Any existing code...
   }, [handleSubmit]);
 
   return (
-    <div className="relative w-full h-auto" style={{userSelect:"none"}}>
+    <div className="relative w-full h-auto" style={{ userSelect: "none" }}>
       <div className="flex flex-col md:flex-row items-stretch h-auto">
         {/* Image Section */}
         <div className="w-full md:w-1/2 md:absolute md:right-0 md:top-0 md:bottom-0 z-10">
@@ -330,12 +382,12 @@ const Inquire = () => {
 
         {/* Form Section */}
         <motion.div
-                                className="flex flex-col w-full md:w-1/2 relative"
-                                variants={fadeInUp}
-                                initial="hidden"
-                                whileInView="visible"
-                                viewport={{ once: true }}
-                            >
+          className="flex flex-col w-full md:w-1/2 relative"
+          variants={fadeInUp}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+        >
           <div className="w-full overflow-hidden py-0 md:py-0">
             <div className="flex whitespace-nowrap items-center md:items-start" ref={containerRef}>
               <motion.div className="flex" animate={controls} style={{ x }}>
@@ -399,7 +451,7 @@ const Inquire = () => {
                 className="bg-[#EFE7DD] text-[#36302A] border border-transparent focus:outline-none focus:ring-1 focus:ring-[#36302A] hover:border-[#36302A] px-3 py-2 rounded-lg w-full"
               />
               {emailError && (
-                <p className="text-sm text-red-600 mt-1 flex items-center gap-1"><FaInfoCircle/>{emailError}</p>
+                <p className="text-sm text-red-600 mt-1 flex items-center gap-1"><FaInfoCircle />{emailError}</p>
               )}
             </div>
 
@@ -443,7 +495,7 @@ const Inquire = () => {
                 />
                 {/* Dial Code Error */}
                 {phoneCodeError && (
-                  <p className="text-sm text-red-600 mt-1 flex items-center gap-1"><FaInfoCircle/> {phoneCodeError}</p>
+                  <p className="text-sm text-red-600 mt-1 flex items-center gap-1"><FaInfoCircle /> {phoneCodeError}</p>
                 )}
               </div>
 
@@ -464,7 +516,7 @@ const Inquire = () => {
                     transition={{ duration: 0.5 }}
                     className="text-sm text-red-600 mt-2 flex items-center gap-1"
                   >
-                    <FaInfoCircle/> {phoneError}
+                    <FaInfoCircle /> {phoneError}
                   </motion.div>
                 )}
               </div>
@@ -484,7 +536,7 @@ const Inquire = () => {
                 className="bg-[#EFE7DD] text-[#36302A] border border-transparent focus:outline-none focus:ring-1 focus:ring-[#36302A] hover:border-[#36302A] px-3 py-2 rounded-lg w-full"
               />
               {companyError && (
-                <p className="text-sm text-red-600 mt-1 flex items-center gap-1"><FaInfoCircle/> {companyError}</p>
+                <p className="text-sm text-red-600 mt-1 flex items-center gap-1"><FaInfoCircle /> {companyError}</p>
               )}
             </div>
 
@@ -501,7 +553,7 @@ const Inquire = () => {
                 }}
                 className="bg-[#EFE7DD] text-[#36302A] border border-transparent focus:outline-none focus:ring-1 focus:ring-[#36302A] hover:border-[#36302A] px-3 py-2 rounded-lg w-full"
               />{websiteError && (
-                <p className="text-sm text-red-600 mt-1 flex items-center gap-1"><FaInfoCircle/> {websiteError}</p>
+                <p className="text-sm text-red-600 mt-1 flex items-center gap-1"><FaInfoCircle /> {websiteError}</p>
               )}
             </div>
 
@@ -519,7 +571,7 @@ const Inquire = () => {
                 }}
                 className="bg-[#EFE7DD] text-[#36302A] border border-transparent focus:outline-none focus:ring-1 focus:ring-[#36302A] hover:border-[#36302A] px-3 py-2 rounded-lg w-full"
               />{socialsError && (
-                <p className="text-sm text-red-600 mt-1 flex items-center gap-1"><FaInfoCircle/> {socialsError}</p>
+                <p className="text-sm text-red-600 mt-1 flex items-center gap-1"><FaInfoCircle /> {socialsError}</p>
               )}
             </div>
 
@@ -536,7 +588,7 @@ const Inquire = () => {
                 }}
                 className="bg-[#EFE7DD] text-[#36302A] border border-transparent focus:outline-none focus:ring-1 focus:ring-[#36302A] hover:border-[#36302A] px-3 py-2 rounded-lg w-full"
               />{servicesError && (
-                <p className="text-sm text-red-600 mt-1 flex items-center gap-1"><FaInfoCircle/> {servicesError}</p>
+                <p className="text-sm text-red-600 mt-1 flex items-center gap-1"><FaInfoCircle /> {servicesError}</p>
               )}
             </div>
 
@@ -545,16 +597,16 @@ const Inquire = () => {
                 Message <span className='text-[#86807A] ml-1'>(required)</span>
               </label>
               <textarea
-              type='messages'
-              value={messages}
-              onChange={(e)=>{
-                setMessages(e.target.value);
-                if(messagesError) setMessagesError('');
-              }}
-              className="bg-[#EFE7DD] text-[#36302A] border border-transparent focus:outline-none focus:ring-1 focus:ring-[#36302A] hover:border-[#36302A] px-3 py-2 rounded-lg w-full"
+                type='messages'
+                value={messages}
+                onChange={(e) => {
+                  setMessages(e.target.value);
+                  if (messagesError) setMessagesError('');
+                }}
+                className="bg-[#EFE7DD] text-[#36302A] border border-transparent focus:outline-none focus:ring-1 focus:ring-[#36302A] hover:border-[#36302A] px-3 py-2 rounded-lg w-full"
               />
               {messagesError && (
-                <p className="text-sm text-red-600 mt-1 flex items-center gap-1"><FaInfoCircle/> {messagesError}</p>
+                <p className="text-sm text-red-600 mt-1 flex items-center gap-1"><FaInfoCircle /> {messagesError}</p>
               )}
             </div>
 
@@ -571,6 +623,13 @@ const Inquire = () => {
                 </motion.div>
               )}
             </AnimatePresence>
+
+            <ReCAPTCHA
+              sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY}
+              onChange={handleRecaptchaChange}
+            />
+
+            <p className="text-xs text-gray-500 mt-2">This site is protected by reCAPTCHA and the Google <a href="https://policies.google.com/privacy" className="underline">Privacy Policy</a> and <a href="https://policies.google.com/terms" className="underline">Terms of Service</a> apply.</p>
 
             <motion.button
               type="submit"
