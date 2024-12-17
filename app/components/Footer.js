@@ -14,7 +14,7 @@ const Footer = () => {
   const pathname = usePathname();
   return (
     <footer
-      className={`flex flex-col items-center justify-center py-8 px-4 ${pathname === REVIEW_PANEL_ROUTE ? "bg-green-600" : ""}`}
+      className={`flex flex-col items-center justify-center py-8 px-4 ${pathname === REVIEW_PANEL_ROUTE ? "bg-[#D2EDE0]" : ""}`}
       style={{ userSelect: "none" }}
     >
       {/* Logo */}
