@@ -6,6 +6,7 @@ import { FaInfoCircle } from "react-icons/fa";
 import { addDoc, collection } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import ReCAPTCHA from "react-google-recaptcha";
+import InquireModal from '../components/InquireModal';
 
 
 const Inquire = () => {
@@ -624,10 +625,10 @@ const Inquire = () => {
               )}
             </AnimatePresence>
 
-            <ReCAPTCHA
+            {/* <ReCAPTCHA
               sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY}
               onChange={handleRecaptchaChange}
-            />
+            /> */}
 
             <p className="text-xs text-gray-500 mt-2">This site is protected by reCAPTCHA and the Google <a href="https://policies.google.com/privacy" className="underline">Privacy Policy</a> and <a href="https://policies.google.com/terms" className="underline">Terms of Service</a> apply.</p>
 
@@ -654,6 +655,8 @@ const Inquire = () => {
           </form>
         </motion.div>
       </div>
+
+      <InquireModal />
     </div>
 
   );
