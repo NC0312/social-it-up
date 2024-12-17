@@ -6,9 +6,15 @@ import { HiLocationMarker } from 'react-icons/hi';
 import { BsTelephoneFill } from 'react-icons/bs';
 import { MdEmail } from 'react-icons/md';
 
+const REVIEW_PANEL_ROUTE = "/review-panel69";
+const isDevelopment = process.env.NEXT_PUBLIC_ENV === "development";
+
 const Footer = () => {
   return (
-    <footer className="flex flex-col items-center justify-center py-8 px-4" style={{userSelect: "none"}}>
+    <footer
+      className={`flex flex-col items-center justify-center py-8 px-4 ${isDevelopment || pathname === REVIEW_PANEL_ROUTE ? "bg-green-600" : ""}`}
+      style={{ userSelect: "none" }}
+    >
       {/* Logo */}
       <div className="mb-8">
         <Image
