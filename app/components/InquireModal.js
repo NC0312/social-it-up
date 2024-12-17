@@ -4,6 +4,7 @@ import { FaCommentDots } from 'react-icons/fa';
 
 const InquireModal = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
 
   const modalVariants = {
     hidden: { x: '100%', opacity: 0 },
@@ -19,12 +20,34 @@ const InquireModal = () => {
     <>
       {/* Feedback Icon/Button */}
       <motion.div
-        className="fixed top-1/2 right-0 z-50 flex items-center bg-[#36302A] text-white px-3 py-2 rounded-l-lg cursor-pointer group lg:right-2"
-        onClick={handleModalToggle}
-        whileHover={{ x: -10 }}
+        className="fixed top-1/2 right-0 z-50 flex items-center bg-[#36302A] text-white rounded-l-lg cursor-pointer overflow-hidden"
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+        onClick={handleModalToggle} /* Open Modal on Click */
+        animate={{
+          width: isHovered ? '110px' : '40px', // Smoothly expand the width
+        }}
+        transition={{ duration: 0.4, ease: 'easeInOut' }}
+        style={{
+          width: '50px', // Initial width for the icon only
+          whiteSpace: 'nowrap',
+        }}
       >
-        <FaCommentDots className="text-lg sm:text-xl" />
-        <span className="ml-2 text-sm hidden group-hover:block">Feedback</span>
+        <div className="flex items-center px-3 py-2">
+          {/* Icon */}
+          <FaCommentDots className="text-lg sm:text-xl" />
+          {/* Feedback Text */}
+          <motion.span
+            className="ml-2 text-sm"
+            initial={{ opacity: 0 }}
+            animate={{
+              opacity: isHovered ? 1 : 0, // Fade in/out the text
+            }}
+            transition={{ duration: 0.3, delay: 0.1 }}
+          >
+            Feedback
+          </motion.span>
+        </div>
       </motion.div>
 
       {/* Modal */}
