@@ -33,7 +33,7 @@ const InquireModal = () => {
           whiteSpace: 'nowrap',
         }}
       >
-        <div className="flex items-center px-3 py-2">
+        <div className="flex items-center px-3 py-2 md:py-5">
           {/* Icon */}
           <FaCommentDots className="text-lg sm:text-xl" />
           {/* Feedback Text */}
@@ -63,7 +63,7 @@ const InquireModal = () => {
             <div className="p-4 sm:p-6 flex flex-col gap-6">
               {/* Modal Header */}
               <div className="flex justify-between items-center">
-                <h2 className="text-lg sm:text-xl font-serif text-[#36302A]">Feedback</h2>
+                <h2 className="text-xl md:text-3xl font-serif text-[#36302A]">Feedback/Queries</h2>
                 <button
                   className="text-[#86807A] hover:text-[#36302A] text-lg"
                   onClick={handleModalToggle}
