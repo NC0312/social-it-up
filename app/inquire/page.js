@@ -7,6 +7,7 @@ import { addDoc, collection } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import ReCAPTCHA from "react-google-recaptcha";
 import InquireModal from '../components/InquireModal';
+import { ImSpinner8 } from 'react-icons/im';
 
 
 const Inquire = () => {
@@ -634,21 +635,26 @@ const Inquire = () => {
 
             <motion.button
               type="submit"
-              className="mt-5 md:mt-2 px-5 py-3 md:py-4 md:w-28 text-sm rounded-md md:rounded-md bg-[#36302A] text-white relative overflow-hidden"
+              className="mt-5 md:mt-2 px-5 py-3 md:py-4 md:w-40 text-sm rounded-md md:rounded-md bg-[#36302A] text-white relative overflow-hidden flex items-center justify-center gap-2"
               disabled={isSubmitting}
               whileHover={{
-                scale: 1.05, // Slight scale-up on hover
+                scale: 1.05,
                 transition: { duration: 0.3, ease: "easeOut" },
               }}
               whileTap={{
-                scale: 0.95, // Slight tap effect
+                scale: 0.95,
                 transition: { duration: 0.2 },
               }}
             >
-              <span className="relative z-10">{isSubmitting ? 'Submitting...' : 'Submit'}</span>
+              {isSubmitting && (
+                <ImSpinner8 className="w-4 h-4 animate-spin" />
+              )}
+              <span className="relative z-10">
+                {isSubmitting ? 'Submitting...' : 'Submit'}
+              </span>
               <motion.div
                 className="absolute top-0 left-0 w-full h-full bg-white opacity-0"
-                whileHover={{ opacity: 0.1 }} // Slight fade effect
+                whileHover={{ opacity: 0.1 }}
                 transition={{ duration: 0.3 }}
               />
             </motion.button>
