@@ -182,7 +182,7 @@ const InquireModal = () => {
                 {/* Email Input */}
                 <div>
                   <label htmlFor="email" className="block text-sm font-medium text-[#36302A]">
-                    Email
+                    Email <span className='text-[#86807A] ml-1'>(required)</span>
                   </label>
                   <input
                     type="email"
@@ -203,7 +203,7 @@ const InquireModal = () => {
                 {/* Message Textarea */}
                 <div>
                   <label htmlFor="message" className="block text-sm font-medium text-[#36302A]">
-                    Message
+                    Message <span className='text-[#86807A] ml-1'>(required)</span>
                   </label>
                   <textarea
                     id="message"
