@@ -12,6 +12,7 @@
     "firebase": "^11.0.2",
     "framer-motion": "^11.11.17",
     "libphonenumber-js": "^1.11.16",
+    "lucide-react": "^0.468.0",
     "next": "15.0.3",
     "nodemailer": "^6.9.16",
     "path": "^0.12.7",
