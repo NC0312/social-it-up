@@ -8,13 +8,20 @@ import { MdEmail } from 'react-icons/md';
 import { usePathname } from "next/navigation";
 
 const REVIEW_PANEL_ROUTE = "/review-panel69";
+const BUG_PANEL_ROUTE = "/bug-panel69";
 // const isDevelopment = process.env.NEXT_PUBLIC_ENV === "development";
 
 const Footer = () => {
   const pathname = usePathname();
   return (
     <footer
-      className={`flex flex-col items-center justify-center py-8 px-4 ${pathname === REVIEW_PANEL_ROUTE ? "bg-[#D2EDE0]" : ""}`}
+    className={`flex flex-col items-center justify-center py-8 px-4 ${
+      pathname === REVIEW_PANEL_ROUTE
+        ? "bg-[#D2EDE0]"
+        : pathname === BUG_PANEL_ROUTE
+        ? "bg-red-200"
+        : ""
+    }`}
       style={{ userSelect: "none" }}
     >
       {/* Logo */}
