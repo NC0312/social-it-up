@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import { MdDeleteForever, MdContentCopy } from "react-icons/md";
 import { useRouter } from "next/navigation";
 import { MdOutlineSaveAlt } from "react-icons/md";
-import { FaArrowRight, FaExternalLinkAlt } from "react-icons/fa";
+import { FaArrowRight, FaExternalLinkAlt, FaSync } from "react-icons/fa";
 import { motion } from "framer-motion";
 
 
@@ -33,6 +33,7 @@ const AdminPanel = () => {
   const [selectedDate, setSelectedDate] = useState("");
   const [signedUp, setSignedUp] = useState("")
   const [currentPage, setCurrentPage] = useState(1);
+  const [issyncing, setIssyncing] = useState(false);
   const entriesPerPage = 20;
 
   // Fetch all inquiries from Firestore, ordered by timestamp in descending order
@@ -51,6 +52,29 @@ const AdminPanel = () => {
       setFilteredInquiries(data); // Initially display all inquiries
     } catch (error) {
       console.error("Error fetching inquiries:", error);
+    }
+  };
+
+  const syncData = async () => {
+    setIssyncing(true);
+    try {
+      const inquiriesRef = collection(db, "inquiries");
+      const q = query(inquiriesRef, orderBy("timestamp", "desc"));
+      const querySnapshot = await getDocs(q);
+
+      const newData = querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+
+      setInquiries(newData);
+      setFilteredInquiries(newData);
+      toast.success("Data refreshed successfully!");
+    } catch (error) {
+      console.error("Error syncing data:", error);
+      toast.error("Failed to refresh data");
+    } finally {
+      setIssyncing(false);
     }
   };
 
@@ -201,61 +225,61 @@ const AdminPanel = () => {
   // };
 
   const CopyableText = ({ text, type }) => {
-          const handleCopy = (e) => {
-              e.stopPropagation();
-              navigator.clipboard.writeText(text)
-                  .then(() => toast.success(`${type} copied to clipboard!`))
-                  .catch(() => toast.error('Failed to copy to clipboard'));
-          };
-  
-          const handleEmailRedirect = (e) => {
-              e.stopPropagation();
-              window.open(`https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(text)}`, '_blank');
-          };
-  
-          return (
-              <div className="flex items-center space-x-2 group">
-                  <span
-                      className="group-hover:underline cursor-pointer"
-                      onClick={handleCopy}
-                  >
-                      {text}
-                  </span>
-                  {type === "Email" ? (
-                      <div className="flex flex-row justify-between items-center space-x-2">
-                          <div className="relative group/tooltip">
-                              <FaExternalLinkAlt
-                                  className="opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer hover:text-[#36302A]"
-                                  onClick={handleEmailRedirect}
-                              />
-                              <span className="absolute hidden group-hover/tooltip:block bg-[#36302A] text-white text-sm rounded px-2 py-1 -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap">
-                                  Open in Gmail
-                              </span>
-                          </div>
-                          <div className="relative group/tooltip">
-                              <MdContentCopy
-                                  className="opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer hover:text-[#36302A]"
-                                  onClick={handleCopy}
-                              />
-                              <span className="absolute hidden group-hover/tooltip:block bg-[#36302A] text-white text-sm rounded px-2 py-1 -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap">
-                                  Copy to clipboard
-                              </span>
-                          </div>
-                      </div>
-                  ) : (
-                      <div className="relative group/tooltip">
-                          <MdContentCopy
-                              className="opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer hover:text-[#36302A]"
-                              onClick={handleCopy}
-                          />
-                          <span className="absolute hidden group-hover/tooltip:block bg-[#36302A] text-white text-sm rounded px-2 py-1 -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap">
-                              Copy to clipboard
-                          </span>
-                      </div>
-                  )}
-              </div>
-          );
-      };
+    const handleCopy = (e) => {
+      e.stopPropagation();
+      navigator.clipboard.writeText(text)
+        .then(() => toast.success(`${type} copied to clipboard!`))
+        .catch(() => toast.error('Failed to copy to clipboard'));
+    };
+
+    const handleEmailRedirect = (e) => {
+      e.stopPropagation();
+      window.open(`https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(text)}`, '_blank');
+    };
+
+    return (
+      <div className="flex items-center space-x-2 group">
+        <span
+          className="group-hover:underline cursor-pointer"
+          onClick={handleCopy}
+        >
+          {text}
+        </span>
+        {type === "Email" ? (
+          <div className="flex flex-row justify-between items-center space-x-2">
+            <div className="relative group/tooltip">
+              <FaExternalLinkAlt
+                className="opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer hover:text-[#36302A]"
+                onClick={handleEmailRedirect}
+              />
+              <span className="absolute hidden group-hover/tooltip:block bg-[#36302A] text-white text-sm rounded px-2 py-1 -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap">
+                Open in Gmail
+              </span>
+            </div>
+            <div className="relative group/tooltip">
+              <MdContentCopy
+                className="opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer hover:text-[#36302A]"
+                onClick={handleCopy}
+              />
+              <span className="absolute hidden group-hover/tooltip:block bg-[#36302A] text-white text-sm rounded px-2 py-1 -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap">
+                Copy to clipboard
+              </span>
+            </div>
+          </div>
+        ) : (
+          <div className="relative group/tooltip">
+            <MdContentCopy
+              className="opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer hover:text-[#36302A]"
+              onClick={handleCopy}
+            />
+            <span className="absolute hidden group-hover/tooltip:block bg-[#36302A] text-white text-sm rounded px-2 py-1 -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap">
+              Copy to clipboard
+            </span>
+          </div>
+        )}
+      </div>
+    );
+  };
 
   // Clickable link component
   const ExternalLink = ({ url }) => {
@@ -292,6 +316,14 @@ const AdminPanel = () => {
           Admin Panel👨‍💻
         </h1>
         <div className="flex space-x-4">
+          {/* <button
+            onClick={syncData}
+            className="px-3 py-1 md:px-4 md:py-2 bg-[#36302A] text-[#FAF4ED] font-semibold rounded-lg shadow-md hover:bg-[#27231f] transition-colors duration-200 flex items-center space-x-2"
+            disabled={issyncing}
+          >
+            <FaSync className={`text-md md:text-xl ${issyncing ? 'animate-spin' : ''}`} />
+            <span>{issyncing ? 'Refreshing...' : 'Refresh Data'}</span>
+          </button> */}
           <button
             onClick={() => router.push('/review-panel69')}
             className="px-3 py-1 md:px-4 md:py-2 bg-[#36302A] text-[#FAF4ED] font-semibold rounded-lg shadow-md hover:bg-[#27231f] transition-colors duration-200 flex items-center space-x-1"
@@ -407,6 +439,23 @@ const AdminPanel = () => {
         viewport={{ once: true }}
       >
         <div className="relative w-full overflow-hidden bg-[#FAF4ED] shadow-md">
+          {/* Refresh button above table */}
+          <motion.div
+              variants={fadeInLeft}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true }}
+              className="mb-4"
+            >
+              <button
+                onClick={syncData}
+                className="px-3 py-1 md:px-4 md:py-2 bg-[#36302A] text-[#FAF4ED] font-semibold rounded-lg shadow-md hover:bg-[#27231f] transition-colors duration-200 flex items-center space-x-2"
+                disabled={issyncing}
+              >
+                <FaSync className={`text-md md:text-xl ${issyncing ? 'animate-spin' : ''}`} />
+                <span>{issyncing ? 'Refreshing...' : 'Refresh Data'}</span>
+              </button>
+            </motion.div>
           <div
             className="overflow-x-auto scrollbar-hide"
             style={{
@@ -415,6 +464,8 @@ const AdminPanel = () => {
               WebkitOverflowScrolling: "touch",
             }}
           >
+
+            
             <table className="min-w-full table-auto border-collapse border border-gray-200">
               <thead className="bg-[#5a4c3f] text-[#FAF4ED]">
                 <tr>
@@ -481,7 +532,7 @@ const AdminPanel = () => {
                       {/* <td className="border border-[#36302A] px-4 py-2 font-serif text-sm md:text-base">
                         {inquiry.email}
                       </td> */}
-                      <td className="border border-[#36302A] px-4 py-2 font-serif text-sm md:text-base" style={{userSelect:"none"}}>
+                      <td className="border border-[#36302A] px-4 py-2 font-serif text-sm md:text-base" style={{ userSelect: "none" }}>
                         <CopyableText text={inquiry.email} type="Email" />
                       </td>
                       <td className="border border-[#36302A] px-4 py-2 font-serif text-sm md:text-base">
@@ -494,7 +545,7 @@ const AdminPanel = () => {
                       {/* <td className="border border-[#36302A] px-4 py-2 font-serif text-sm md:text-base">
                         {inquiry.phoneNumber}
                       </td> */}
-                      <td className="border border-[#36302A] px-4 py-2 font-serif text-sm md:text-base" style={{userSelect:"none"}}>
+                      <td className="border border-[#36302A] px-4 py-2 font-serif text-sm md:text-base" style={{ userSelect: "none" }}>
                         <CopyableText
                           text={`${inquiry.phoneNumber}`}
                           type="Phone number"
@@ -504,7 +555,7 @@ const AdminPanel = () => {
                       {/* <td className="border border-[#36302A] px-4 py-2 font-serif text-sm md:text-base">
                         {inquiry.company}
                       </td> */}
-                      <td className="border border-[#36302A] px-4 py-2 font-serif text-sm md:text-base" style={{userSelect:"none"}}>
+                      <td className="border border-[#36302A] px-4 py-2 font-serif text-sm md:text-base" style={{ userSelect: "none" }}>
                         <CopyableText
                           text={`${inquiry.company}`}
                           type="Brand Name"
