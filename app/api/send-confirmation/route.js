@@ -5,13 +5,14 @@ import path from 'path';
 export async function POST(req) {
     try {
         // Log the incoming request
-        console.log('Received feedback confirmation request');
+        console.log('Received email request');
 
         // Parse the request body
-        const { email } = await req.json();
+        const { email, firstName } = await req.json();
 
         // Log the parsed data
         console.log('Email:', email);
+        console.log('First Name:', firstName);
 
         // Verify environment variables
         if (!process.env.SMTP_HOST || !process.env.SMTP_USER || !process.env.SMTP_PASSWORD) {
@@ -41,30 +42,31 @@ export async function POST(req) {
         const mailOptions = {
             from: process.env.SMTP_FROM_EMAIL,
             to: email,
-            subject: 'Thank you for your feedback',
+            subject: 'Thank you for your request',
             html: `
-        <h1>Thank you for your feedback!</h1>
-        <p>We have received your feedback and will address it as soon as possible.</p>
-        <p>We appreciate your input in helping us improve our services.</p>
+        <h1>Thank you for your request, ${firstName}!</h1>
+        <p>We have received your message and will get back to you shortly.</p>
         <p>Best regards,</p>
-        <img src="cid:logo" style="width: 79px; height: 70px;"/>
+           <img src="cid:logo" style="width: 79px; height: 70px;"/>
   `,
-            attachments: [{
+             attachments: [{
                 filename: 'logo.png',
-                path: path.join(process.cwd(), 'public', 'logo.png'),
-                cid: 'logo',
+                // path: './public/logo.png',
+                path:path.join(process.cwd(),'public','logo.png'),
+                cid: 'logo' , 
             }]
         };
 
+
         try {
             const info = await transporter.sendMail(mailOptions);
-            console.log('Feedback confirmation email sent successfully:', info.messageId);
+            console.log('Email sent successfully:', info.messageId);
             return NextResponse.json(
-                { message: 'Feedback confirmation email sent successfully' },
+                { message: 'Confirmation email sent successfully' },
                 { status: 200 }
             );
         } catch (emailError) {
-            console.error('Error sending feedback confirmation email:', emailError);
+            console.error('Error sending email:', emailError);
             return NextResponse.json(
                 { error: `Email sending failed: ${emailError.message}` },
                 { status: 500 }
