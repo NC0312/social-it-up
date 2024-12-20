@@ -316,14 +316,6 @@ const AdminPanel = () => {
           Admin Panel👨‍💻
         </h1>
         <div className="flex space-x-4">
-          {/* <button
-            onClick={syncData}
-            className="px-3 py-1 md:px-4 md:py-2 bg-[#36302A] text-[#FAF4ED] font-semibold rounded-lg shadow-md hover:bg-[#27231f] transition-colors duration-200 flex items-center space-x-2"
-            disabled={issyncing}
-          >
-            <FaSync className={`text-md md:text-xl ${issyncing ? 'animate-spin' : ''}`} />
-            <span>{issyncing ? 'Refreshing...' : 'Refresh Data'}</span>
-          </button> */}
           <button
             onClick={() => router.push('/review-panel69')}
             className="px-3 py-1 md:px-4 md:py-2 bg-[#36302A] text-[#FAF4ED] font-semibold rounded-lg shadow-md hover:bg-[#27231f] transition-colors duration-200 flex items-center space-x-1"

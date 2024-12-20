@@ -4,7 +4,7 @@ import { collection, getDocs, query, orderBy, deleteDoc, doc, writeBatch, update
 import { db } from "../lib/firebase";
 import { toast } from "sonner";
 import { MdDeleteForever, MdContentCopy } from "react-icons/md";
-import { FaArrowLeft, FaExternalLinkAlt, FaFileDownload, FaFileExcel } from "react-icons/fa";
+import { FaArrowLeft, FaExternalLinkAlt, FaFileDownload, FaFileExcel, FaSync } from "react-icons/fa";
 import { IoMdSend } from "react-icons/io";
 import { useRouter } from 'next/navigation';
 import { motion } from "framer-motion";
@@ -36,6 +36,7 @@ const BugPanel = () => {
     const [isDeleting, setIsDeleting] = useState(false);
     const [isDeletingAll, setIsDeletingAll] = useState(false);
     const [loadingNotifications, setLoadingNotifications] = useState({});
+    const [issyncing, setIssyncing] = useState(false);
     const entriesPerPage = 20;
 
     const fetchBugs = async () => {
@@ -55,6 +56,29 @@ const BugPanel = () => {
         } catch (error) {
             console.error("Error fetching bugs:", error);
             toast.error("Failed to fetch bugs");
+        }
+    };
+
+    const syncData = async () => {
+        setIssyncing(true);
+        try {
+            const bugsRef = collection(db, "feedback");
+            const q = query(bugsRef, orderBy("timestamp", "desc"));
+            const querySnapshot = await getDocs(q);
+            
+            const newData = querySnapshot.docs.map(doc => ({
+                docId: doc.id,
+                ...doc.data()
+            }));
+            
+            setBugs(newData);
+            setFilteredBugs(newData);
+            toast.success("Data refreshed successfully!");
+        } catch (error) {
+            console.error("Error refreshing data:", error);
+            toast.error("Failed to refresh data");
+        } finally {
+            setIssyncing(false);
         }
     };
 
@@ -434,18 +458,30 @@ const BugPanel = () => {
                 </div>
             </motion.div>
 
+            
             <motion.div
                 variants={fadeInUp}
                 initial="hidden"
                 whileInView="visible"
                 viewport={{ once: true }}
             >
-                <button
-                    onClick={handleDownloadCSV}
-                    className="px-3 md:px-4 py-2 md:py-3 bg-red-600 text-white font-semibold rounded-lg shadow-md hover:bg-red-700 transition-colors duration-200 flex items-center space-x-2 mb-2 ml-0 md:mb-5 md:ml-5"
-                >
-                    <FaFileExcel className="text-xl" />
-                </button>
+                <div className="flex space-x-2 mb-2 ml-0 md:mb-5 md:ml-5">
+                    <button
+                        onClick={handleDownloadCSV}
+                        className="px-3 md:px-4 py-2 md:py-3 bg-red-600 text-white font-semibold rounded-lg shadow-md hover:bg-red-700 transition-colors duration-200 flex items-center space-x-2"
+                    >
+                        <FaFileExcel className="text-xl" />
+                        <span>Download CSV</span>
+                    </button>
+                    <button
+                        onClick={syncData}
+                        disabled={issyncing}
+                        className="px-3 md:px-4 py-2 md:py-3 bg-red-600 text-white font-semibold rounded-lg shadow-md hover:bg-red-700 transition-colors duration-200 flex items-center space-x-2"
+                    >
+                        <FaSync className={`text-xl ${issyncing ? 'animate-spin' : ''}`} />
+                        <span>{issyncing ? 'Refreshing...' : 'Refresh Data'}</span>
+                    </button>
+                </div>
             </motion.div>
 
             <motion.div

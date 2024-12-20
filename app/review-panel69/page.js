@@ -513,7 +513,7 @@ const ReviewPanel = () => {
                     className="px-3 md:px-4 py-2 md:py-3 bg-green-600 text-white font-semibold rounded-lg shadow-md hover:bg-green-700 transition-colors duration-200 flex items-center space-x-2 mb-2 ml-0 md:mb-5 md:ml-5"
                 >
                     <FaFileExcel className="text-xl" />
-                    {/* <span className="hidden md:inline">Download CSV</span> */}
+                    <span className="hidden md:inline">Download CSV</span>
                 </button>
             </motion.div>
 
