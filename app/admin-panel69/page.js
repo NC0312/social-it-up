@@ -344,39 +344,41 @@ const AdminPanel = () => {
         whileInView="visible"
         viewport={{ once: true }}
       >
-        <div className="mb-6">
-          <label
-            className="block text-sm md:text-lg font-medium mb-2"
-            htmlFor="date-filter"
-          >
-            Filter by Date:
-          </label>
-          <input
-            id="date-filter"
-            type="date"
-            value={selectedDate}
-            onChange={handleDateChange}
-            className="w-full md:w-1/3 border border-gray-300 rounded-lg px-3 py-1 md:py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-[#36302A]"
-          />
-        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+          <div>
+            <label
+              className="block text-sm md:text-lg font-medium mb-2"
+              htmlFor="date-filter"
+            >
+              Filter by Date:
+            </label>
+            <input
+              id="date-filter"
+              type="date"
+              value={selectedDate}
+              onChange={handleDateChange}
+              className="w-full border border-gray-300 rounded-lg px-3 py-1 md:py-1.5 shadow-sm focus:outline-none focus:ring-2 focus:ring-[#36302A]"
+            />
+          </div>
 
-        <div className="mb-6">
-          <label
-            className="block text-sm md:text-lg font-medium mb-2"
-            htmlFor="signup-filter"
-          >
-            Filter by Signed Up:
-          </label>
-          <select
-            id="signup-filter"
-            value={signedUp}
-            onChange={handleSignUpChange}
-            className="w-full md:w-1/3 border border-gray-300 rounded-lg px-3 py-1 md:py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-[#36302A]"
-          >
-            <option value="">Has anyone signed up for news and updates?</option>
-            <option value="Yes">Yes</option>
-            <option value="No">No</option>
-          </select>
+          <div>
+            <label
+              className="block text-sm md:text-lg font-medium mb-2"
+              htmlFor="signup-filter"
+            >
+              Filter by Signed Up:
+            </label>
+            <select
+              id="signup-filter"
+              value={signedUp}
+              onChange={handleSignUpChange}
+              className="w-full border border-gray-300 rounded-lg px-3 py-1 md:py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-[#36302A]"
+            >
+              <option value="">Has anyone signed up for news and updates?</option>
+              <option value="Yes">Yes</option>
+              <option value="No">No</option>
+            </select>
+          </div>
         </div>
       </motion.div>
 
@@ -433,21 +435,21 @@ const AdminPanel = () => {
         <div className="relative w-full overflow-hidden bg-[#FAF4ED] shadow-md">
           {/* Refresh button above table */}
           <motion.div
-              variants={fadeInLeft}
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true }}
-              className="mb-4"
+            variants={fadeInLeft}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            className="mb-4"
+          >
+            <button
+              onClick={syncData}
+              className="px-3 py-1 md:px-4 md:py-2 bg-[#36302A] text-[#FAF4ED] font-semibold rounded-lg shadow-md hover:bg-[#27231f] transition-colors duration-200 flex items-center space-x-2"
+              disabled={issyncing}
             >
-              <button
-                onClick={syncData}
-                className="px-3 py-1 md:px-4 md:py-2 bg-[#36302A] text-[#FAF4ED] font-semibold rounded-lg shadow-md hover:bg-[#27231f] transition-colors duration-200 flex items-center space-x-2"
-                disabled={issyncing}
-              >
-                <FaSync className={`text-md md:text-xl ${issyncing ? 'animate-spin' : ''}`} />
-                <span>{issyncing ? 'Refreshing...' : 'Refresh Data'}</span>
-              </button>
-            </motion.div>
+              <FaSync className={`text-md md:text-xl ${issyncing ? 'animate-spin' : ''}`} />
+              <span>{issyncing ? 'Refreshing...' : 'Refresh Data'}</span>
+            </button>
+          </motion.div>
           <div
             className="overflow-x-auto scrollbar-hide"
             style={{
@@ -457,7 +459,7 @@ const AdminPanel = () => {
             }}
           >
 
-            
+
             <table className="min-w-full table-auto border-collapse border border-gray-200">
               <thead className="bg-[#5a4c3f] text-[#FAF4ED]">
                 <tr>
