@@ -62,7 +62,7 @@ const ReviewPanel = () => {
     const syncData = async () => {
         setIssyncing(true);
         try {
-            const reviewsRef = collection(db, "feedback");
+            const reviewsRef = collection(db, "reviews");
             const q = query(reviewsRef, orderBy("timestamp", "desc"));
             const querySnapshot = await getDocs(q);
 
