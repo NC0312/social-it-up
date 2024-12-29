@@ -59,6 +59,27 @@ const ReviewPanel = () => {
             toast.error("Failed to fetch reviews");
         }
     };
+    const syncData = async () => {
+        setIssyncing(true);
+        try {
+            const reviewsRef = collection(db, "feedback");
+            const q = query(reviewsRef, orderBy("timestamp", "desc"));
+            const querySnapshot = await getDocs(q);
+
+            const newData = querySnapshot.docs.map(doc => ({
+                docId: doc.id,
+                ...doc.data()
+            }));
+            setReviews(newData);
+            setFilteredReviews(newData);
+            toast.success("Data refreshed successfully!");
+        } catch (error) {
+            console.error("Error refreshing data:", error);
+            toast.error("Failed to refresh data");
+        } finally {
+            setIssyncing(false);
+        }
+    };
 
     const handleDeleteAllReviews = async () => {
         if (isDeletingAll) return;
@@ -345,28 +366,7 @@ const ReviewPanel = () => {
 
         return csvRows.join('\n');
     };
-    const syncData = async () => {
-        setIssyncing(true);
-        try {
-            const bugsRef = collection(db, "feedback");
-            const q = query(bugsRef, orderBy("timestamp", "desc"));
-            const querySnapshot = await getDocs(q);
-
-            const newData = querySnapshot.docs.map(doc => ({
-                docId: doc.id,
-                ...doc.data()
-            }));
-
-            setBugs(newData);
-            setFilteredBugs(newData);
-            toast.success("Data refreshed successfully!");
-        } catch (error) {
-            console.error("Error refreshing data:", error);
-            toast.error("Failed to refresh data");
-        } finally {
-            setIssyncing(false);
-        }
-    };
+    
 
     const handleDownloadCSV = () => {
         const csvContent = convertToCSV(filteredReviews);
