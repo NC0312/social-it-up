@@ -4,7 +4,7 @@ import { collection, getDocs, query, orderBy, deleteDoc, doc, writeBatch, update
 import { db } from "../lib/firebase";
 import { toast } from "sonner";
 import { MdDeleteForever, MdContentCopy } from "react-icons/md";
-import { FaArrowLeft, FaExternalLinkAlt, FaFileDownload, FaFileExcel } from "react-icons/fa";
+import { FaArrowLeft, FaExternalLinkAlt, FaFileDownload, FaFileExcel, FaSync } from "react-icons/fa";
 import { IoMdSend } from "react-icons/io";
 import { useRouter } from 'next/navigation';
 import { motion } from "framer-motion";
@@ -37,6 +37,7 @@ const ReviewPanel = () => {
     const [isDeleting, setIsDeleting] = useState(false);
     const [isDeletingAll, setIsDeletingAll] = useState(false);
     const [loadingNotifications, setLoadingNotifications] = useState({});
+    const [issyncing, setIssyncing] = useState(false);
     const entriesPerPage = 20;
 
     const fetchReviews = async () => {
@@ -272,11 +273,11 @@ const ReviewPanel = () => {
     const ExternalLink = ({ url }) => {
         const handleClick = () => {
             if (!url) return;
-    
+
             const finalUrl = url.startsWith('http') ? url : `http://${url}`;
             window.open(finalUrl, '_blank', 'noopener,noreferrer');
         };
-    
+
         return url ? (
             <div
                 className="flex items-center space-x-2 cursor-pointer hover:text-green-600 group"
@@ -331,7 +332,7 @@ const ReviewPanel = () => {
                 review.email,
                 review.isChecked ? "Yes" : "No",
                 review.phoneDialCode,
-                `"${review.phoneNumber}"`, 
+                `"${review.phoneNumber}"`,
                 review.company,
                 review.services,
                 review.socials,
@@ -343,6 +344,28 @@ const ReviewPanel = () => {
         }
 
         return csvRows.join('\n');
+    };
+    const syncData = async () => {
+        setIssyncing(true);
+        try {
+            const bugsRef = collection(db, "feedback");
+            const q = query(bugsRef, orderBy("timestamp", "desc"));
+            const querySnapshot = await getDocs(q);
+
+            const newData = querySnapshot.docs.map(doc => ({
+                docId: doc.id,
+                ...doc.data()
+            }));
+
+            setBugs(newData);
+            setFilteredBugs(newData);
+            toast.success("Data refreshed successfully!");
+        } catch (error) {
+            console.error("Error refreshing data:", error);
+            toast.error("Failed to refresh data");
+        } finally {
+            setIssyncing(false);
+        }
     };
 
     const handleDownloadCSV = () => {
@@ -364,14 +387,14 @@ const ReviewPanel = () => {
         try {
             const reviewRef = doc(db, "reviews", docId);
             await updateDoc(reviewRef, { priority: newPriority });
-            
+
             // Update local state
-            const updatedReviews = reviews.map(review => 
+            const updatedReviews = reviews.map(review =>
                 review.docId === docId ? { ...review, priority: newPriority } : review
             );
             setReviews(updatedReviews);
             setFilteredReviews(updatedReviews);
-            
+
             toast.success("Priority updated successfully!");
         } catch (error) {
             console.error("Error updating priority:", error);
@@ -508,13 +531,23 @@ const ReviewPanel = () => {
                 whileInView="visible"
                 viewport={{ once: true }}
             >
-                <button
-                    onClick={handleDownloadCSV}
-                    className="px-3 md:px-4 py-2 md:py-3 bg-green-600 text-white font-semibold rounded-lg shadow-md hover:bg-green-700 transition-colors duration-200 flex items-center space-x-2 mb-2 ml-0 md:mb-5 md:ml-5"
-                >
-                    <FaFileExcel className="text-xl" />
-                    <span className="hidden md:inline">Download CSV</span>
-                </button>
+                <div className="flex space-x-2 mb-2 ml-0 md:mb-5 md:ml-5">
+                    <button
+                        onClick={handleDownloadCSV}
+                        className="px-3 md:px-4 py-2 md:py-3 bg-green-600 text-white font-semibold rounded-lg shadow-md hover:bg-green-700 transition-colors duration-200 flex items-center space-x-2 mb-2 ml-0 md:mb-5 md:ml-5"
+                    >
+                        <FaFileExcel className="text-xl" />
+                        <span className="hidden md:inline">Download CSV</span>
+                    </button>
+                    <button
+                        onClick={syncData}
+                        disabled={issyncing}
+                        className="px-3 md:px-4 py-2 md:py-3 bg-green-600 text-white font-semibold rounded-lg shadow-md hover:bg-green-700 transition-colors duration-200 flex items-center space-x-2 mb-2 ml-0 md:mb-5 md:ml-5"
+                    >
+                        <FaSync className={`text-xl ${issyncing ? 'animate-spin' : ''}`} />
+                        <span>{issyncing ? 'Refreshing...' : 'Refresh Data'}</span>
+                    </button>
+                </div>
             </motion.div>
 
             <motion.div
