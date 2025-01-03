@@ -7,7 +7,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { motion } from 'framer-motion';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Users, Smile, BarChart } from 'lucide-react';
 
 // Prevent hydration error by using client-only render for the entire chart
 const DynamicRatingsDashboard = () => {
@@ -97,28 +97,38 @@ const DynamicRatingsDashboard = () => {
     };
 
     return (
-        <div className="px-4 py-8">
-            <Card className="w-full max-w-4xl mx-auto overflow-hidden rounded-2xl border-0">
+        <div className="px-4 py-16">
+            <Card className="w-full max-w-4xl mx-auto overflow-hidden rounded-2xl border-0 px-5 py-5">
                 <CardHeader className="space-y-6 pb-8">
                     <div className="relative overflow-hidden rounded-xl p-6 bg-[#36302A]">
-                        <CardTitle className="text-3xl font-serif font-bold text-center text-white">
-                            User Experience Analytics
+                        <CardTitle className="text-3xl md:text-4xl font-serif font-medium text-center text-[#D6D4D3]">
+                            User Ratings Analytics
                         </CardTitle>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="bg-gradient-to-br from-[#36302A] to-[#4A443E] font-serif p-4 rounded-xl text-white">
-                            <h3 className="text-lg font-medium opacity-80">Total Responses</h3>
-                            <p className="text-3xl font-bold">{totalRatings}</p>
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <h3 className="text-lg font-medium opacity-80">Total Responses</h3>
+                                    <p className="text-3xl font-bold">{totalRatings}</p>
+                                </div>
+                                <Users className="w-10 h-10 opacity-50" />
+                            </div>
                         </div>
                         <div className="bg-gradient-to-br from-[#5A544E] to-[#36302A] font-serif p-4 rounded-xl text-white">
-                            <h3 className="text-lg font-medium opacity-80">Most Common</h3>
-                            <p className="text-3xl font-bold">
-                                {ratingsData.length > 0
-                                    ? ratingsData.reduce((max, curr) => curr.count > max.count ? curr : max).emoji
-                                    : '--'
-                                }
-                            </p>
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <h3 className="text-lg font-medium opacity-80">Most Common</h3>
+                                    <p className="text-3xl font-bold">
+                                        {ratingsData.length > 0
+                                            ? ratingsData.reduce((max, curr) => curr.count > max.count ? curr : max).emoji
+                                            : '--'
+                                        }
+                                    </p>
+                                </div>
+                                <Smile className="w-10 h-10 opacity-50" />
+                            </div>
                         </div>
                     </div>
                 </CardHeader>
