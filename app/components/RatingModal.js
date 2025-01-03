@@ -9,12 +9,15 @@ import {
     AlertDialogCancel,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
+import { doc, updateDoc, getDoc, setDoc } from 'firebase/firestore';
+import { db } from '../lib/firebase';
 
 const RatingModal = ({ isOpen: externalIsOpen = true, onClose }) => {
     const [isOpen, setIsOpen] = useState(externalIsOpen);
     const [selectedRating, setSelectedRating] = useState(null);
     const [isSubmitted, setIsSubmitted] = useState(false);
     const [hoveredRating, setHoveredRating] = useState(null);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     useEffect(() => {
         setIsOpen(externalIsOpen);
@@ -35,16 +38,51 @@ const RatingModal = ({ isOpen: externalIsOpen = true, onClose }) => {
         { rating: 5, emoji: "😍", label: "Love it!", color: "#4DB8FF" }
     ];
 
-    const handleSubmit = () => {
-        if (selectedRating) {
-            console.log(`Submitted rating: ${selectedRating}`);
-            setIsSubmitted(true);
-            setTimeout(() => {
-                setIsOpen(false);
-                setIsSubmitted(false);
-                setSelectedRating(null);
-                if (onClose) onClose();
-            }, 1500);
+    const updateRatingInFirebase = async (ratingData) => {
+        try {
+            const ratingRef = doc(db, 'ratings', ratingData.label.toLowerCase());
+            const ratingDoc = await getDoc(ratingRef);
+            
+            if (ratingDoc.exists()) {
+                // Update existing rating count
+                await updateDoc(ratingRef, {
+                    count: ratingDoc.data().count + 1
+                });
+            } else {
+                // Create new rating document
+                await setDoc(ratingRef, {
+                    label: ratingData.label,
+                    emoji: ratingData.emoji,
+                    color: ratingData.color,
+                    count: 1
+                });
+            }
+        } catch (error) {
+            console.error('Error updating rating:', error);
+            throw error; // Re-throw to handle in handleSubmit
+        }
+    };
+
+    const handleSubmit = async () => {
+        if (selectedRating && !isSubmitting) {
+            setIsSubmitting(true);
+            try {
+                const selectedEmoji = emojis.find(e => e.rating === selectedRating);
+                await updateRatingInFirebase(selectedEmoji);
+                
+                setIsSubmitted(true);
+                setTimeout(() => {
+                    setIsOpen(false);
+                    setIsSubmitted(false);
+                    setSelectedRating(null);
+                    if (onClose) onClose();
+                }, 1500);
+            } catch (error) {
+                console.error('Failed to submit rating:', error);
+                // You might want to show an error message to the user here
+            } finally {
+                setIsSubmitting(false);
+            }
         }
     };
 
@@ -158,11 +196,11 @@ const RatingModal = ({ isOpen: externalIsOpen = true, onClose }) => {
                             </AlertDialogCancel>
                             <Button
                                 onClick={handleSubmit}
-                                disabled={!selectedRating}
+                                disabled={!selectedRating || isSubmitting}
                                 className={`w-full bg-[#36302A] text-white hover:bg-[#36302A]/90 text-sm sm:text-base
-                                    ${!selectedRating ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                    ${(!selectedRating || isSubmitting) ? 'opacity-50 cursor-not-allowed' : ''}`}
                             >
-                                Submit
+                                {isSubmitting ? 'Submitting...' : 'Submit'}
                             </Button>
                         </>
                     )}
