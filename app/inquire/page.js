@@ -8,6 +8,7 @@ import { db } from '../lib/firebase';
 import ReCAPTCHA from "react-google-recaptcha";
 import InquireModal from '../components/InquireModal';
 import { ImSpinner8 } from 'react-icons/im';
+import RatingModal from '../components/RatingModal';
 
 
 const Inquire = () => {
@@ -49,6 +50,7 @@ const Inquire = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formSubmitMessage, setFormSubmitMessage] = useState('');
   const [recaptchaValue, setRecaptchaValue] = useState(null);
+  const [showRatingModal, setShowRatingModal] = useState(false);
 
   const controls = useAnimation();
   const x = useMotionValue(0);
@@ -307,6 +309,8 @@ const Inquire = () => {
       if (!response.ok) {
         throw new Error(data.error || 'Failed to send confirmation email');
       }
+
+      setShowRatingModal(true);
 
       // Reset form
       [
@@ -663,6 +667,17 @@ const Inquire = () => {
       </div>
 
       <InquireModal />
+
+      <AnimatePresence>
+        {showRatingModal && (
+          <div className="fixed inset-0 z-[9999] flex items-center justify-center">
+            <RatingModal
+              isOpen={showRatingModal}
+              onClose={() => setShowRatingModal(false)}
+            />
+          </div>
+        )}
+      </AnimatePresence>
     </div>
 
   );
