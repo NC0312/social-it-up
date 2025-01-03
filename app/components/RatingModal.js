@@ -5,7 +5,6 @@ import {
     AlertDialogContent,
     AlertDialogHeader,
     AlertDialogTitle,
-    AlertDialogDescription,
     AlertDialogFooter,
     AlertDialogCancel,
 } from "@/components/ui/alert-dialog";
@@ -15,6 +14,7 @@ const RatingModal = ({ isOpen: externalIsOpen = true, onClose }) => {
     const [isOpen, setIsOpen] = useState(externalIsOpen);
     const [selectedRating, setSelectedRating] = useState(null);
     const [isSubmitted, setIsSubmitted] = useState(false);
+    const [hoveredRating, setHoveredRating] = useState(null);
 
     useEffect(() => {
         setIsOpen(externalIsOpen);
@@ -28,11 +28,11 @@ const RatingModal = ({ isOpen: externalIsOpen = true, onClose }) => {
     };
 
     const emojis = [
-        { rating: 1, emoji: "😡", label: "Angry" },
-        { rating: 2, emoji: "😕", label: "Disappointed" },
-        { rating: 3, emoji: "😐", label: "Neutral" },
-        { rating: 4, emoji: "🙂", label: "Satisfied" },
-        { rating: 5, emoji: "😍", label: "Love it!" }
+        { rating: 1, emoji: "😡", label: "Angry", color: "#FF4D4D" },
+        { rating: 2, emoji: "😕", label: "Disappointed", color: "#FFA64D" },
+        { rating: 3, emoji: "😐", label: "Neutral", color: "#FFD700" },
+        { rating: 4, emoji: "🙂", label: "Satisfied", color: "#4DFF4D" },
+        { rating: 5, emoji: "😍", label: "Love it!", color: "#4DB8FF" }
     ];
 
     const handleSubmit = () => {
@@ -55,14 +55,25 @@ const RatingModal = ({ isOpen: externalIsOpen = true, onClose }) => {
                     <AlertDialogTitle className="text-center text-lg sm:text-xl md:text-2xl font-bold font-serif text-[#36302A]">
                         How was your experience?
                     </AlertDialogTitle>
-                    <AlertDialogDescription className="text-center">
+                    <div className="text-center">
                         {isSubmitted ? (
                             <motion.div
                                 initial={{ opacity: 0, scale: 0.5 }}
                                 animate={{ opacity: 1, scale: 1 }}
                                 className="py-4 sm:py-6 text-base sm:text-lg font-medium text-[#36302A]"
                             >
-                                Thanks for your feedback! 🎉
+                                <motion.div
+                                    animate={{
+                                        scale: [1, 1.2, 1],
+                                        rotate: [0, 10, -10, 0],
+                                    }}
+                                    transition={{
+                                        duration: 0.5,
+                                        times: [0, 0.2, 0.5, 0.8, 1],
+                                    }}
+                                >
+                                    Thanks for your feedback! 🎉
+                                </motion.div>
                             </motion.div>
                         ) : (
                             <div className="py-4 sm:py-6">
@@ -74,23 +85,70 @@ const RatingModal = ({ isOpen: externalIsOpen = true, onClose }) => {
                                             animate={{ opacity: 1, y: 0 }}
                                             transition={{ delay: index * 0.1 }}
                                             onClick={() => setSelectedRating(item.rating)}
-                                            className={`group flex flex-col items-center justify-center transform transition-all duration-200 hover:scale-110 focus:outline-none
-                                                ${selectedRating === item.rating ? 'scale-110' : ''}`}
+                                            onMouseEnter={() => setHoveredRating(item.rating)}
+                                            onMouseLeave={() => setHoveredRating(null)}
+                                            className={`group relative flex flex-col items-center justify-center p-2 rounded-lg transition-all duration-300
+                                                ${selectedRating === item.rating 
+                                                    ? 'bg-[#36302A]/10 scale-110 shadow-lg' 
+                                                    : 'hover:bg-[#36302A]/5'}`}
                                         >
-                                            <div className="flex flex-col items-center">
-                                                <span className="text-2xl sm:text-3xl md:text-4xl transition-transform duration-200 group-hover:scale-110">
+                                            <AnimatePresence>
+                                                {selectedRating === item.rating && (
+                                                    <motion.div
+                                                        initial={{ opacity: 0, scale: 0 }}
+                                                        animate={{ opacity: 0.15, scale: 1 }}
+                                                        exit={{ opacity: 0, scale: 0 }}
+                                                        className="absolute inset-0 rounded-lg"
+                                                        style={{ backgroundColor: item.color }}
+                                                    />
+                                                )}
+                                            </AnimatePresence>
+                                            
+                                            <div className="flex flex-col items-center relative z-10">
+                                                <motion.span
+                                                    animate={{
+                                                        scale: selectedRating === item.rating ? 1.2 : 1,
+                                                        y: selectedRating === item.rating ? -4 : 0,
+                                                    }}
+                                                    className="text-2xl sm:text-3xl md:text-4xl transition-transform duration-200 group-hover:scale-110"
+                                                >
                                                     {item.emoji}
-                                                </span>
-                                                <span className="mt-1 sm:mt-2 text-[10px] sm:text-xs text-[#36302A] opacity-80 group-hover:opacity-100">
+                                                </motion.span>
+                                                
+                                                <motion.span
+                                                    animate={{
+                                                        opacity: selectedRating === item.rating || hoveredRating === item.rating ? 1 : 0.8,
+                                                    }}
+                                                    className="mt-1 sm:mt-2 text-[10px] sm:text-xs text-[#36302A] font-medium"
+                                                >
                                                     {item.label}
-                                                </span>
+                                                </motion.span>
+                                                
+                                                {selectedRating === item.rating && (
+                                                    <motion.div
+                                                        initial={{ width: 0 }}
+                                                        animate={{ width: "100%" }}
+                                                        className="absolute -bottom-2 h-0.5 rounded-full"
+                                                        style={{ backgroundColor: item.color }}
+                                                    />
+                                                )}
                                             </div>
+                                            
+                                            {hoveredRating === item.rating && selectedRating !== item.rating && (
+                                                <motion.div
+                                                    initial={{ opacity: 0, scale: 0.8 }}
+                                                    animate={{ opacity: 1, scale: 1 }}
+                                                    exit={{ opacity: 0, scale: 0.8 }}
+                                                    className="absolute -top-1 -right-1 w-2 h-2 rounded-full"
+                                                    style={{ backgroundColor: item.color }}
+                                                />
+                                            )}
                                         </motion.button>
                                     ))}
                                 </div>
                             </div>
                         )}
-                    </AlertDialogDescription>
+                    </div>
                 </AlertDialogHeader>
                 <AlertDialogFooter className="flex flex-col gap-2 sm:gap-4 pt-2 sm:pt-4 w-full">
                     {!isSubmitted && (
@@ -102,7 +160,7 @@ const RatingModal = ({ isOpen: externalIsOpen = true, onClose }) => {
                                 onClick={handleSubmit}
                                 disabled={!selectedRating}
                                 className={`w-full bg-[#36302A] text-white hover:bg-[#36302A]/90 text-sm sm:text-base
-                    ${!selectedRating ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                    ${!selectedRating ? 'opacity-50 cursor-not-allowed' : ''}`}
                             >
                                 Submit
                             </Button>
