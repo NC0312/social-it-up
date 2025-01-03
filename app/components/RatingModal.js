@@ -91,7 +91,7 @@ const RatingModal = ({ isOpen: externalIsOpen = true, onClose }) => {
             <AlertDialogContent className="fixed left-[50%] top-[50%] z-[1000] w-[95%] sm:w-[400px] md:w-[450px] -translate-x-1/2 -translate-y-1/2 rounded-lg border-none bg-[#FAF4ED] p-4 sm:p-6 shadow-lg">
                 <AlertDialogHeader className="mb-2 sm:mb-4">
                     <AlertDialogTitle className="text-center text-lg sm:text-xl md:text-2xl font-bold font-serif text-[#36302A]">
-                        How was your experience?
+                        How was your experience with Social It Up?
                     </AlertDialogTitle>
                     <div className="text-center">
                         {isSubmitted ? (

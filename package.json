@@ -9,13 +9,15 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@gsap/react": "^2.1.1",
     "@radix-ui/react-alert-dialog": "^1.1.4",
     "@radix-ui/react-slot": "^1.1.1",
     "@studio-freight/lenis": "^1.0.42",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "firebase": "^11.0.2",
-    "framer-motion": "^11.11.17",
+    "framer-motion": "^11.15.0",
+    "gsap": "^3.12.5",
     "libphonenumber-js": "^1.11.16",
     "lucide-react": "^0.468.0",
     "next": "15.0.3",
