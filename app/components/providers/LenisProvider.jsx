@@ -1,34 +1,23 @@
 "use client";
 
-import { createContext, useContext, useEffect, useRef } from "react";
-import { usePathname } from "next/navigation";
+import { useEffect } from "react";
 import Lenis from "@studio-freight/lenis";
 
-const LenisContext = createContext({});
-
-export const useLenis = () => {
-  return useContext(LenisContext);
-};
-
-export const LenisProvider = ({ children, options = {} }) => {
-  const lenisRef = useRef();
-  const pathname = usePathname();
-
+export default function LenisProvider({ children }) {
   useEffect(() => {
     const lenis = new Lenis({
       duration: 1.2,
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-      orientation: "vertical",
-      gestureOrientation: "vertical",
-      smoothWheel: true,
-      wheelMultiplier: 1,
+      direction: "vertical",
+      gestureDirection: "vertical",
+      smooth: true,
       smoothTouch: false,
       touchMultiplier: 2,
-      infinite: false,
-      ...options,
     });
 
-    lenisRef.current = lenis;
+    lenis.on("scroll", (e) => {
+      console.log(e);
+    });
 
     function raf(time) {
       lenis.raf(time);
@@ -37,30 +26,10 @@ export const LenisProvider = ({ children, options = {} }) => {
 
     requestAnimationFrame(raf);
 
-    // Handle window resize
-    const resizeObserver = new ResizeObserver(() => {
-      lenis.resize();
-    });
-
-    resizeObserver.observe(document.body);
-
     return () => {
       lenis.destroy();
-      lenisRef.current = null;
-      resizeObserver.disconnect();
     };
-  }, [options]);
+  }, []);
 
-  // Reset scroll position on route change
-  useEffect(() => {
-    if (lenisRef.current) {
-      lenisRef.current.scrollTo(0, { immediate: true });
-    }
-  }, [pathname]);
-
-  return (
-    <LenisContext.Provider value={lenisRef.current}>
-      {children}
-    </LenisContext.Provider>
-  );
-};
+  return <>{children}</>;
+}
