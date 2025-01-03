@@ -66,6 +66,7 @@ input[type="checkbox"]:checked {
       --chart-5: 27 87% 67%;
       --radius: 0.5rem;
     }
+
     .dark {
       --background: 222.2 84% 4.9%;
       --foreground: 210 40% 98%;
@@ -98,8 +99,107 @@ input[type="checkbox"]:checked {
     * {
       @apply border-border;
     }
+
     body {
       @apply bg-background text-foreground;
     }
+  }
+}
+
+
+/* Advanced Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+  padding: 2px;
+}
+
+::-webkit-scrollbar-track {
+  background: linear-gradient(to right,
+      #FAF4ED 0%,
+      #EFE7DD 100%);
+  border-radius: 10px;
+  margin: 4px;
+  box-shadow: inset 0 0 6px rgba(54, 48, 42, 0.1);
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(45deg,
+      #36302A 0%,
+      #4A443E 50%,
+      #36302A 100%);
+  border-radius: 10px;
+  border: 3px solid transparent;
+  background-clip: padding-box;
+  transition: all 0.3s ease;
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.1),
+    inset 0 0 0 1px rgba(0, 0, 0, 0.1);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(45deg,
+      #4A443E 0%,
+      #5A544E 50%,
+      #4A443E 100%);
+  box-shadow:
+    0 0 10px rgba(54, 48, 42, 0.3),
+    inset 0 0 0 1px rgba(0, 0, 0, 0.2);
+}
+
+::-webkit-scrollbar-thumb:active {
+  background: linear-gradient(45deg,
+      #2A2420 0%,
+      #36302A 50%,
+      #2A2420 100%);
+}
+
+/* Corner styling */
+::-webkit-scrollbar-corner {
+  background: #FAF4ED;
+  border-radius: 10px;
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #36302A #FAF4ED;
+}
+
+/* Dark mode */
+@media (prefers-color-scheme: dark) {
+  ::-webkit-scrollbar-track {
+    background: linear-gradient(to right,
+        #36302A 0%,
+        #2A2420 100%);
+    box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: linear-gradient(45deg,
+        #FAF4ED 0%,
+        #EFE7DD 50%,
+        #FAF4ED 100%);
+    box-shadow:
+      0 0 0 1px rgba(0, 0, 0, 0.1),
+      inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(45deg,
+        #EFE7DD 0%,
+        #DFD7CD 50%,
+        #EFE7DD 100%);
+  }
+
+  ::-webkit-scrollbar-thumb:active {
+    background: linear-gradient(45deg,
+        #FAF4ED 0%,
+        #FFFFFF 50%,
+        #FAF4ED 100%);
+  }
+
+  ::-webkit-scrollbar-corner {
+    background: #36302A;
   }
 }
