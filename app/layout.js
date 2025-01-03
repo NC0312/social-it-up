@@ -20,6 +20,14 @@ const geistMono = localFont({
   weight: "100 900",
 });
 
+export const metadata = {
+  title: "www.socialitup.in",
+  description: "Social it up -- A Marketing Agency",
+  icons: {
+    icon: "/logo.png",
+  },
+};
+
 export default function RootLayout({ children }) {
   return (
     <html lang="en" className="lenis lenis-smooth">
