@@ -21,6 +21,7 @@ body {
   background: var(--background);
   font-family: "Syne", Arial, Helvetica, sans-serif;
   overflow-x: hidden !important;
+  min-height: 100vh;
 }
 
 input[type="checkbox"] {
@@ -202,4 +203,26 @@ input[type="checkbox"]:checked {
   ::-webkit-scrollbar-corner {
     background: #36302A;
   }
+}
+
+
+/* Lenis Smooth Scroll */
+html.lenis {
+  height: auto;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto;
+}
+
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+.lenis.lenis-scrolling iframe {
+  pointer-events: none;
 }

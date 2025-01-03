@@ -602,15 +602,17 @@ const Inquire = () => {
               <label className='text-sm text-[#36302A] mb-1'>
                 Message <span className='text-[#86807A] ml-1'>(required)</span>
               </label>
-              <textarea
-                type='messages'
-                value={messages}
-                onChange={(e) => {
-                  setMessages(e.target.value);
-                  if (messagesError) setMessagesError('');
-                }}
-                className="bg-[#EFE7DD] text-[#36302A] border border-transparent focus:outline-none focus:ring-1 focus:ring-[#36302A] hover:border-[#36302A] px-3 py-2 rounded-lg w-full"
-              />
+              <div data-lenis-prevent>
+                <textarea
+                  type='messages'
+                  value={messages}
+                  onChange={(e) => {
+                    setMessages(e.target.value);
+                    if (messagesError) setMessagesError('');
+                  }}
+                  className="bg-[#EFE7DD] text-[#36302A] border border-transparent focus:outline-none focus:ring-1 focus:ring-[#36302A] hover:border-[#36302A] px-3 py-2 rounded-lg w-full"
+                />
+              </div>
               {messagesError && (
                 <p className="text-sm text-red-600 mt-1 flex items-center gap-1"><FaInfoCircle /> {messagesError}</p>
               )}
@@ -679,9 +681,6 @@ const Inquire = () => {
         )}
       </AnimatePresence>
     </div>
-
-
-
   );
 };
 

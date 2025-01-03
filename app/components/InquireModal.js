@@ -205,15 +205,17 @@ const InquireModal = () => {
                   <label htmlFor="message" className="block text-sm font-medium text-[#36302A]">
                     Message <span className='text-[#86807A] ml-1'>(required)</span>
                   </label>
-                  <textarea
-                    id="message"
-                    name="message"
-                    rows={4}
-                    value={formData.message}
-                    onChange={handleInputChange}
-                    className="mt-1 block w-full px-3 py-2 bg-[#EFE7DD] border rounded-lg focus:outline-none focus:ring-1 focus:ring-[#36302A] hover:border-[#36302A]"
-                    placeholder="Type your message here..."
-                  />
+                  <div data-lenis-prevent>
+                    <textarea
+                      id="message"
+                      name="message"
+                      rows={4}
+                      value={formData.message}
+                      onChange={handleInputChange}
+                      className="mt-1 block w-full px-3 py-2 bg-[#EFE7DD] border rounded-lg focus:outline-none focus:ring-1 focus:ring-[#36302A] hover:border-[#36302A]"
+                      placeholder="Type your message here..."
+                    />
+                  </div>
                   {errors.message && (
                     <p className="text-sm text-red-600 mt-1 flex items-center gap-1">
                       <FaInfoCircle /> {errors.message}
@@ -265,4 +267,3 @@ const InquireModal = () => {
 };
 
 export default InquireModal;
-
