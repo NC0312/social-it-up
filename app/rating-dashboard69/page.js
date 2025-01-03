@@ -101,7 +101,7 @@ const DynamicRatingsDashboard = () => {
             <Card className="w-full max-w-4xl mx-auto overflow-hidden rounded-2xl border-0 px-5 py-5">
                 <CardHeader className="space-y-6 pb-8">
                     <div className="relative overflow-hidden rounded-xl p-6 bg-[#36302A]">
-                        <CardTitle className="text-3xl md:text-4xl font-serif font-medium text-center text-white">
+                        <CardTitle className="text-3xl md:text-4xl font-serif font-medium text-center text-[#D6D4D3]">
                             User Ratings Analytics
                         </CardTitle>
                     </div>
