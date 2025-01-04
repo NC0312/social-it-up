@@ -580,9 +580,6 @@ const BugPanel = () => {
                                                             >
                                                                 <FaCheck className="text-xs md:text-sm" />
                                                             </button>
-                                                            <span className="absolute hidden group-hover:block bg-black text-white text-xs rounded px-2 py-1 -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap">
-                                                                Mark as resolved
-                                                            </span>
                                                         </div>
                                                     )}
                                                 </div>
@@ -613,9 +610,9 @@ const BugPanel = () => {
                                             <td className="border border-red-200 px-4 py-2 text-sm md:text-base">
                                                 <button
                                                     onClick={() => handleSendNotification(bug.email, bug.subject, bug.docId)}
-                                                    className="px-2 py-1 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors duration-200 flex items-center space-x-1"
+                                                    className={`px-2 py-1 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors duration-200 flex items-center space-x-1 ${bug.status === 'resolved' ? 'opacity-50 cursor-not-allowed' : ''}`}
                                                     title="Send Notification"
-                                                    disabled={loadingNotifications[bug.docId]}
+                                                    disabled={loadingNotifications[bug.docId] || bug.status === 'resolved'}
                                                 >
                                                     {loadingNotifications[bug.docId] ? (
                                                         <span className="animate-spin">⌛</span>
