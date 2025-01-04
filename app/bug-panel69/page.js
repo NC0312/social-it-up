@@ -541,13 +541,14 @@ const BugPanel = () => {
                                     {[
                                         "Action",
                                         "Priority",
+                                        "Bug Status",
                                         "ChangePriority",
                                         "Timestamp",
                                         "Email",
                                         "Notify",
                                         "Subject",
                                         "Message",
-                                        "Bug Status"
+                                        
                                     ].map((header) => (
                                         <th
                                             key={header}
@@ -583,6 +584,9 @@ const BugPanel = () => {
                                                         </div>
                                                     )}
                                                 </div>
+                                            </td>
+                                            <td className="border border-red-200 px-4 py-2 text-sm md:text-base">
+                                                {bug.status}
                                             </td>
                                             <td className="border border-red-200 px-4 py-2 text-sm md:text-base">
                                                 <PriorityDisplay priority={bug.priority} />
@@ -630,9 +634,7 @@ const BugPanel = () => {
                                             <td className="border border-red-200 px-4 py-2 font-serif text-sm md:text-base">
                                                 {bug.message}
                                             </td>
-                                            <td className="border border-red-200 px-4 py-2 text-sm md:text-base">
-                                                {bug.status}
-                                            </td>
+                                            
                                         </tr>
                                     ))
                                 ) : (
