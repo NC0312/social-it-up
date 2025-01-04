@@ -540,8 +540,8 @@ const BugPanel = () => {
                                 <tr>
                                     {[
                                         "Action",
-                                        "Priority",
                                         "Bug Status",
+                                        "Priority",
                                         "ChangePriority",
                                         "Timestamp",
                                         "Email",
