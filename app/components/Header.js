@@ -6,6 +6,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { AnimatePresence } from "framer-motion";
 import { usePathname } from "next/navigation";
+import { Menu } from 'lucide-react';
 
 const REVIEW_PANEL_ROUTE = "/review-panel69";
 const BUG_PANEL_ROUTE = "/bug-panel69";
@@ -16,6 +17,7 @@ function Header() {
   const [active, setActive] = useState("Home");
   const [hoveredItem, setHoveredItem] = useState(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = React.useState(false);
 
   useEffect(() => {
     const routeToActiveMap = {
@@ -27,6 +29,12 @@ function Header() {
     };
     setActive(routeToActiveMap[pathname] || "Home");
   }, [pathname]);
+
+  const adminLinks = [
+    { href: '/admin-panel69', label: 'Admin Panel' },
+    { href: '/bug-panel69', label: 'Bugs & Issues' },
+    { href: '/rating-dashboard69', label: 'Rating Dashboard' }
+  ];
 
   useEffect(() => {
     if (isMenuOpen) {
@@ -50,12 +58,12 @@ function Header() {
     <div className="border-b border-[#575553] relative">
       <nav
         className={`flex items-center justify-between px-12 py-1 md:py-2 relative z-20 ${pathname === REVIEW_PANEL_ROUTE
-            ? "bg-green-600"
-            : pathname === BUG_PANEL_ROUTE
-              ? "bg-red-600"
-              : process.env.NEXT_PUBLIC_ENV === "development"
-                ? "bg-blue-600"
-                : ""
+          ? "bg-green-600"
+          : pathname === BUG_PANEL_ROUTE
+            ? "bg-red-600"
+            : process.env.NEXT_PUBLIC_ENV === "development"
+              ? "bg-blue-600"
+              : ""
           }`}
       >
         {/* Logo */}
@@ -98,8 +106,8 @@ function Header() {
               <li
                 key={item}
                 className={`relative cursor-pointer ${isDevelopment || pathname === REVIEW_PANEL_ROUTE || pathname === BUG_PANEL_ROUTE
-                  ? "text-white"
-                  : "text-[#575553]"
+                    ? "text-white"
+                    : "text-[#575553]"
                   } text-md font-medium`}
                 onMouseEnter={() => setHoveredItem(item)}
                 onMouseLeave={() => setHoveredItem(null)}
@@ -112,13 +120,12 @@ function Header() {
                   {item}
                 </Link>
 
-                {/* Animated Underline */}
                 {(active === item || hoveredItem === item) && (
                   <motion.div
                     layoutId={active === item ? "activeUnderline" : "hoverUnderline"}
                     className={`absolute bottom-0 left-0 ${isDevelopment || pathname === REVIEW_PANEL_ROUTE || pathname === BUG_PANEL_ROUTE
-                      ? "bg-white"
-                      : "bg-[#575553]"
+                        ? "bg-white"
+                        : "bg-[#575553]"
                       }`}
                     style={{
                       height: "2px",
@@ -134,36 +141,30 @@ function Header() {
               </li>
             ))}
 
-            {/* Admin Panel Button (Responsive View) */}
+            {/* Admin Dropdown */}
             {isDevelopment && (
-              <li className="hidden lg:block text-center">
-                <Link
-                  href="/admin-panel69"
-                  className="px-4 py-1 bg-[#ff8c00] text-white rounded-md hover:bg-[#ff9d33] transition text-sm lg:text-md"
+              <div className="relative">
+                <button
+                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                  className="p-2 rounded-md hover:bg-[#2563EB] hover:bg-opacity-20 transition"
                 >
-                  Admin Panel
-                </Link>
-              </li>
-            )}
-            {isDevelopment && (
-              <li className="hidden lg:block text-center ml-4">
-                <Link
-                  href="/bug-panel69"
-                  className="px-4 py-1 bg-[#ff8c00] text-white rounded-md hover:bg-[#ff9d33] transition text-sm lg:text-md"
-                >
-                  Bugs & Issues
-                </Link>
-              </li>
-            )}
-            {isDevelopment && (
-              <li className="hidden lg:block text-center ml-4">
-                <Link
-                  href="/rating-dashboard69"
-                  className="px-4 py-1 bg-[#ff8c00] text-white rounded-md hover:bg-[#ff9d33] transition text-sm lg:text-md"
-                >
-                  Rating Dashboard
-                </Link>
-              </li>
+                  <Menu className="w-6 h-6 text-white" />
+                </button>
+
+                {isDropdownOpen && (
+                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50">
+                    {adminLinks.map((link) => (
+                      <Link
+                        key={link.href}
+                        href={link.href}
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-[#2563EB] hover:text-white transition"
+                      >
+                        {link.label}
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
             )}
           </ul>
         </div>
@@ -254,7 +255,7 @@ function Header() {
                 <li className="pt-6">
                   <Link
                     href="/admin-panel69"
-                    className="px-4 py-2 bg-[#ff8c00] text-white rounded-md hover:bg-[#ff9d33] transition"
+                    className="px-4 py-2 bg-[#2563EB] text-white rounded-md hover:bg-[#2563EB] transition"
                     onClick={handleMenuToggle}
                   >
                     Admin Panel
@@ -265,7 +266,7 @@ function Header() {
                 <li className="pt-4">
                   <Link
                     href="/bug-panel69"
-                    className="px-4 py-2 bg-[#ff8c00] text-white rounded-md hover:bg-[#ff9d33]  transition"
+                    className="px-4 py-2 bg-[#2563EB] text-white rounded-md hover:bg-[#2563EB]  transition"
                     onClick={handleMenuToggle}
                   >
                     Bugs & Issues
@@ -276,7 +277,7 @@ function Header() {
                 <li className="pt-4">
                   <Link
                     href="/rating-dashboard69"
-                    className="px-4 py-2 bg-[#ff8c00] text-white rounded-md hover:bg-[#ff9d33]  transition"
+                    className="px-4 py-2 bg-[#2563EB] text-white rounded-md hover:bg-[#2563EB]  transition"
                     onClick={handleMenuToggle}
                   >
                     Rating Dashboard
