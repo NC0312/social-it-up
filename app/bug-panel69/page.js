@@ -38,6 +38,7 @@ const BugPanel = () => {
     const [isDeletingAll, setIsDeletingAll] = useState(false);
     const [loadingNotifications, setLoadingNotifications] = useState({});
     const [issyncing, setIssyncing] = useState(false);
+    const [selectedStatus, setSelectedStatus] = useState("");
     const entriesPerPage = 20;
 
     const fetchBugs = async () => {
@@ -67,13 +68,13 @@ const BugPanel = () => {
             const bugsRef = collection(db, "feedback");
             const q = query(bugsRef, orderBy("timestamp", "desc"));
             const querySnapshot = await getDocs(q);
-            
+
             const newData = querySnapshot.docs.map(doc => ({
                 docId: doc.id,
                 ...doc.data(),
                 status: doc.data().status || "unresolved"
             }));
-            
+
             setBugs(newData);
             setFilteredBugs(newData);
             toast.success("Data refreshed successfully!");
@@ -182,6 +183,10 @@ const BugPanel = () => {
         setSelectedPriority(e.target.value);
     };
 
+    const handleStatusChange = (e) => {
+        setSelectedStatus(e.target.value);
+    };
+
     const handleFetchData = () => {
         let filtered = bugs;
 
@@ -198,6 +203,10 @@ const BugPanel = () => {
 
         if (selectedPriority) {
             filtered = filtered.filter(bug => bug.priority === selectedPriority);
+        }
+
+        if (selectedStatus) {
+            filtered = filtered.filter(bug => bug.status === selectedStatus);
         }
 
         setFilteredBugs(filtered);
@@ -348,13 +357,13 @@ const BugPanel = () => {
         try {
             const bugRef = doc(db, "feedback", docId);
             await updateDoc(bugRef, { priority: newPriority });
-            
-            const updatedBugs = bugs.map(bug => 
+
+            const updatedBugs = bugs.map(bug =>
                 bug.docId === docId ? { ...bug, priority: newPriority } : bug
             );
             setBugs(updatedBugs);
             setFilteredBugs(updatedBugs);
-            
+
             toast.success("Priority updated successfully!");
         } catch (error) {
             console.error("Error updating priority:", error);
@@ -367,13 +376,13 @@ const BugPanel = () => {
             try {
                 const bugRef = doc(db, "feedback", docId);
                 await updateDoc(bugRef, { status: 'resolved' });
-                
-                const updatedBugs = bugs.map(bug => 
+
+                const updatedBugs = bugs.map(bug =>
                     bug.docId === docId ? { ...bug, status: 'resolved' } : bug
                 );
                 setBugs(updatedBugs);
                 setFilteredBugs(updatedBugs);
-                
+
                 // Send resolution email
                 const resolvedBug = updatedBugs.find(bug => bug.docId === docId);
                 if (resolvedBug) {
@@ -394,7 +403,7 @@ const BugPanel = () => {
                         throw new Error('Failed to send resolution email');
                     }
                 }
-                
+
                 toast.success("Bug marked as resolved and email sent successfully!");
             } catch (error) {
                 console.error("Error marking bug as resolved:", error);
@@ -434,7 +443,7 @@ const BugPanel = () => {
                 whileInView="visible"
                 viewport={{ once: true }}
             >
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                     <div>
                         <label className="block text-sm md:text-lg font-medium mb-2 text-red-800" htmlFor="date-filter">
                             Filter by Date:
@@ -465,6 +474,21 @@ const BugPanel = () => {
                             <option value="highest">Highest</option>
                         </select>
                     </div>
+                    <div>
+                        <label className="block text-sm md:text-lg font-medium mb-2 text-red-800" htmlFor="status-filter">
+                            Filter by Bug Status:
+                        </label>
+                        <select
+                            id="status-filter"
+                            value={selectedStatus}
+                            onChange={handleStatusChange}
+                            className="w-full border border-red-300 rounded-lg px-3 py-1 md:py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500"
+                        >
+                            <option value="">Select Bug Status</option>
+                            <option value="resolved">Resolved</option>
+                            <option value="unresolved">Unresolved</option>
+                        </select>
+                    </div>
                 </div>
             </motion.div>
 
@@ -485,6 +509,7 @@ const BugPanel = () => {
                         onClick={() => {
                             setSelectedDate("");
                             setSelectedPriority("");
+                            setSelectedStatus("");
                             setFilteredBugs(bugs);
                             toast.success("Filters cleared!");
                         }}
@@ -548,7 +573,7 @@ const BugPanel = () => {
                                         "Notify",
                                         "Subject",
                                         "Message",
-                                        
+
                                     ].map((header) => (
                                         <th
                                             key={header}
@@ -634,7 +659,7 @@ const BugPanel = () => {
                                             <td className="border border-red-200 px-4 py-2 font-serif text-sm md:text-base">
                                                 {bug.message}
                                             </td>
-                                            
+
                                         </tr>
                                     ))
                                 ) : (
