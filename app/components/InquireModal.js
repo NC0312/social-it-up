@@ -70,26 +70,28 @@ const InquireModal = () => {
     setIsSubmitting(true);
 
     try {
-      // Store feedback in Firebase
+      // Store feedback in Firebase first
       await addDoc(collection(db, "feedback"), {
         ...formData,
         timestamp: new Date(),
       });
 
-      // Send confirmation email
-      await fetch('/api/send-feedback-confirmation', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email: formData.email }),
-      });
+     
 
       setShowSuccess(true);
       setTimeout(() => {
         setShowSuccess(false);
         setIsModalOpen(false);
       }, 3000);
+
+       // Send confirmation email after successful submission
+       await fetch('/api/send-feedback-confirmation', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email: formData.email }),
+      });
 
       // Reset form
       setFormData({ subject: 'bug', message: '', email: '' });
