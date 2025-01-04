@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import { FaBars, FaTimes } from "react-icons/fa";
 import Link from "next/link";
@@ -17,7 +17,8 @@ function Header() {
   const [active, setActive] = useState("Home");
   const [hoveredItem, setHoveredItem] = useState(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isDropdownOpen, setIsDropdownOpen] = React.useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
 
   useEffect(() => {
     const routeToActiveMap = {
@@ -35,6 +36,19 @@ function Header() {
     { href: '/bug-panel69', label: 'Bugs & Issues' },
     { href: '/rating-dashboard69', label: 'Rating Dashboard' }
   ];
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   useEffect(() => {
     if (isMenuOpen) {
@@ -143,7 +157,7 @@ function Header() {
 
             {/* Admin Dropdown */}
             {isDevelopment && (
-              <div className="relative">
+              <div className="relative" ref={dropdownRef}>
                 <button
                   onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                   className="p-2 rounded-md hover:bg-[#2563EB] hover:bg-opacity-20 transition"
@@ -158,6 +172,7 @@ function Header() {
                         key={link.href}
                         href={link.href}
                         className="block px-4 py-2 text-sm text-gray-700 hover:bg-[#2563EB] hover:text-white transition"
+                        onClick={() => setIsDropdownOpen(false)}
                       >
                         {link.label}
                       </Link>
