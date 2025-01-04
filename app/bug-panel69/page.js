@@ -1,5 +1,5 @@
-"use client";
-import React, { useEffect, useState } from "react";
+'use client';
+import React, { useState, useEffect } from 'react';
 import { collection, getDocs, query, orderBy, deleteDoc, doc, writeBatch, updateDoc } from "firebase/firestore";
 import { db } from "../lib/firebase";
 import { toast } from "sonner";
@@ -11,6 +11,7 @@ import { motion } from "framer-motion";
 import { BsFillSendFill } from "react-icons/bs";
 import { HiBellAlert } from "react-icons/hi2";
 import PriorityDisplay from "../components/PriorityDisplay";
+import { FaCheck } from "react-icons/fa";
 
 const BugPanel = () => {
     const fadeInLeft = {
@@ -49,7 +50,8 @@ const BugPanel = () => {
             const data = snapshot.docs.map((doc) => ({
                 docId: doc.id,
                 ...doc.data(),
-                priority: doc.data().priority || "low" // Default to low if not set
+                priority: doc.data().priority || "low",
+                status: doc.data().status || "unresolved"
             }));
             setBugs(data);
             setFilteredBugs(data);
@@ -68,7 +70,8 @@ const BugPanel = () => {
             
             const newData = querySnapshot.docs.map(doc => ({
                 docId: doc.id,
-                ...doc.data()
+                ...doc.data(),
+                status: doc.data().status || "unresolved"
             }));
             
             setBugs(newData);
@@ -277,8 +280,8 @@ const BugPanel = () => {
         );
     };
 
-    const handleSendNotification = async (email,subject, docId) => {
-        if (loadingNotifications[docId]) return; // Prevent multiple clicks
+    const handleSendNotification = async (email, subject, docId) => {
+        if (loadingNotifications[docId]) return;
 
         try {
             setLoadingNotifications(prev => ({ ...prev, [docId]: true }));
@@ -308,7 +311,7 @@ const BugPanel = () => {
     };
 
     const convertToCSV = (data) => {
-        const headers = ["Timestamp", "Email", "Subject", "Message", "Priority"];
+        const headers = ["Timestamp", "Email", "Subject", "Message", "Priority", "Status"];
         const csvRows = [headers.join(',')];
 
         for (const bug of data) {
@@ -317,7 +320,8 @@ const BugPanel = () => {
                 bug.email,
                 bug.subject,
                 bug.message,
-                bug.priority
+                bug.priority,
+                bug.status
             ];
             csvRows.push(row.map(field => `"${field}"`).join(','));
         }
@@ -345,7 +349,6 @@ const BugPanel = () => {
             const bugRef = doc(db, "feedback", docId);
             await updateDoc(bugRef, { priority: newPriority });
             
-            // Update local state
             const updatedBugs = bugs.map(bug => 
                 bug.docId === docId ? { ...bug, priority: newPriority } : bug
             );
@@ -356,6 +359,26 @@ const BugPanel = () => {
         } catch (error) {
             console.error("Error updating priority:", error);
             toast.error("Failed to update priority. Please try again.");
+        }
+    };
+
+    const handleMarkAsResolved = async (docId) => {
+        if (window.confirm("Are you sure you want to mark this bug as resolved?")) {
+            try {
+                const bugRef = doc(db, "feedback", docId);
+                await updateDoc(bugRef, { status: 'resolved' });
+                
+                const updatedBugs = bugs.map(bug => 
+                    bug.docId === docId ? { ...bug, status: 'resolved' } : bug
+                );
+                setBugs(updatedBugs);
+                setFilteredBugs(updatedBugs);
+                
+                toast.success("Bug marked as resolved successfully!");
+            } catch (error) {
+                console.error("Error marking bug as resolved:", error);
+                toast.error("Failed to mark bug as resolved. Please try again.");
+            }
         }
     };
 
@@ -372,13 +395,6 @@ const BugPanel = () => {
                         Bugs & Issues 🐞
                     </h1>
                     <div className="flex space-x-4">
-                        {/* <button
-                            onClick={() => router.push('/admin-panel69')}
-                            className="px-4 py-2 bg-red-600 text-white font-semibold rounded-lg shadow-md hover:bg-red-700 transition-colors duration-200 flex items-center space-x-2"
-                        >
-                            <FaArrowLeft className="text-md md:text-xl" />
-                            <span>Back to Admin Panel</span>
-                        </button> */}
                         <button
                             onClick={handleDeleteAllBugs}
                             disabled={isDeletingAll}
@@ -412,7 +428,7 @@ const BugPanel = () => {
                     </div>
 
                     <div>
-                <label className="block text-sm md:text-lg font-medium mb-2 text-red-800" htmlFor="priority-filter">
+                        <label className="block text-sm md:text-lg font-medium mb-2 text-red-800" htmlFor="priority-filter">
                             Filter by Priority:
                         </label>
                         <select
@@ -458,7 +474,6 @@ const BugPanel = () => {
                 </div>
             </motion.div>
 
-            
             <motion.div
                 variants={fadeInUp}
                 initial="hidden"
@@ -504,14 +519,15 @@ const BugPanel = () => {
                                 <tr>
                                     {[
                                         "Action",
+                                        "Bug Status",
                                         "Priority",
                                         "ChangePriority",
                                         "Timestamp",
                                         "Email",
-                                         "Notify",
+                                        "Notify",
                                         "Subject",
                                         "Message",
-                                       
+                                        
                                     ].map((header) => (
                                         <th
                                             key={header}
@@ -525,15 +541,34 @@ const BugPanel = () => {
                             <tbody>
                                 {displayedBugs.length > 0 ? (
                                     displayedBugs.map((bug) => (
-                                        <tr key={bug.docId} className="hover:bg-red-50">
+                                        <tr key={bug.docId} className={`hover:bg-red-50 ${bug.status === 'resolved' ? 'opacity-50' : ''}`}>
                                             <td className="border border-red-200 px-4 md:px-7 py-2 md:py-2 text-xs md:text-base">
-                                                <button
-                                                    onClick={() => handleDeleteBug(bug.docId)}
-                                                    className="text-red-500 hover:text-red-700 text-lg md:text-2xl"
-                                                    title="Delete"
-                                                >
-                                                    <MdDeleteForever />
-                                                </button>
+                                                <div className="flex space-x-2">
+                                                    <button
+                                                        onClick={() => handleDeleteBug(bug.docId)}
+                                                        className="text-red-500 hover:text-red-700 text-lg md:text-2xl"
+                                                        title="Delete"
+                                                    >
+                                                        <MdDeleteForever />
+                                                    </button>
+                                                    {bug.status !== 'resolved' && (
+                                                        <div className="relative group">
+                                                            <button
+                                                                onClick={() => handleMarkAsResolved(bug.docId)}
+                                                                className="p-1 ml-3 bg-green-500 text-white rounded-full hover:bg-green-600 transition-colors duration-200"
+                                                                title="Mark as Resolved"
+                                                            >
+                                                                <FaCheck className="text-xs md:text-sm" />
+                                                            </button>
+                                                            {/* <span className="absolute hidden group-hover:block bg-black text-white text-xs rounded px-2 py-1 -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap">
+                                                                Mark as resolved
+                                                            </span> */}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </td>
+                                            <td className="border border-red-200 px-4 py-2 text-sm md:text-base">
+                                                {bug.status}
                                             </td>
                                             <td className="border border-red-200 px-4 py-2 text-sm md:text-base">
                                                 <PriorityDisplay priority={bug.priority} />
@@ -560,7 +595,7 @@ const BugPanel = () => {
                                             </td>
                                             <td className="border border-red-200 px-4 py-2 text-sm md:text-base">
                                                 <button
-                                                    onClick={() => handleSendNotification(bug.email,bug.subject, bug.docId)}
+                                                    onClick={() => handleSendNotification(bug.email, bug.subject, bug.docId)}
                                                     className="px-2 py-1 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors duration-200 flex items-center space-x-1"
                                                     title="Send Notification"
                                                     disabled={loadingNotifications[bug.docId]}
@@ -581,11 +616,12 @@ const BugPanel = () => {
                                             <td className="border border-red-200 px-4 py-2 font-serif text-sm md:text-base">
                                                 {bug.message}
                                             </td>
+                                            
                                         </tr>
                                     ))
                                 ) : (
                                     <tr>
-                                        <td colSpan="8" className="text-center py-4">
+                                        <td colSpan="9" className="text-center py-4">
                                             No data available
                                         </td>
                                     </tr>
@@ -641,4 +677,3 @@ const BugPanel = () => {
 };
 
 export default BugPanel;
-
