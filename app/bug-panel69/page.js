@@ -374,10 +374,31 @@ const BugPanel = () => {
                 setBugs(updatedBugs);
                 setFilteredBugs(updatedBugs);
                 
-                toast.success("Bug marked as resolved successfully!");
+                // Send resolution email
+                const resolvedBug = updatedBugs.find(bug => bug.docId === docId);
+                if (resolvedBug) {
+                    const response = await fetch('/api/bug-resolved-email', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            email: resolvedBug.email,
+                            subject: resolvedBug.subject,
+                            timestamp: resolvedBug.timestamp.seconds * 1000,
+                            description: resolvedBug.message
+                        }),
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('Failed to send resolution email');
+                    }
+                }
+                
+                toast.success("Bug marked as resolved and email sent successfully!");
             } catch (error) {
                 console.error("Error marking bug as resolved:", error);
-                toast.error("Failed to mark bug as resolved. Please try again.");
+                toast.error("Failed to mark bug as resolved or send email. Please try again.");
             }
         }
     };
@@ -475,7 +496,7 @@ const BugPanel = () => {
             </motion.div>
 
             <motion.div
-                variants={fadeInUp}
+                variants={fadeInLeft}
                 initial="hidden"
                 whileInView="visible"
                 viewport={{ once: true }}
@@ -519,7 +540,6 @@ const BugPanel = () => {
                                 <tr>
                                     {[
                                         "Action",
-                                        "Bug Status",
                                         "Priority",
                                         "ChangePriority",
                                         "Timestamp",
@@ -527,7 +547,7 @@ const BugPanel = () => {
                                         "Notify",
                                         "Subject",
                                         "Message",
-                                        
+                                        "Bug Status"
                                     ].map((header) => (
                                         <th
                                             key={header}
@@ -555,20 +575,17 @@ const BugPanel = () => {
                                                         <div className="relative group">
                                                             <button
                                                                 onClick={() => handleMarkAsResolved(bug.docId)}
-                                                                className="p-1 ml-3 bg-green-500 text-white rounded-full hover:bg-green-600 transition-colors duration-200"
+                                                                className="p-1 bg-green-500 text-white rounded-full hover:bg-green-600 transition-colors duration-200"
                                                                 title="Mark as Resolved"
                                                             >
                                                                 <FaCheck className="text-xs md:text-sm" />
                                                             </button>
-                                                            {/* <span className="absolute hidden group-hover:block bg-black text-white text-xs rounded px-2 py-1 -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap">
+                                                            <span className="absolute hidden group-hover:block bg-black text-white text-xs rounded px-2 py-1 -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap">
                                                                 Mark as resolved
-                                                            </span> */}
+                                                            </span>
                                                         </div>
                                                     )}
                                                 </div>
-                                            </td>
-                                            <td className="border border-red-200 px-4 py-2 text-sm md:text-base">
-                                                {bug.status}
                                             </td>
                                             <td className="border border-red-200 px-4 py-2 text-sm md:text-base">
                                                 <PriorityDisplay priority={bug.priority} />
@@ -616,7 +633,9 @@ const BugPanel = () => {
                                             <td className="border border-red-200 px-4 py-2 font-serif text-sm md:text-base">
                                                 {bug.message}
                                             </td>
-                                            
+                                            <td className="border border-red-200 px-4 py-2 text-sm md:text-base">
+                                                {bug.status}
+                                            </td>
                                         </tr>
                                     ))
                                 ) : (
