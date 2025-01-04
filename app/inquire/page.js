@@ -220,8 +220,7 @@ const Inquire = () => {
   const handleSubmit = useCallback(async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
-
-    debugger;
+  
     // Run all validations and store their results
     const phoneNumberValid = validatePhoneNumber();
     const emailValid = validateEmail();
@@ -232,7 +231,7 @@ const Inquire = () => {
     const socialsValid = validateSocials();
     const servicesValid = validateServices();
     const messagesValid = validateMessages();
-
+  
     // Check if all validations passed
     const isValid =
       phoneNumberValid &&
@@ -244,20 +243,20 @@ const Inquire = () => {
       socialsValid &&
       servicesValid &&
       messagesValid;
-
+  
     // If any validation failed, stop submission and show errors
     if (!isValid) {
       setIsSubmitting(false);
       return;
     }
-
+  
     // Check reCAPTCHA only if form validation passed
     if (!recaptchaValue) {
       setFormSubmitMessage("Please complete the reCAPTCHA.");
       setIsSubmitting(false);
       return;
     }
-
+  
     try {
       // Verify reCAPTCHA
       const recaptchaResponse = await fetch('/api/verify-recaptcha', {
@@ -267,20 +266,20 @@ const Inquire = () => {
         },
         body: JSON.stringify({ recaptchaValue }),
       });
-
+  
       if (!recaptchaResponse.ok) {
         const errorData = await recaptchaResponse.json();
         throw new Error(errorData.error || 'reCAPTCHA verification failed');
       }
-
+  
       const recaptchaData = await recaptchaResponse.json();
-
+  
       if (!recaptchaData.success) {
         throw new Error('reCAPTCHA verification failed');
       }
-
+  
       // Store form data in Firestore
-      await addDoc(collection(db, "inquiries"), {
+      const docRef = await addDoc(collection(db, "inquiries"), {
         firstName,
         lastName,
         email,
@@ -294,24 +293,24 @@ const Inquire = () => {
         isChecked,
         timestamp: new Date(),
       });
-
-      // Send confirmation email
-      const response = await fetch('/api/send-confirmation', {
+  
+      // Show success message immediately
+      setFormSubmitMessage("Form submitted successfully! Check your email for confirmation.");
+      setShowRatingModal(true);
+  
+      // Trigger email sending asynchronously
+      fetch('/api/send-confirmation', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email, firstName }),
+        body: JSON.stringify({ 
+          email, 
+          firstName,
+          docId: docRef.id // Pass the document ID for potential updates
+        }),
       });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to send confirmation email');
-      }
-
-      setShowRatingModal(true);
-
+  
       // Reset form
       [
         setFirstName,
@@ -326,15 +325,13 @@ const Inquire = () => {
         setServices,
       ].forEach(setter => setter(""));
       setIsChecked(false);
-
+  
       // Reset reCAPTCHA
       if (typeof window !== 'undefined' && window.grecaptcha) {
         window.grecaptcha.reset();
       }
       setRecaptchaValue(null);
-
-      // Show success message
-      setFormSubmitMessage("Form submitted successfully! Check your email for confirmation.");
+  
     } catch (error) {
       console.error("Error submitting form or verifying reCAPTCHA: ", error);
       setFormSubmitMessage(
