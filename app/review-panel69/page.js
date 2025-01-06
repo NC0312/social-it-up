@@ -11,6 +11,7 @@ import { motion } from "framer-motion";
 import { BsFillSendFill } from "react-icons/bs";
 import { HiBellAlert } from "react-icons/hi2";
 import PriorityDisplay from "../components/PriorityDisplay";
+import { CheckCircle } from 'lucide-react';
 
 const ReviewPanel = () => {
     const fadeInLeft = {
@@ -33,6 +34,7 @@ const ReviewPanel = () => {
     const [selectedDate, setSelectedDate] = useState("");
     const [signedUp, setSignedUp] = useState("");
     const [selectedPriority, setSelectedPriority] = useState("");
+    const [selectedClientStatus, setSelectedClientStatus] = useState("");
     const [currentPage, setCurrentPage] = useState(1);
     const [isDeleting, setIsDeleting] = useState(false);
     const [isDeletingAll, setIsDeletingAll] = useState(false);
@@ -50,7 +52,8 @@ const ReviewPanel = () => {
             const data = snapshot.docs.map((doc) => ({
                 docId: doc.id,
                 ...doc.data(),
-                priority: doc.data().priority || "low" // Default to low if not set
+                priority: doc.data().priority || "low",
+                clientStatus: doc.data().clientStatus || "Pending"
             }));
             setReviews(data);
             setFilteredReviews(data);
@@ -59,6 +62,7 @@ const ReviewPanel = () => {
             toast.error("Failed to fetch reviews");
         }
     };
+
     const syncData = async () => {
         setIssyncing(true);
         try {
@@ -68,7 +72,8 @@ const ReviewPanel = () => {
 
             const newData = querySnapshot.docs.map(doc => ({
                 docId: doc.id,
-                ...doc.data()
+                ...doc.data(),
+                clientStatus: doc.data().clientStatus || "Pending"
             }));
             setReviews(newData);
             setFilteredReviews(newData);
@@ -182,6 +187,10 @@ const ReviewPanel = () => {
         setSelectedPriority(e.target.value);
     };
 
+    const handleClientStatusChange = (e) => {
+        setSelectedClientStatus(e.target.value);
+    };
+
     const handleFetchData = () => {
         let filtered = reviews;
 
@@ -209,6 +218,10 @@ const ReviewPanel = () => {
 
         if (selectedPriority) {
             filtered = filtered.filter(review => review.priority === selectedPriority);
+        }
+
+        if (selectedClientStatus) {
+            filtered = filtered.filter(review => review.clientStatus === selectedClientStatus);
         }
 
         setFilteredReviews(filtered);
@@ -342,7 +355,7 @@ const ReviewPanel = () => {
     };
 
     const convertToCSV = (data) => {
-        const headers = ["Timestamp", "FirstName", "LastName", "Email", "SignedUp", "DialCode", "PhoneNumber", "BrandName", "Services", "Socials", "Website", "Messages", "Priority"];
+        const headers = ["Timestamp", "FirstName", "LastName", "Email", "SignedUp", "DialCode", "PhoneNumber", "BrandName", "Services", "Socials", "Website", "Messages", "Priority", "ClientStatus"];
         const csvRows = [headers.join(',')];
 
         for (const review of data) {
@@ -359,7 +372,8 @@ const ReviewPanel = () => {
                 review.socials,
                 review.website,
                 review.messages,
-                review.priority
+                review.priority,
+                review.clientStatus
             ];
             csvRows.push(row.map(field => `"${field}"`).join(','));
         }
@@ -402,6 +416,25 @@ const ReviewPanel = () => {
         }
     };
 
+    const handleClientStatusUpdate = async (docId, newStatus) => {
+        try {
+            const reviewRef = doc(db, "reviews", docId);
+            await updateDoc(reviewRef, { clientStatus: newStatus });
+
+            // Update local state
+            const updatedReviews = reviews.map(review =>
+                review.docId === docId ? { ...review, clientStatus: newStatus } : review
+            );
+            setReviews(updatedReviews);
+            setFilteredReviews(updatedReviews);
+
+            toast.success("Client status updated successfully!");
+        } catch (error) {
+            console.error("Error updating client status:", error);
+            toast.error("Failed to update client status. Please try again.");
+        }
+    };
+
     return (
         <div className="p-4 md:p-6 bg-green-50 min-h-screen">
             <motion.div
@@ -430,13 +463,6 @@ const ReviewPanel = () => {
                             <MdDeleteForever className="text-xl" />
                             <span>Delete All</span>
                         </button>
-                        {/* <button
-                            onClick={handleDownloadCSV}
-                            className="px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 transition-colors duration-200 flex items-center space-x-2"
-                        >
-                            <FaFileDownload className="text-xl" />
-                            <span>Download CSV</span>
-                        </button> */}
                     </div>
                 </div>
             </motion.div>
@@ -447,7 +473,7 @@ const ReviewPanel = () => {
                 whileInView="visible"
                 viewport={{ once: true }}
             >
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
                     <div>
                         <label className="block text-sm md:text-lg font-medium mb-2 text-green-800" htmlFor="date-filter">
                             Filter by Date:
@@ -494,6 +520,22 @@ const ReviewPanel = () => {
                             <option value="highest">Highest</option>
                         </select>
                     </div>
+
+                    <div>
+                        <label className="block text-sm md:text-lg font-medium mb-2 text-green-800" htmlFor="client-status-filter">
+                            Filter by Client Status:
+                        </label>
+                        <select
+                            id="client-status-filter"
+                            value={selectedClientStatus}
+                            onChange={handleClientStatusChange}
+                            className="w-full border border-green-300 rounded-lg px-3 py-1 md:py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                        >
+                            <option value="">Select Client Status</option>
+                            <option value="Pending">Pending</option>
+                            <option value="Reached out">Reached out</option>
+                        </select>
+                    </div>
                 </div>
             </motion.div>
 
@@ -515,6 +557,7 @@ const ReviewPanel = () => {
                             setSelectedDate("");
                             setSignedUp("");
                             setSelectedPriority("");
+                            setSelectedClientStatus("");
                             setFilteredReviews(reviews);
                             toast.success("Filters cleared!");
                         }}
@@ -572,6 +615,8 @@ const ReviewPanel = () => {
                                         "Action",
                                         "Priority",
                                         "ChangePriority",
+                                        "Client Status",
+                                        "Update Status",
                                         "Timestamp",
                                         "FirstName",
                                         "LastName",
@@ -598,7 +643,7 @@ const ReviewPanel = () => {
                             <tbody>
                                 {displayedReviews.length > 0 ? (
                                     displayedReviews.map((review) => (
-                                        <tr key={review.docId} className="hover:bg-green-50">
+                                        <tr key={review.docId} className={`hover:bg-green-50 ${review.clientStatus === 'Reached out' ? 'opacity-50' : ''}`}>
                                             <td className="border border-green-200 px-4 md:px-7 py-2 md:py-2 text-xs md:text-base">
                                                 <button
                                                     onClick={() => handleDeleteReview(review.docId)}
@@ -623,6 +668,18 @@ const ReviewPanel = () => {
                                                     <option value="highest">Highest</option>
                                                 </select>
                                             </td>
+                                            <td className="border border-green-200 px-4 py-2 font-serif text-sm md:text-base">
+                                                {review.clientStatus}
+                                            </td>
+                                            <td className="border border-green-200 px-4 py-2 text-sm md:text-base">
+                                                <button
+                                                    onClick={() => handleClientStatusUpdate(review.docId, review.clientStatus === 'Pending' ? 'Reached out' : 'Pending')}
+                                                    className={`text-green-500 hover:text-green-700 text-lg md:text-2xl ${review.clientStatus === 'Reached out' ? 'opacity-50' : ''}`}
+                                                    title="Update Client Status"
+                                                >
+                                                    <CheckCircle />
+                                                </button>
+                                            </td>
                                             <td className="border border-green-200 px-4 py-2 font-serif text-sm md:text-base whitespace-nowrap">
                                                 {review.movedToReviewAt
                                                     ? new Date(review.movedToReviewAt.seconds * 1000).toLocaleString()
@@ -640,9 +697,13 @@ const ReviewPanel = () => {
                                             <td className="border border-green-200 px-4 py-2 text-sm md:text-base">
                                                 <button
                                                     onClick={() => handleSendNotification(review.email, review.firstName, review.docId)}
-                                                    className="px-2 py-1 bg-green-500 text-white rounded-md hover:bg-green-600 transition-colors duration-200 flex items-center space-x-1"
-                                                    title="Send Notification"
-                                                    disabled={loadingNotifications[review.docId]}
+                                                    className={`px-2 py-1 rounded-md transition-colors duration-200 flex items-center space-x-1 ${
+                                                        review.clientStatus === 'Reached out'
+                                                            ? 'bg-gray-400 cursor-not-allowed'
+                                                            : 'bg-green-500 hover:bg-green-600 text-white'
+                                                    }`}
+                                                    title={review.clientStatus === 'Reached out' ? 'Already reached out' : 'Send Notification'}
+                                                    disabled={loadingNotifications[review.docId] || review.clientStatus === 'Reached out'}
                                                 >
                                                     {loadingNotifications[review.docId] ? (
                                                         <span className="animate-spin">⌛</span>
@@ -684,11 +745,12 @@ const ReviewPanel = () => {
                                             <td className="border border-green-200 px-4 py-2 font-serif text-sm md:text-base">
                                                 {review.messages}
                                             </td>
+                                            
                                         </tr>
                                     ))
                                 ) : (
                                     <tr>
-                                        <td colSpan="16" className="text-center py-4">
+                                        <td colSpan="18" className="text-center py-4">
                                             No data available
                                         </td>
                                     </tr>
