@@ -416,14 +416,24 @@ const ReviewPanel = () => {
         }
     };
 
-    const handleClientStatusUpdate = async (docId, newStatus) => {
+    const handleClientStatusUpdate = async (docId, currentStatus) => {
+        // Only allow changing from 'Pending' to 'Reached out'
+        if (currentStatus === 'Reached out') {
+            toast.info("Client status cannot be changed back to Pending.");
+            return;
+        }
+
+        if (!window.confirm("Are you sure you want to update the client status to 'Reached out'? This action cannot be undone.")) {
+            return;
+        }
+
         try {
             const reviewRef = doc(db, "reviews", docId);
-            await updateDoc(reviewRef, { clientStatus: newStatus });
+            await updateDoc(reviewRef, { clientStatus: 'Reached out' });
 
             // Update local state
             const updatedReviews = reviews.map(review =>
-                review.docId === docId ? { ...review, clientStatus: newStatus } : review
+                review.docId === docId ? { ...review, clientStatus: 'Reached out' } : review
             );
             setReviews(updatedReviews);
             setFilteredReviews(updatedReviews);
@@ -673,9 +683,12 @@ const ReviewPanel = () => {
                                             </td>
                                             <td className="border border-green-200 px-4 py-2 text-sm md:text-base">
                                                 <button
-                                                    onClick={() => handleClientStatusUpdate(review.docId, review.clientStatus === 'Pending' ? 'Reached out' : 'Pending')}
-                                                    className={`text-green-500 hover:text-green-700 text-lg md:text-2xl ${review.clientStatus === 'Reached out' ? 'opacity-50' : ''}`}
-                                                    title="Update Client Status"
+                                                    onClick={() => handleClientStatusUpdate(review.docId, review.clientStatus)}
+                                                    className={`text-green-500 hover:text-green-700 text-lg md:text-2xl ${
+                                                        review.clientStatus === 'Reached out' ? 'opacity-50 cursor-not-allowed' : ''
+                                                    }`}
+                                                    title={review.clientStatus === 'Reached out' ? 'Status already updated' : 'Update Client Status'}
+                                                    disabled={review.clientStatus === 'Reached out'}
                                                 >
                                                     <CheckCircle />
                                                 </button>
@@ -778,7 +791,7 @@ const ReviewPanel = () => {
                             First
                         </button>
                         <button
-                            onClick={() => handlePageChange(currentPage - 1)}
+                            onClick                            ={() => handlePageChange(currentPage - 1)}
                             disabled={currentPage === 1}
                             className="px-4 py-2 text-[#FAF4ED] bg-green-600 rounded-md shadow-md hover:bg-green-700 w-full md:w-auto"
                         >
