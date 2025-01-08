@@ -303,165 +303,132 @@ const AdminPanel = () => {
   };
 
   return (
-    <div className="p-4 md:p-6 bg-[#FAF4ED] min-h-screen">
-      {/* <div className="flex flex-col md:flex-row justify-between items-center border-b border-gray-300 py-6 pb-4 mb-6"> */}
+    <div className="p-4 md:p-8 bg-gradient-to-b from-[#FAF4ED] to-white min-h-screen">
+      {/* Enhanced Header Section */}
       <motion.div
-        className="flex flex-col md:flex-row justify-between items-center border-b border-gray-300 py-6 pb-4 mb-6"
         variants={fadeInLeft}
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true }}
       >
-        <h1 className="text-4xl md:text-6xl font-serif font-bold text-[#36302A] mb-4 md:mb-0">
-          Admin Panel👨‍💻
-        </h1>
-        <div className="flex space-x-4">
-          <button
-            onClick={() => router.push('/review-panel69')}
-            className="px-3 py-1 md:px-4 md:py-2 bg-[#36302A] text-[#FAF4ED] font-semibold rounded-lg shadow-md hover:bg-[#27231f] transition-colors duration-200 flex items-center space-x-1"
-          >
-
-            <span>Review Panel</span>
-            <FaArrowRight className="text-md md:text-xl" />
-          </button>
-          <button
-            onClick={() => {
-              if (window.confirm('Are you sure you want to delete all data? This action cannot be undone.')) {
-                handleDeleteAll();
-              }
-            }}
-            className="px-4 py-2 bg-red-600 text-[#FAF4ED] font-semibold rounded-lg shadow-md hover:bg-red-700 transition-colors duration-200 flex items-center space-x-2"
-          >
-            <MdDeleteForever className="text-xl" />
-            <span>Delete All Data</span>
-          </button>
+        <div className="flex flex-col md:flex-row justify-between items-center border-b border-[#36302A]/50 py-6 pb-4 mb-8">
+          <div className="flex items-center gap-3">
+            <h1 className="text-4xl md:text-6xl font-serif font-bold bg-gradient-to-r from-[#36302A] to-[#5a4c3f] bg-clip-text text-transparent">
+              Admin Panel
+            </h1>
+            <span className="text-4xl animate-bounce">👨‍💻</span>
+          </div>
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => router.push('/review-panel69')}
+              className="px-4 py-2.5 bg-[#36302A] text-[#FAF4ED] font-semibold rounded-lg shadow-lg hover:bg-[#2C2925] transition-all duration-200 flex items-center gap-2"
+            >
+              <span>Review Panel</span>
+              <FaArrowRight className="text-lg" />
+            </button>
+            <button
+              onClick={() => {
+                if (window.confirm('Are you sure you want to delete all data? This action cannot be undone.')) {
+                  handleDeleteAll();
+                }
+              }}
+              className="px-4 py-2.5 bg-red-600/90 text-[#FAF4ED] font-semibold rounded-lg shadow-lg hover:bg-red-700 transition-all duration-200 flex items-center gap-2"
+            >
+              <MdDeleteForever className="text-xl" />
+              <span>Delete All</span>
+            </button>
+          </div>
         </div>
       </motion.div>
 
+      {/* Enhanced Filter Section */}
       <motion.div
         variants={fadeInRight}
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true }}
       >
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-          <div>
-            <label
-              className="block text-sm md:text-lg font-medium mb-2"
-              htmlFor="date-filter"
-            >
-              Filter by Date:
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 bg-white p-6 rounded-xl shadow-sm border border-[#36302A]/10">
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-[#36302A] flex items-center gap-2" htmlFor="date-filter">
+              <span className="text-lg">📅</span> Filter by Date
             </label>
             <input
               id="date-filter"
               type="date"
               value={selectedDate}
               onChange={handleDateChange}
-              className="w-full border border-gray-300 rounded-lg px-3 py-1 md:py-1.5 shadow-sm focus:outline-none focus:ring-2 focus:ring-[#36302A]"
+              className="w-full border border-[#36302A]/20 rounded-lg px-4 py-2.5 shadow-sm focus:outline-none focus:ring-2 focus:ring-[#36302A] focus:border-transparent transition-all duration-200"
             />
           </div>
 
-          <div>
-            <label
-              className="block text-sm md:text-lg font-medium mb-2"
-              htmlFor="signup-filter"
-            >
-              Filter by Signed Up:
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-[#36302A] flex items-center gap-2" htmlFor="signup-filter">
+              <span className="text-lg">✉️</span> Newsletter Signup Status
             </label>
             <select
               id="signup-filter"
               value={signedUp}
               onChange={handleSignUpChange}
-              className="w-full border border-gray-300 rounded-lg px-3 py-1 md:py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-[#36302A]"
+              className="w-full border border-[#36302A]/20 rounded-lg px-4 py-2.5 shadow-sm focus:outline-none focus:ring-2 focus:ring-[#36302A] focus:border-transparent transition-all duration-200 bg-white"
             >
-              <option value="">Has anyone signed up for news and updates?</option>
-              <option value="Yes">Yes</option>
-              <option value="No">No</option>
+              <option value="">All Signups</option>
+              <option value="Yes">Signed Up</option>
+              <option value="No">Not Signed Up</option>
             </select>
           </div>
         </div>
       </motion.div>
 
+      {/* Enhanced Action Buttons */}
       <motion.div
         variants={fadeInLeft}
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true }}
       >
-        <div className="mb-6 text-center flex justify-center items-center space-x-4">
+        <div className="flex flex-wrap gap-4 mb-8">
           <button
-            onClick={() => {
-              debugger
-              if (selectedDate) { // Check if there is a filter selected
-                handleFetchData();
-                toast.success("Data fetched successfully!");
-              }
-              else if (signedUp) {
-                handleFetchData();
-                toast.success("Data fetched successfully!");
-              }
-              else {
-                toast.error("No filter applied!");
-              }
-            }}
-            className="px-8 py-2 md:py-3 bg-[#36302A] text-[#FAF4ED] font-semibold rounded-md md:rounded-lg shadow-md hover:bg-[#2C2925] focus:outline-none focus:ring-2 focus:ring-[#36302A] w-full md:w-auto"
+            onClick={handleFetchData}
+            className="px-6 py-2.5 bg-[#36302A] text-[#FAF4ED] font-semibold rounded-lg shadow-lg hover:bg-[#2C2925] transition-all duration-200 flex items-center gap-2 hover:scale-105"
           >
-            Apply Filter
+            <span className="text-lg">🔍</span>
+            Apply Filters
           </button>
           <button
             onClick={() => {
-              if (selectedDate || signedUp) {
-                setSelectedDate("");
-                setSignedUp("");
-                setFilteredInquiries(inquiries);
-                toast.success("Filters cleared!");
-              } else {
-                toast.error("No filter to clear!");
-              }
+              setSelectedDate("");
+              setSignedUp("");
+              setFilteredInquiries(inquiries);
+              toast.success("Filters cleared!");
             }}
-            className="px-5 py-2 md:py-3 bg-red-600 text-[#FAF4ED] font-semibold rounded-md md:rounded-lg shadow-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-600 md:w-auto"
+            className="px-6 py-2.5 bg-red-600/90 text-[#FAF4ED] font-semibold rounded-lg shadow-lg hover:bg-red-700 transition-all duration-200 flex items-center gap-2 hover:scale-105"
           >
-            <MdDeleteForever className="text-lg md:text-2xl" />
+            <MdDeleteForever className="text-xl" />
+            Clear Filters
+          </button>
+          <button
+            onClick={syncData}
+            disabled={issyncing}
+            className="px-6 py-2.5 bg-[#36302A] text-[#FAF4ED] font-semibold rounded-lg shadow-lg hover:bg-[#2C2925] transition-all duration-200 flex items-center gap-2 hover:scale-105 disabled:opacity-50"
+          >
+            <FaSync className={`text-xl ${issyncing ? 'animate-spin' : ''}`} />
+            <span>{issyncing ? 'Syncing...' : 'Sync Data'}</span>
           </button>
         </div>
       </motion.div>
 
+      {/* Enhanced Table Section */}
       <motion.div
         variants={fadeInUp}
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true }}
       >
-        <div className="relative w-full overflow-hidden bg-[#FAF4ED] shadow-md">
-          {/* Refresh button above table */}
-          <motion.div
-            variants={fadeInLeft}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
-            className="mb-4"
-          >
-            <button
-              onClick={syncData}
-              className="px-3 py-1 md:px-4 md:py-2 bg-[#36302A] text-[#FAF4ED] font-semibold rounded-lg shadow-md hover:bg-[#27231f] transition-colors duration-200 flex items-center space-x-2"
-              disabled={issyncing}
-            >
-              <FaSync className={`text-md md:text-xl ${issyncing ? 'animate-spin' : ''}`} />
-              <span>{issyncing ? 'Refreshing...' : 'Refresh Data'}</span>
-            </button>
-          </motion.div>
-          <div
-            className="overflow-x-auto scrollbar-hide"
-            style={{
-              scrollbarWidth: "none",
-              msOverflowStyle: "none",
-              WebkitOverflowScrolling: "touch",
-            }}
-          >
-
-
-            <table className="min-w-full table-auto border-collapse border border-gray-200">
-              <thead className="bg-[#5a4c3f] text-[#FAF4ED]">
+        <div className="relative w-full overflow-hidden bg-white shadow-md rounded-lg">
+          <div className="overflow-x-auto scrollbar-hide">
+            <table className="min-w-full table-auto border-collapse border border-[#36302A]/20">
+              <thead className="bg-[#36302A] text-[#FAF4ED]">
                 <tr>
                   {[
                     "Action",
@@ -472,7 +439,6 @@ const AdminPanel = () => {
                     "SignedUp",
                     "DialCode",
                     "PhoneNumber",
-                    // "Company/Brand",
                     "BrandName",
                     "Services",
                     "Socials",
@@ -481,7 +447,7 @@ const AdminPanel = () => {
                   ].map((header) => (
                     <th
                       key={header}
-                      className="border border-[#36302A] px-4 md:px-4 py-2 md:py-4 text-left text-xs md:text-md md:text-base  font-semibold"
+                      className="border border-[#36302A]/50 px-4 py-4 text-left font-semibold text-sm md:text-base"
                     >
                       {header}
                     </th>

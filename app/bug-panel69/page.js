@@ -12,6 +12,7 @@ import { BsFillSendFill } from "react-icons/bs";
 import { HiBellAlert } from "react-icons/hi2";
 import PriorityDisplay from "../components/PriorityDisplay";
 import { FaCheck } from "react-icons/fa";
+import { CheckCircle } from 'lucide-react';
 
 const BugPanel = () => {
     const fadeInLeft = {
@@ -39,6 +40,8 @@ const BugPanel = () => {
     const [loadingNotifications, setLoadingNotifications] = useState({});
     const [issyncing, setIssyncing] = useState(false);
     const [selectedStatus, setSelectedStatus] = useState("");
+    const [selectedItems, setSelectedItems] = useState(new Set());
+    const [selectAll, setSelectAll] = useState(false);
     const entriesPerPage = 20;
 
     const fetchBugs = async () => {
@@ -412,79 +415,165 @@ const BugPanel = () => {
         }
     };
 
+    const StatusCell = ({ status }) => {
+        const getStatusConfig = (status) => {
+            switch (status.toLowerCase()) {
+                case 'resolved':
+                    return {
+                        bgColor: 'bg-green-50',
+                        textColor: 'text-green-700',
+                        borderColor: 'border-green-200',
+                        prefix: '✓'
+                    };
+                case 'unresolved':
+                    return {
+                        bgColor: 'bg-red-50',
+                        textColor: 'text-red-700',
+                        borderColor: 'border-red-200',
+                        prefix: '•'
+                    };
+                default:
+                    return {
+                        bgColor: 'bg-gray-50',
+                        textColor: 'text-gray-700',
+                        borderColor: 'border-gray-200',
+                        prefix: '•'
+                    };
+            }
+        };
+
+        const config = getStatusConfig(status);
+
+        return (
+            <div className={`
+                inline-flex items-center gap-2 
+                px-4 py-2 rounded-lg 
+                ${config.bgColor} 
+                ${config.textColor} 
+                border ${config.borderColor}
+                font-semibold text-sm
+                transition-all duration-200
+            `}>
+                <span className="text-lg">{config.prefix}</span>
+                <span className="capitalize">{status}</span>
+            </div>
+        );
+    };
+
+    const UpdateStatusCell = ({ onResolve, isResolved }) => {
+        return (
+            <button
+                onClick={onResolve}
+                disabled={isResolved}
+                className={`
+                    group relative flex items-center justify-center p-2 
+                    rounded-lg transition-all duration-200 
+                    ${isResolved
+                        ? 'bg-gray-100 cursor-not-allowed'
+                        : 'bg-green-50 hover:bg-green-100 active:bg-green-200'
+                    }
+                `}
+            >
+                <CheckCircle
+                    className={`
+                        w-6 h-6 transition-all duration-200 
+                        ${isResolved ? 'text-gray-400' : 'text-green-600 group-hover:text-green-700'}
+                    `}
+                />
+
+                <span className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-gray-800 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">
+                    {isResolved ? 'Already resolved' : 'Mark as resolved'}
+                </span>
+            </button>
+        );
+    };
+
     return (
-        <div className="p-4 md:p-6 bg-red-50 min-h-screen">
+        <div className="p-4 md:p-8 bg-gradient-to-b from-red-50 to-white min-h-screen">
+            {/* Enhanced Header Section */}
             <motion.div
                 variants={fadeInLeft}
                 initial="hidden"
                 whileInView="visible"
                 viewport={{ once: true }}
             >
-                <div className="flex flex-col md:flex-row justify-between items-center border-b border-red-300 py-6 pb-4 mb-6">
-                    <h1 className="text-4xl md:text-6xl font-serif font-bold text-red-800 mb-4 md:mb-0">
-                        Bugs & Issues 🐞
-                    </h1>
-                    <div className="flex space-x-4">
+                <div className="flex flex-col md:flex-row justify-between items-center border-b border-red-300/50 py-6 pb-4 mb-8">
+                    <div className="flex items-center gap-3">
+                        <h1 className="text-4xl md:text-6xl font-serif font-bold bg-gradient-to-r from-red-800 to-red-600 bg-clip-text text-transparent">
+                            Bug Panel
+                        </h1>
+                        <span className="text-4xl animate-bounce">🐞</span>
+                    </div>
+                    <div className="flex items-center gap-4">
+                        {/* <button
+                            onClick={() => router.push('/admin-panel69')}
+                            className="px-4 py-2.5 bg-red-600 text-white font-semibold rounded-lg shadow-lg hover:bg-red-700 transition-all duration-200 flex items-center gap-2 hover:translate-x-[-4px]"
+                        >
+                            <FaArrowLeft className="text-lg" />
+                            <span>Back to Admin Panel</span>
+                        </button> */}
                         <button
                             onClick={handleDeleteAllBugs}
                             disabled={isDeletingAll}
-                            className="px-4 py-2 bg-red-600 text-white font-semibold rounded-lg shadow-md hover:bg-red-700 transition-colors duration-200 flex items-center space-x-2"
+                            className="px-4 py-2.5 bg-red-600/90 text-white font-semibold rounded-lg shadow-lg hover:bg-red-700 transition-all duration-200 flex items-center gap-2 hover:scale-105"
                         >
                             <MdDeleteForever className="text-xl" />
-                            <span>Delete All</span>
+                            <span>{isDeletingAll ? 'Deleting...' : 'Delete All'}</span>
                         </button>
                     </div>
                 </div>
             </motion.div>
 
+            {/* Enhanced Filter Section */}
             <motion.div
                 variants={fadeInRight}
                 initial="hidden"
                 whileInView="visible"
                 viewport={{ once: true }}
             >
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                    <div>
-                        <label className="block text-sm md:text-lg font-medium mb-2 text-red-800" htmlFor="date-filter">
-                            Filter by Date:
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 bg-white p-6 rounded-xl shadow-sm border border-red-100">
+                    <div className="space-y-2">
+                        <label className="block text-sm font-medium text-red-800 flex items-center gap-2" htmlFor="date-filter">
+                            <span className="text-lg">📅</span> Filter by Date
                         </label>
                         <input
                             id="date-filter"
                             type="date"
                             value={selectedDate}
                             onChange={handleDateChange}
-                            className="w-full border border-red-300 rounded-lg px-3 py-1 md:py-1.5 shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500"
+                            className="w-full border border-red-200 rounded-lg px-4 py-2.5 shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-200"
                         />
                     </div>
 
-                    <div>
-                        <label className="block text-sm md:text-lg font-medium mb-2 text-red-800" htmlFor="priority-filter">
-                            Filter by Priority:
+                    <div className="space-y-2">
+                        <label className="block text-sm font-medium text-red-800 flex items-center gap-2" htmlFor="priority-filter">
+                            <span className="text-lg">🎯</span> Priority Level
                         </label>
                         <select
                             id="priority-filter"
                             value={selectedPriority}
                             onChange={handlePriorityChange}
-                            className="w-full border border-red-300 rounded-lg px-3 py-1 md:py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500"
+                            className="w-full border border-red-200 rounded-lg px-4 py-2.5 shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-200 bg-white"
                         >
-                            <option value="">Select Priority</option>
-                            <option value="low">Low</option>
-                            <option value="medium">Medium</option>
-                            <option value="high">High</option>
-                            <option value="highest">Highest</option>
+                            <option value="">All Priorities</option>
+                            <option value="low">Low Priority</option>
+                            <option value="medium">Medium Priority</option>
+                            <option value="high">High Priority</option>
+                            <option value="highest">Highest Priority</option>
                         </select>
                     </div>
-                    <div>
-                        <label className="block text-sm md:text-lg font-medium mb-2 text-red-800" htmlFor="status-filter">
-                            Filter by Bug Status:
+
+                    <div className="space-y-2">
+                        <label className="block text-sm font-medium text-red-800 flex items-center gap-2" htmlFor="status-filter">
+                            <span className="text-lg">📊</span> Bug Status
                         </label>
                         <select
                             id="status-filter"
                             value={selectedStatus}
                             onChange={handleStatusChange}
-                            className="w-full border border-red-300 rounded-lg px-3 py-1 md:py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500"
+                            className="w-full border border-red-200 rounded-lg px-4 py-2.5 shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-200 bg-white"
                         >
-                            <option value="">Select Bug Status</option>
+                            <option value="">All Statuses</option>
                             <option value="resolved">Resolved</option>
                             <option value="unresolved">Unresolved</option>
                         </select>
@@ -492,18 +581,20 @@ const BugPanel = () => {
                 </div>
             </motion.div>
 
+            {/* Enhanced Action Buttons */}
             <motion.div
                 variants={fadeInLeft}
                 initial="hidden"
                 whileInView="visible"
                 viewport={{ once: true }}
             >
-                <div className="mb-6 text-center flex justify-center items-center space-x-4">
+                <div className="flex flex-wrap gap-4 mb-8">
                     <button
                         onClick={handleFetchData}
-                        className="px-8 py-2 md:py-3 bg-red-600 text-white font-semibold rounded-md md:rounded-lg shadow-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 w-full md:w-auto"
+                        className="px-6 py-2.5 bg-red-600 text-white font-semibold rounded-lg shadow-lg hover:bg-red-700 transition-all duration-200 flex items-center gap-2 hover:scale-105"
                     >
-                        Apply Filter
+                        <span className="text-lg">🔍</span>
+                        Apply Filters
                     </button>
                     <button
                         onClick={() => {
@@ -513,38 +604,30 @@ const BugPanel = () => {
                             setFilteredBugs(bugs);
                             toast.success("Filters cleared!");
                         }}
-                        className="px-5 py-2 md:py-3 bg-red-600 text-white font-semibold rounded-md md:rounded-lg shadow-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-600 md:w-auto"
+                        className="px-6 py-2.5 bg-red-600/90 text-white font-semibold rounded-lg shadow-lg hover:bg-red-700 transition-all duration-200 flex items-center gap-2 hover:scale-105"
                     >
-                        <MdDeleteForever className="text-lg md:text-2xl" />
+                        <MdDeleteForever className="text-xl" />
+                        Clear Filters
                     </button>
-                </div>
-            </motion.div>
-
-            <motion.div
-                variants={fadeInLeft}
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true }}
-            >
-                <div className="flex space-x-2 mb-2 ml-0 md:mb-5 md:ml-5">
                     <button
                         onClick={handleDownloadCSV}
-                        className="px-3 md:px-4 py-2 md:py-3 bg-red-600 text-white font-semibold rounded-lg shadow-md hover:bg-red-700 transition-colors duration-200 flex items-center space-x-2"
+                        className="px-6 py-2.5 bg-red-600 text-white font-semibold rounded-lg shadow-lg hover:bg-red-700 transition-all duration-200 flex items-center gap-2 hover:scale-105"
                     >
                         <FaFileExcel className="text-xl" />
-                        <span>Download CSV</span>
+                        <span className="hidden md:inline">Export CSV</span>
                     </button>
                     <button
                         onClick={syncData}
                         disabled={issyncing}
-                        className="px-3 md:px-4 py-2 md:py-3 bg-red-600 text-white font-semibold rounded-lg shadow-md hover:bg-red-700 transition-colors duration-200 flex items-center space-x-2"
+                        className="px-6 py-2.5 bg-red-600 text-white font-semibold rounded-lg shadow-lg hover:bg-red-700 transition-all duration-200 flex items-center gap-2 hover:scale-105 disabled:opacity-50"
                     >
                         <FaSync className={`text-xl ${issyncing ? 'animate-spin' : ''}`} />
-                        <span>{issyncing ? 'Refreshing...' : 'Refresh Data'}</span>
+                        <span>{issyncing ? 'Syncing...' : 'Sync Data'}</span>
                     </button>
                 </div>
             </motion.div>
 
+            {/* Enhanced Table Section */}
             <motion.div
                 variants={fadeInUp}
                 initial="hidden"
@@ -552,33 +635,23 @@ const BugPanel = () => {
                 viewport={{ once: true }}
             >
                 <div className="relative w-full overflow-hidden bg-white shadow-md rounded-lg">
-                    <div
-                        className="overflow-x-auto scrollbar-hide"
-                        style={{
-                            scrollbarWidth: "none",
-                            msOverflowStyle: "none",
-                            WebkitOverflowScrolling: "touch",
-                        }}
-                    >
+                    <div className="overflow-x-auto scrollbar-hide">
                         <table className="min-w-full table-auto border-collapse border border-red-200">
                             <thead className="bg-red-600 text-white">
                                 <tr>
                                     {[
                                         "Action",
                                         "Bug Status",
+                                        "Update status",
                                         "Priority",
-                                        "ChangePriority",
+                                        "Change Priority",
                                         "Timestamp",
                                         "Email",
                                         "Notify",
                                         "Subject",
-                                        "Message",
-
+                                        "Message"
                                     ].map((header) => (
-                                        <th
-                                            key={header}
-                                            className="border border-red-500 px-4 md:px-4 py-2 md:py-4 text-left text-xs md:text-md md:text-base font-semibold"
-                                        >
+                                        <th key={header} className="border border-red-500 px-4 py-4 text-left font-semibold">
                                             {header}
                                         </th>
                                     ))}
@@ -597,21 +670,16 @@ const BugPanel = () => {
                                                     >
                                                         <MdDeleteForever />
                                                     </button>
-                                                    {bug.status !== 'resolved' && (
-                                                        <div className="relative group">
-                                                            <button
-                                                                onClick={() => handleMarkAsResolved(bug.docId)}
-                                                                className="p-1 bg-green-500 text-white rounded-full hover:bg-green-600 transition-colors duration-200"
-                                                                title="Mark as Resolved"
-                                                            >
-                                                                <FaCheck className="text-xs md:text-sm" />
-                                                            </button>
-                                                        </div>
-                                                    )}
                                                 </div>
                                             </td>
                                             <td className="border border-red-200 px-4 py-2 text-sm md:text-base">
-                                                {bug.status}
+                                                <StatusCell status={bug.status} />
+                                            </td>
+                                            <td className="border border-red-200 px-8 py-2">
+                                                <UpdateStatusCell
+                                                    onResolve={() => handleMarkAsResolved(bug.docId)}
+                                                    isResolved={bug.status === 'resolved'}
+                                                />
                                             </td>
                                             <td className="border border-red-200 px-4 py-2 text-sm md:text-base">
                                                 <PriorityDisplay priority={bug.priority} />
@@ -659,7 +727,6 @@ const BugPanel = () => {
                                             <td className="border border-red-200 px-4 py-2 font-serif text-sm md:text-base">
                                                 {bug.message}
                                             </td>
-
                                         </tr>
                                     ))
                                 ) : (
@@ -675,7 +742,7 @@ const BugPanel = () => {
                 </div>
             </motion.div>
 
-            {/* Pagination */}
+            {/* Enhanced Pagination */}
             {filteredBugs.length > 0 && (
                 <div className="flex flex-col md:flex-row justify-between items-center py-4">
                     <div>
@@ -683,32 +750,32 @@ const BugPanel = () => {
                             Total Records: {filteredBugs.length} | Showing {startIndex} to {endIndex} of {filteredBugs.length} records
                         </span>
                     </div>
-                    <div className="space-y-0 md:space-y-0 space-x-4 md:space-x-4 flex flex-row md:flex-row">
+                    <div className="flex gap-4">
                         <button
                             onClick={() => handlePageChange(1)}
                             disabled={currentPage === 1}
-                            className="px-4 py-2 text-[#FAF4ED] bg-red-600 rounded-md shadow-md hover:bg-red-700 w-full md:w-auto"
+                            className="px-4 py-2 bg-red-600 text-white rounded-md shadow-md hover:bg-red-700 disabled:opacity-50 transition-all duration-200"
                         >
                             First
                         </button>
                         <button
                             onClick={() => handlePageChange(currentPage - 1)}
                             disabled={currentPage === 1}
-                            className="px-4 py-2 text-[#FAF4ED] bg-red-600 rounded-md shadow-md hover:bg-red-700 w-full md:w-auto"
+                            className="px-4 py-2 bg-red-600 text-white rounded-md shadow-md hover:bg-red-700 disabled:opacity-50 transition-all duration-200"
                         >
-                            Prev
+                            Previous
                         </button>
                         <button
                             onClick={() => handlePageChange(currentPage + 1)}
                             disabled={currentPage === totalPages}
-                            className="px-4 py-2 text-[#FAF4ED] bg-red-600 rounded-md shadow-md hover:bg-red-700 w-full md:w-auto"
+                            className="px-4 py-2 bg-red-600 text-white rounded-md shadow-md hover:bg-red-700 disabled:opacity-50 transition-all duration-200"
                         >
                             Next
                         </button>
                         <button
                             onClick={() => handlePageChange(totalPages)}
                             disabled={currentPage === totalPages}
-                            className="px-4 py-2 text-[#FAF4ED] bg-red-600 rounded-md shadow-md hover:bg-red-700 w-full md:w-auto"
+                            className="px-4 py-2 bg-red-600 text-white rounded-md shadow-md hover:bg-red-700 disabled:opacity-50 transition-all duration-200"
                         >
                             Last
                         </button>

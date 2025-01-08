@@ -11,7 +11,8 @@ import { motion } from "framer-motion";
 import { BsFillSendFill } from "react-icons/bs";
 import { HiBellAlert } from "react-icons/hi2";
 import PriorityDisplay from "../components/PriorityDisplay";
-import { CheckCircle } from 'lucide-react';
+import { AlertCircle, Badge, CheckCircle } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 const ReviewPanel = () => {
     const fadeInLeft = {
@@ -380,7 +381,7 @@ const ReviewPanel = () => {
 
         return csvRows.join('\n');
     };
-    
+
 
     const handleDownloadCSV = () => {
         const csvContent = convertToCSV(filteredReviews);
@@ -445,122 +446,199 @@ const ReviewPanel = () => {
         }
     };
 
+    const StatusCell = ({ status }) => {
+        const getStatusConfig = (status) => {
+            switch (status) {
+                case 'Pending':
+                    return {
+                        bgColor: 'bg-orange-50',
+                        textColor: 'text-orange-700',
+                        borderColor: 'border-orange-200',
+                        prefix: '•'
+                    };
+                case 'Reached out':
+                    return {
+                        bgColor: 'bg-green-50',
+                        textColor: 'text-green-700',
+                        borderColor: 'border-green-200',
+                        prefix: '✓'
+                    };
+                default:
+                    return {
+                        bgColor: 'bg-gray-50',
+                        textColor: 'text-gray-700',
+                        borderColor: 'border-gray-200',
+                        prefix: '•'
+                    };
+            }
+        };
+
+        const config = getStatusConfig(status);
+
+        return (
+            <div className={`
+                inline-flex items-center gap-2 
+                px-4 py-2 rounded-lg 
+                ${config.bgColor} 
+                ${config.textColor} 
+                border ${config.borderColor}
+                font-semibold text-base
+                transition-all duration-200
+            `}>
+                <span className="text-lg">{config.prefix}</span>
+                <span>{status}</span>
+            </div>
+        );
+    };
+
+    const UpdateStatusCell = ({ status, onUpdate, disabled }) => {
+        return (
+            <button
+                onClick={onUpdate}
+                disabled={disabled}
+                className={`group relative flex items-center justify-center p-2 rounded-lg transition-all duration-200 ${disabled
+                    ? 'bg-gray-100 cursor-not-allowed'
+                    : 'bg-green-50 hover:bg-green-100 active:bg-green-200'
+                    }`}
+            >
+                <CheckCircle
+                    className={`w-6 h-6 transition-all duration-200 ${disabled ? 'text-gray-400' : 'text-green-600 group-hover:text-green-700'
+                        }`}
+                />
+
+                {/* Tooltip */}
+                <span className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-gray-800 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">
+                    {disabled ? 'Already reached out' : 'Mark as reached out'}
+                </span>
+            </button>
+        );
+    };
+
     return (
-        <div className="p-4 md:p-6 bg-green-50 min-h-screen">
+        <div className="p-4 md:p-8 bg-gradient-to-b from-green-50 to-white min-h-screen">
             <motion.div
                 variants={fadeInLeft}
                 initial="hidden"
                 whileInView="visible"
                 viewport={{ once: true }}
             >
-                <div className="flex flex-col md:flex-row justify-between items-center border-b border-green-300 py-6 pb-4 mb-6">
-                    <h1 className="text-4xl md:text-6xl font-serif font-bold text-green-800 mb-4 md:mb-0">
-                        Review Panel 📋
-                    </h1>
-                    <div className="flex space-x-4">
+                <div className="flex flex-col md:flex-row justify-between items-center border-b border-green-300/50 py-6 pb-4 mb-8">
+                    <div className="flex items-center gap-3">
+                        <h1 className="text-4xl md:text-6xl font-serif font-bold bg-gradient-to-r from-green-800 to-green-600 bg-clip-text text-transparent">
+                            Review Panel
+                        </h1>
+                        <span className="text-4xl animate-bounce">📋</span>
+                    </div>
+                    <div className="flex items-center gap-4">
                         <button
                             onClick={() => router.push('/admin-panel69')}
-                            className="px-4 py-2 bg-green-600 text-white font-semibold rounded-lg shadow-md hover:bg-green-700 transition-colors duration-200 flex items-center space-x-2"
+                            className="px-4 py-2.5 bg-green-600 text-white font-semibold rounded-lg shadow-lg hover:bg-green-700 transition-all duration-200 flex items-center gap-2 hover:translate-x-[-4px]"
                         >
-                            <FaArrowLeft className="text-md md:text-xl" />
+                            <FaArrowLeft className="text-lg" />
                             <span>Back to Admin Panel</span>
                         </button>
                         <button
                             onClick={handleDeleteAllReviews}
                             disabled={isDeletingAll}
-                            className="px-4 py-2 bg-red-600 text-white font-semibold rounded-lg shadow-md hover:bg-red-700 transition-colors duration-200 flex items-center space-x-2"
+                            className="px-4 py-2.5 bg-red-600/90 text-white font-semibold rounded-lg shadow-lg hover:bg-red-700 transition-all duration-200 flex items-center gap-2 hover:scale-105"
                         >
                             <MdDeleteForever className="text-xl" />
-                            <span>Delete All</span>
+                            <span>{isDeletingAll ? 'Deleting...' : 'Delete All'}</span>
                         </button>
                     </div>
                 </div>
             </motion.div>
 
+            {/* Enhanced Filter Section */}
             <motion.div
                 variants={fadeInRight}
                 initial="hidden"
                 whileInView="visible"
                 viewport={{ once: true }}
             >
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-                    <div>
-                        <label className="block text-sm md:text-lg font-medium mb-2 text-green-800" htmlFor="date-filter">
-                            Filter by Date:
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8 bg-white p-6 rounded-xl shadow-sm border border-green-100">
+                    <div className="space-y-2">
+                        <label className="block text-sm font-medium text-green-800 flex items-center gap-2" htmlFor="date-filter">
+                            <span className="text-lg">📅</span> Filter by Date
                         </label>
                         <input
                             id="date-filter"
                             type="date"
                             value={selectedDate}
                             onChange={handleDateChange}
-                            className="w-full border border-green-300 rounded-lg px-3 py-1 md:py-1.5 shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                            className="w-full border border-green-200 rounded-lg px-4 py-2.5 shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200"
                         />
                     </div>
 
-                    <div>
-                        <label className="block text-sm md:text-lg font-medium mb-2 text-green-800" htmlFor="signup-filter">
-                            Filter by Signed Up:
+                    {/* Similar enhancements for other filter inputs */}
+                    <div className="space-y-2">
+                        <label className="block text-sm font-medium text-green-800 flex items-center gap-2" htmlFor="signup-filter">
+                            <span className="text-lg">📝</span> Newsletter Signup
                         </label>
                         <select
                             id="signup-filter"
                             value={signedUp}
                             onChange={handleSignUpChange}
-                            className="w-full border border-green-300 rounded-lg px-3 py-1 md:py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                            className="w-full border border-green-200 rounded-lg px-4 py-2.5 shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 bg-white"
                         >
-                            <option value="">Has anyone signed up for news and updates?</option>
-                            <option value="Yes">Yes</option>
-                            <option value="No">No</option>
+                            <option value="">All Signups</option>
+                            <option value="Yes">Subscribed</option>
+                            <option value="No">Not Subscribed</option>
                         </select>
                     </div>
 
-                    <div>
-                        <label className="block text-sm md:text-lg font-medium mb-2 text-green-800" htmlFor="priority-filter">
-                            Filter by Priority:
+                    {/* Enhanced Priority Filter */}
+                    <div className="space-y-2">
+                        <label className="block text-sm font-medium text-green-800 flex items-center gap-2" htmlFor="priority-filter">
+                            <span className="text-lg">🎯</span> Priority Level
                         </label>
                         <select
                             id="priority-filter"
                             value={selectedPriority}
                             onChange={handlePriorityChange}
-                            className="w-full border border-green-300 rounded-lg px-3 py-1 md:py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                            className="w-full border border-green-200 rounded-lg px-4 py-2.5 shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 bg-white"
                         >
-                            <option value="">Select Priority</option>
-                            <option value="low">Low</option>
-                            <option value="medium">Medium</option>
-                            <option value="high">High</option>
-                            <option value="highest">Highest</option>
+                            <option value="">All Priorities</option>
+                            <option value="low">Low Priority</option>
+                            <option value="medium">Medium Priority</option>
+                            <option value="high">High Priority</option>
+                            <option value="highest">Highest Priority</option>
                         </select>
                     </div>
 
-                    <div>
-                        <label className="block text-sm md:text-lg font-medium mb-2 text-green-800" htmlFor="client-status-filter">
-                            Filter by Client Status:
+                    {/* Enhanced Client Status Filter */}
+                    <div className="space-y-2">
+                        <label className="block text-sm font-medium text-green-800 flex items-center gap-2" htmlFor="client-status-filter">
+                            <span className="text-lg">📊</span> Client Status
                         </label>
                         <select
                             id="client-status-filter"
                             value={selectedClientStatus}
                             onChange={handleClientStatusChange}
-                            className="w-full border border-green-300 rounded-lg px-3 py-1 md:py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                            className="w-full border border-green-200 rounded-lg px-4 py-2.5 shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 bg-white"
                         >
-                            <option value="">Select Client Status</option>
+                            <option value="">All Statuses</option>
                             <option value="Pending">Pending</option>
-                            <option value="Reached out">Reached out</option>
+                            <option value="Reached out">Reached Out</option>
                         </select>
                     </div>
                 </div>
             </motion.div>
 
+            {/* Enhanced Action Buttons */}
             <motion.div
                 variants={fadeInLeft}
                 initial="hidden"
                 whileInView="visible"
                 viewport={{ once: true }}
             >
-                <div className="mb-6 text-center flex justify-center items-center space-x-4">
+                <div className="flex flex-wrap gap-4 mb-8">
                     <button
                         onClick={handleFetchData}
-                        className="px-8 py-2 md:py-3 bg-green-600 text-white font-semibold rounded-md md:rounded-lg shadow-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 w-full md:w-auto"
+                        className="px-6 py-2.5 bg-green-600 text-white font-semibold rounded-lg shadow-lg hover:bg-green-700 transition-all duration-200 flex items-center gap-2 hover:scale-105"
                     >
-                        Apply Filter
+                        <span className="text-lg">🔍</span>
+                        Apply Filters
                     </button>
                     <button
                         onClick={() => {
@@ -571,34 +649,25 @@ const ReviewPanel = () => {
                             setFilteredReviews(reviews);
                             toast.success("Filters cleared!");
                         }}
-                        className="px-5 py-2 md:py-3 bg-red-600 text-white font-semibold rounded-md md:rounded-lg shadow-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-600 md:w-auto"
+                        className="px-6 py-2.5 bg-red-600/90 text-white font-semibold rounded-lg shadow-lg hover:bg-red-700 transition-all duration-200 flex items-center gap-2 hover:scale-105"
                     >
-                        <MdDeleteForever className="text-lg md:text-2xl" />
+                        <MdDeleteForever className="text-xl" />
+                        Clear Filters
                     </button>
-                </div>
-            </motion.div>
-
-            <motion.div
-                variants={fadeInUp}
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true }}
-            >
-                <div className="flex space-x-2 mb-2 ml-0 md:mb-5 md:ml-5">
                     <button
                         onClick={handleDownloadCSV}
-                        className="px-3 md:px-4 py-2 md:py-3 bg-green-600 text-white font-semibold rounded-lg shadow-md hover:bg-green-700 transition-colors duration-200 flex items-center space-x-2 mb-2 ml-0 md:mb-5 md:ml-5"
+                        className="px-6 py-2.5 bg-green-600 text-white font-semibold rounded-lg shadow-lg hover:bg-green-700 transition-all duration-200 flex items-center gap-2 hover:scale-105"
                     >
                         <FaFileExcel className="text-xl" />
-                        <span className="hidden md:inline">Download CSV</span>
+                        <span className="hidden md:inline">Export CSV</span>
                     </button>
                     <button
                         onClick={syncData}
                         disabled={issyncing}
-                        className="px-3 md:px-4 py-2 md:py-3 bg-green-600 text-white font-semibold rounded-lg shadow-md hover:bg-green-700 transition-colors duration-200 flex items-center space-x-2 mb-2 ml-0 md:mb-5 md:ml-5"
+                        className="px-6 py-2.5 bg-green-600 text-white font-semibold rounded-lg shadow-lg hover:bg-green-700 transition-all duration-200 flex items-center gap-2 hover:scale-105 disabled:opacity-50"
                     >
                         <FaSync className={`text-xl ${issyncing ? 'animate-spin' : ''}`} />
-                        <span>{issyncing ? 'Refreshing...' : 'Refresh Data'}</span>
+                        <span>{issyncing ? 'Syncing...' : 'Sync Data'}</span>
                     </button>
                 </div>
             </motion.div>
@@ -678,20 +747,15 @@ const ReviewPanel = () => {
                                                     <option value="highest">Highest</option>
                                                 </select>
                                             </td>
-                                            <td className="border border-green-200 px-4 py-2 font-serif text-sm md:text-base">
-                                                {review.clientStatus}
+                                            <td className="border border-green-200 px-4 py-2">
+                                                <StatusCell status={review.clientStatus} />
                                             </td>
-                                            <td className="border border-green-200 px-4 py-2 text-sm md:text-base">
-                                                <button
-                                                    onClick={() => handleClientStatusUpdate(review.docId, review.clientStatus)}
-                                                    className={`text-green-500 hover:text-green-700 text-lg md:text-2xl ${
-                                                        review.clientStatus === 'Reached out' ? 'opacity-50 cursor-not-allowed' : ''
-                                                    }`}
-                                                    title={review.clientStatus === 'Reached out' ? 'Status already updated' : 'Update Client Status'}
+                                            <td className="border border-green-200 px-4 py-2">
+                                                <UpdateStatusCell
+                                                    status={review.clientStatus}
+                                                    onUpdate={() => handleClientStatusUpdate(review.docId, review.clientStatus)}
                                                     disabled={review.clientStatus === 'Reached out'}
-                                                >
-                                                    <CheckCircle />
-                                                </button>
+                                                />
                                             </td>
                                             <td className="border border-green-200 px-4 py-2 font-serif text-sm md:text-base whitespace-nowrap">
                                                 {review.movedToReviewAt
@@ -710,11 +774,10 @@ const ReviewPanel = () => {
                                             <td className="border border-green-200 px-4 py-2 text-sm md:text-base">
                                                 <button
                                                     onClick={() => handleSendNotification(review.email, review.firstName, review.docId)}
-                                                    className={`px-2 py-1 rounded-md transition-colors duration-200 flex items-center space-x-1 ${
-                                                        review.clientStatus === 'Reached out'
-                                                            ? 'bg-gray-400 cursor-not-allowed'
-                                                            : 'bg-green-500 hover:bg-green-600 text-white'
-                                                    }`}
+                                                    className={`px-2 py-1 rounded-md transition-colors duration-200 flex items-center space-x-1 ${review.clientStatus === 'Reached out'
+                                                        ? 'bg-gray-400 cursor-not-allowed'
+                                                        : 'bg-green-500 hover:bg-green-600 text-white'
+                                                        }`}
                                                     title={review.clientStatus === 'Reached out' ? 'Already reached out' : 'Send Notification'}
                                                     disabled={loadingNotifications[review.docId] || review.clientStatus === 'Reached out'}
                                                 >
@@ -758,7 +821,7 @@ const ReviewPanel = () => {
                                             <td className="border border-green-200 px-4 py-2 font-serif text-sm md:text-base">
                                                 {review.messages}
                                             </td>
-                                            
+
                                         </tr>
                                     ))
                                 ) : (
@@ -791,7 +854,7 @@ const ReviewPanel = () => {
                             First
                         </button>
                         <button
-                            onClick                            ={() => handlePageChange(currentPage - 1)}
+                            onClick={() => handlePageChange(currentPage - 1)}
                             disabled={currentPage === 1}
                             className="px-4 py-2 text-[#FAF4ED] bg-green-600 rounded-md shadow-md hover:bg-green-700 w-full md:w-auto"
                         >
@@ -819,4 +882,3 @@ const ReviewPanel = () => {
 };
 
 export default ReviewPanel;
-
