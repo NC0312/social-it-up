@@ -294,11 +294,15 @@ const BugPanel = () => {
 
     const handleSendNotification = async (email, subject, docId) => {
         if (loadingNotifications[docId]) return;
-
+    
         try {
             setLoadingNotifications(prev => ({ ...prev, [docId]: true }));
-
-            const response = await fetch('/api/send-bug-notification', {
+    
+            // Show immediate "queued" toast
+            toast.info('Notification email queued for sending!');
+    
+            // Start the email sending process
+            fetch('/api/send-bug-notification', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -307,17 +311,31 @@ const BugPanel = () => {
                     email,
                     subject
                 }),
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Failed to send notification email');
+                }
+                return response.json();
+            })
+            .then(data => {
+                toast.success('Notification email sent successfully!');
+            })
+            .catch(error => {
+                console.error('Error sending notification email:', error);
+                toast.error('Failed to send notification email. Please try again.');
+            })
+            .finally(() => {
+                setLoadingNotifications(prev => ({ ...prev, [docId]: false }));
             });
-
-            if (!response.ok) {
-                throw new Error('Failed to send notification email');
-            }
-
-            toast.success('Notification email sent successfully!');
+    
+            setTimeout(() => {
+                setLoadingNotifications(prev => ({ ...prev, [docId]: false }));
+            }, 2000);
+    
         } catch (error) {
-            console.error('Error sending notification email:', error);
-            toast.error('Failed to send notification email. Please try again.');
-        } finally {
+            console.error('Error queuing notification email:', error);
+            toast.error('Failed to queue notification email. Please try again.');
             setLoadingNotifications(prev => ({ ...prev, [docId]: false }));
         }
     };
