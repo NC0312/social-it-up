@@ -331,7 +331,11 @@ const ReviewPanel = () => {
         try {
             setLoadingNotifications(prev => ({ ...prev, [docId]: true }));
 
-            const response = await fetch('/api/send-notification-email', {
+            // Show immediate "queued" toast
+            toast.info('Notification email queued for sending!');
+
+            // Start the email sending process
+            fetch('/api/send-notification-email', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -340,20 +344,33 @@ const ReviewPanel = () => {
                     email,
                     firstName,
                 }),
-            });
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Failed to send notification email');
+                    }
+                    return response.json();
+                }).then(data => {
+                    toast.success('Notification email sent successfully!');
+                })
+                .catch(error => {
+                    console.error('Error sending notification email:', error);
+                    toast.error('Failed to send notification email. Please try again.');
+                })
+                .finally(() => {
+                    setLoadingNotifications(prev => ({ ...prev, [docId]: false }));
+                });
 
-            if (!response.ok) {
-                throw new Error('Failed to send notification email');
-            }
+            setTimeout(() => {
+                setLoadingNotifications(prev => ({ ...prev, [docId]: false }));
+            }, 2000);
 
-            toast.success('Notification email sent successfully!');
         } catch (error) {
-            console.error('Error sending notification email:', error);
-            toast.error('Failed to send notification email. Please try again.');
-        } finally {
+            console.error('Error queuing notification email:', error);
+            toast.error('Failed to queue notification email. Please try again.');
             setLoadingNotifications(prev => ({ ...prev, [docId]: false }));
-        }
-    };
+        }
+    };
 
     const convertToCSV = (data) => {
         const headers = ["Timestamp", "FirstName", "LastName", "Email", "SignedUp", "DialCode", "PhoneNumber", "BrandName", "Services", "Socials", "Website", "Messages", "Priority", "ClientStatus"];
