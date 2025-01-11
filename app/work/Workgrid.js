@@ -24,37 +24,49 @@ const WorkPageGrid = () => {
       bgcolor: "bg-[#8B1818]", // deep red background
     },
     {
-      src: "/work-images/image2.png",
-      alt: "Safar",
-      bgcolor: "bg-[#003B5C]", // deep blue background
-    },
-    {
-      src: "/work-images/image3.png",
-      alt: "Indo Canadian Transport Co.",
-      bgcolor: "bg-[#2E1A47]", // purple background
-    },
+      src: "/work-images/image5.png",
+      alt: "Machan",
+      bgcolor: "bg-[#1C1C1C]", // dark background
+    }, 
     {
       src: "/work-images/image4.png",
       alt: "Taiga",
       bgcolor: "bg-[#1B4D2E]", // green background
     },
     {
-      src: "/work-images/image5.png",
-      alt: "Machan",
-      bgcolor: "bg-[#1C1C1C]", // dark background
+      src:"/work-images/image8.png",
+      alt:"pretty knots",
+  },
+  {
+    src: "/work-images/image6.png",
+    alt: "Box Ongo",
+    bgcolor: "bg-[#0A4B8F]", // royal blue background
+  },
+  {
+    src: "/work-images/image10.png",
+    alt:"",
+    bgcolor:"",
+  },
+   
+   
+    {
+      src:"/work-images/image9.png",
+      alt:"",
+      bgcolor:"",
     },
     {
-      src: "/work-images/image6.png",
-      alt: "Box Ongo",
-      bgcolor: "bg-[#0A4B8F]", // royal blue background
+      src: "/work-images/image2.png",
+      alt: "Safar",
+      bgcolor: "bg-[#003B5C]", // deep blue background
     },
     {
         src: "/work-images/image7.png",
         alt:"Wise Monkeys",
     },
     {
-        src:"/work-images/image8.png",
-        alt:"pretty knots",
+      src: "/work-images/image3.png",
+      alt: "Indo Canadian Transport Co.",
+      bgcolor: "bg-[#2E1A47]", // purple background
     }
   ];
 
