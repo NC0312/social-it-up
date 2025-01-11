@@ -34,9 +34,7 @@ export default function RootLayout({ children }) {
           <DynamicTitle />
           <Header />
           <main className="flex-grow">
-            <LenisProvider>
               {children}
-            </LenisProvider>
           </main>
           <Footer />
         </div>
