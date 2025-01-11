@@ -28,6 +28,7 @@ export const metadata = {
 };
 
 export default function RootLayout({ children }) {
+  const isProduction = process.env.NEXT_PUBLIC_ENV === 'production';
   return (
     <html lang="en" className="lenis lenis-smooth">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
@@ -38,7 +39,7 @@ export default function RootLayout({ children }) {
               {children}
           </main>
           <Footer />
-          <Chatbot />
+          {isProduction && <Chatbot />}
         </div>
         <Toaster />
       </body>
