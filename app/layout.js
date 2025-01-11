@@ -5,6 +5,7 @@ import DynamicTitle from "./components/DynamicTitle";
 import Footer from "./components/Footer";
 import { Toaster } from "sonner";
 import LenisProvider from "./components/providers/LenisProvider";
+import Chatbot from "./components/Chatbot";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -37,6 +38,7 @@ export default function RootLayout({ children }) {
               {children}
           </main>
           <Footer />
+          <Chatbot />
         </div>
         <Toaster />
       </body>
