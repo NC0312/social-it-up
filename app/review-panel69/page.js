@@ -13,6 +13,7 @@ import { HiBellAlert } from "react-icons/hi2";
 import PriorityDisplay from "../components/PriorityDisplay";
 import { AlertCircle, Badge, CheckCircle } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Pagination } from "../components/Pagination";
 
 const ReviewPanel = () => {
     const fadeInLeft = {
@@ -369,8 +370,8 @@ const ReviewPanel = () => {
             console.error('Error queuing notification email:', error);
             toast.error('Failed to queue notification email. Please try again.');
             setLoadingNotifications(prev => ({ ...prev, [docId]: false }));
-        }
-    };
+        }
+    };
 
     const convertToCSV = (data) => {
         const headers = ["Timestamp", "FirstName", "LastName", "Email", "SignedUp", "DialCode", "PhoneNumber", "BrandName", "Services", "Socials", "Website", "Messages", "Priority", "ClientStatus"];
@@ -856,43 +857,16 @@ const ReviewPanel = () => {
 
             {/* Pagination */}
             {filteredReviews.length > 0 && (
-                <div className="flex flex-col md:flex-row justify-between items-center py-4">
-                    <div>
-                        <span className="text-sm md:text-lg text-green-700">
-                            Total Records: {filteredReviews.length} | Showing {startIndex} to {endIndex} of {filteredReviews.length} records | DB Limit: 6500 records
-                        </span>
-                    </div>
-                    <div className="space-y-0 md:space-y-0 space-x-4 md:space-x-4 flex flex-row md:flex-row">
-                        <button
-                            onClick={() => handlePageChange(1)}
-                            disabled={currentPage === 1}
-                            className="px-4 py-2 text-[#FAF4ED] bg-green-600 rounded-md shadow-md hover:bg-green-700 w-full md:w-auto"
-                        >
-                            First
-                        </button>
-                        <button
-                            onClick={() => handlePageChange(currentPage - 1)}
-                            disabled={currentPage === 1}
-                            className="px-4 py-2 text-[#FAF4ED] bg-green-600 rounded-md shadow-md hover:bg-green-700 w-full md:w-auto"
-                        >
-                            Prev
-                        </button>
-                        <button
-                            onClick={() => handlePageChange(currentPage + 1)}
-                            disabled={currentPage === totalPages}
-                            className="px-4 py-2 text-[#FAF4ED] bg-green-600 rounded-md shadow-md hover:bg-green-700 w-full md:w-auto"
-                        >
-                            Next
-                        </button>
-                        <button
-                            onClick={() => handlePageChange(totalPages)}
-                            disabled={currentPage === totalPages}
-                            className="px-4 py-2 text-[#FAF4ED] bg-green-600 rounded-md shadow-md hover:bg-green-700 w-full md:w-auto"
-                        >
-                            Last
-                        </button>
-                    </div>
-                </div>
+                <Pagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    totalRecords={filteredReviews.length}
+                    startIndex={startIndex}
+                    endIndex={endIndex}
+                    onPageChange={handlePageChange}
+                    pageButtonsStyles={"bg-green-500 hover:bg-green-600 font-serif"}
+                    recordInfoStyles={"text-gray-800 font-serif"}
+                />
             )}
         </div>
     );

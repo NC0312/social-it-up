@@ -13,6 +13,7 @@ import { HiBellAlert } from "react-icons/hi2";
 import PriorityDisplay from "../components/PriorityDisplay";
 import { FaCheck } from "react-icons/fa";
 import { CheckCircle } from 'lucide-react';
+import { Pagination } from '../components/Pagination';
 
 const BugPanel = () => {
     const fadeInLeft = {
@@ -294,13 +295,13 @@ const BugPanel = () => {
 
     const handleSendNotification = async (email, subject, docId) => {
         if (loadingNotifications[docId]) return;
-    
+
         try {
             setLoadingNotifications(prev => ({ ...prev, [docId]: true }));
-    
+
             // Show immediate "queued" toast
             toast.info('Notification email queued for sending!');
-    
+
             // Start the email sending process
             fetch('/api/send-bug-notification', {
                 method: 'POST',
@@ -312,27 +313,27 @@ const BugPanel = () => {
                     subject
                 }),
             })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Failed to send notification email');
-                }
-                return response.json();
-            })
-            .then(data => {
-                toast.success('Notification email sent successfully!');
-            })
-            .catch(error => {
-                console.error('Error sending notification email:', error);
-                toast.error('Failed to send notification email. Please try again.');
-            })
-            .finally(() => {
-                setLoadingNotifications(prev => ({ ...prev, [docId]: false }));
-            });
-    
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Failed to send notification email');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    toast.success('Notification email sent successfully!');
+                })
+                .catch(error => {
+                    console.error('Error sending notification email:', error);
+                    toast.error('Failed to send notification email. Please try again.');
+                })
+                .finally(() => {
+                    setLoadingNotifications(prev => ({ ...prev, [docId]: false }));
+                });
+
             setTimeout(() => {
                 setLoadingNotifications(prev => ({ ...prev, [docId]: false }));
             }, 2000);
-    
+
         } catch (error) {
             console.error('Error queuing notification email:', error);
             toast.error('Failed to queue notification email. Please try again.');
@@ -762,43 +763,16 @@ const BugPanel = () => {
 
             {/* Enhanced Pagination */}
             {filteredBugs.length > 0 && (
-                <div className="flex flex-col md:flex-row justify-between items-center py-4">
-                    <div>
-                        <span className="text-sm md:text-lg text-red-700">
-                            Total Records: {filteredBugs.length} | Showing {startIndex} to {endIndex} of {filteredBugs.length} records
-                        </span>
-                    </div>
-                    <div className="flex gap-4">
-                        <button
-                            onClick={() => handlePageChange(1)}
-                            disabled={currentPage === 1}
-                            className="px-4 py-2 bg-red-600 text-white rounded-md shadow-md hover:bg-red-700 disabled:opacity-50 transition-all duration-200"
-                        >
-                            First
-                        </button>
-                        <button
-                            onClick={() => handlePageChange(currentPage - 1)}
-                            disabled={currentPage === 1}
-                            className="px-4 py-2 bg-red-600 text-white rounded-md shadow-md hover:bg-red-700 disabled:opacity-50 transition-all duration-200"
-                        >
-                            Previous
-                        </button>
-                        <button
-                            onClick={() => handlePageChange(currentPage + 1)}
-                            disabled={currentPage === totalPages}
-                            className="px-4 py-2 bg-red-600 text-white rounded-md shadow-md hover:bg-red-700 disabled:opacity-50 transition-all duration-200"
-                        >
-                            Next
-                        </button>
-                        <button
-                            onClick={() => handlePageChange(totalPages)}
-                            disabled={currentPage === totalPages}
-                            className="px-4 py-2 bg-red-600 text-white rounded-md shadow-md hover:bg-red-700 disabled:opacity-50 transition-all duration-200"
-                        >
-                            Last
-                        </button>
-                    </div>
-                </div>
+                <Pagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    totalRecords={filteredBugs.length}
+                    startIndex={startIndex}
+                    endIndex={endIndex}
+                    onPageChange={handlePageChange}
+                    pageButtonsStyles={"bg-red-600 hover:bg-[#2C2925] text-white font-serif"}
+                    recordInfoStyles={"text-gray-800 font-serif"}
+                />
             )}
         </div>
     );

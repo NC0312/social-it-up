@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { collection, getDocs, query, where, orderBy, deleteDoc, doc, writeBatch, addDoc } from "firebase/firestore";
 import { db } from "../lib/firebase";
 import { toast } from "sonner";
@@ -9,6 +9,8 @@ import { useRouter } from "next/navigation";
 import { MdOutlineSaveAlt } from "react-icons/md";
 import { FaArrowRight, FaExternalLinkAlt, FaSync } from "react-icons/fa";
 import { motion } from "framer-motion";
+import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Settings, Table, List, LayoutGrid } from "lucide-react";
+import { Pagination } from "../components/Pagination";
 
 
 const AdminPanel = () => {
@@ -559,45 +561,17 @@ const AdminPanel = () => {
 
       {/* Pagination */}
       {filteredInquiries.length > 0 && (
-        <div className="flex flex-col md:flex-row justify-between items-center py-4">
-          <div>
-            <span className="text-sm md:text-lg text-[#36302A]">
-              Total Records : {filteredInquiries.length} | Showing {startIndex} to {endIndex} of {filteredInquiries.length} records | DB Limit : 6500 records
-            </span>
-          </div>
-          <div className="space-y-0 md:space-y-0 space-x-4 md:space-x-4 flex flex-row md:flex-row">
-            <button
-              onClick={() => handlePageChange(1)}
-              disabled={currentPage === 1}
-              className="px-4 py-2 text-[#FAF4ED] bg-[#36302A] rounded-md shadow-md hover:bg-[#2C2925] w-full md:w-auto"
-            >
-              First
-            </button>
-            <button
-              onClick={() => handlePageChange(currentPage - 1)}
-              disabled={currentPage === 1}
-              className="px-4 py-2 text-[#FAF4ED] bg-[#36302A] rounded-md shadow-md hover:bg-[#2C2925] w-full md:w-auto"
-            >
-              Prev
-            </button>
-            <button
-              onClick={() => handlePageChange(currentPage + 1)}
-              disabled={currentPage === totalPages}
-              className="px-4 py-2 text-[#FAF4ED] bg-[#36302A] rounded-md shadow-md hover:bg-[#2C2925] w-full md:w-auto"
-            >
-              Next
-            </button>
-            <button
-              onClick={() => handlePageChange(totalPages)}
-              disabled={currentPage === totalPages}
-              className="px-4 py-2 text-[#FAF4ED] bg-[#36302A] rounded-md shadow-md hover:bg-[#2C2925] w-full md:w-auto"
-            >
-              Last
-            </button>
-          </div>
-        </div>
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          totalRecords={filteredInquiries.length}
+          startIndex={startIndex}
+          endIndex={endIndex}
+          onPageChange={handlePageChange}
+          pageButtonsStyles={"bg-[#36302A] hover:bg-[#2C2925] text-white font-serif"}
+          recordInfoStyles={"font-serif text-gray-800"}
+        />
       )}
-
     </div>
   );
 };
