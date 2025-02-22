@@ -5,10 +5,25 @@ import { AiOutlineInstagram } from 'react-icons/ai';
 import { HiLocationMarker } from 'react-icons/hi';
 import { BsTelephoneFill } from 'react-icons/bs';
 import { MdEmail } from 'react-icons/md';
+import { usePathname } from "next/navigation";
+
+const REVIEW_PANEL_ROUTE = "/review-panel69";
+const BUG_PANEL_ROUTE = "/bug-panel69";
+// const isDevelopment = process.env.NEXT_PUBLIC_ENV === "development";
 
 const Footer = () => {
+  const pathname = usePathname();
   return (
-    <footer className="flex flex-col items-center justify-center py-8 px-4">
+    <footer
+    className={`flex flex-col items-center justify-center py-8 px-4 ${
+      pathname === REVIEW_PANEL_ROUTE
+        ? "bg-[#D2EDE0]"
+        : pathname === BUG_PANEL_ROUTE
+        ? "bg-red-200"
+        : ""
+    }`}
+      style={{ userSelect: "none" }}
+    >
       {/* Logo */}
       <div className="mb-8">
         <Image
@@ -71,7 +86,7 @@ const Footer = () => {
       </nav>
 
       {/* Instagram Icon */}
-      <Link href="https://instagram.com/socialitup" target='_blank' className="mb-8">
+      <Link href="https://www.instagram.com/socialitup.in/" target='_blank' className="mb-8">
         <AiOutlineInstagram className="w-6 h-6 text-gray-800 hover:text-gray-600" />
       </Link>
 

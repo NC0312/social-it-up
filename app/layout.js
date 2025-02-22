@@ -3,12 +3,16 @@ import "./globals.css";
 import Header from "./components/Header";
 import DynamicTitle from "./components/DynamicTitle";
 import Footer from "./components/Footer";
+import { Toaster } from "sonner";
+import LenisProvider from "./components/providers/LenisProvider";
+import Chatbot from "./components/Chatbot";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
   variable: "--font-geist-sans",
   weight: "100 900",
 });
+
 const geistMono = localFont({
   src: "./fonts/GeistMonoVF.woff",
   variable: "--font-geist-mono",
@@ -24,15 +28,20 @@ export const metadata = {
 };
 
 export default function RootLayout({ children }) {
+  const isProduction = process.env.NEXT_PUBLIC_ENV === 'production';
   return (
-    <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        <DynamicTitle /> {/* Add the client component */}
-        <Header />
-        {children}
-        <Footer/>
+    <html lang="en" className="lenis lenis-smooth">
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+        <div className="flex flex-col min-h-screen">
+          <DynamicTitle />
+          <Header />
+          <main className="flex-grow">
+              {children}
+          </main>
+          <Footer />
+          {isProduction && <Chatbot />}
+        </div>
+        <Toaster />
       </body>
     </html>
   );
