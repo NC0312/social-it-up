@@ -352,7 +352,7 @@ const AdminPanel = () => {
       >
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 bg-white p-6 rounded-xl shadow-sm border border-[#36302A]/10">
           <div className="space-y-2">
-            <label className="block text-sm font-medium text-[#36302A] flex items-center gap-2" htmlFor="date-filter">
+            <label className="block text-sm font-medium text-[#36302A] items-center gap-2" htmlFor="date-filter">
               <span className="text-lg">📅</span> Filter by Date
             </label>
             <input
@@ -365,7 +365,7 @@ const AdminPanel = () => {
           </div>
 
           <div className="space-y-2">
-            <label className="block text-sm font-medium text-[#36302A] flex items-center gap-2" htmlFor="signup-filter">
+            <label className="block text-sm font-medium text-[#36302A] items-center gap-2" htmlFor="signup-filter">
               <span className="text-lg">✉️</span> Newsletter Signup Status
             </label>
             <select
