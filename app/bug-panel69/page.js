@@ -585,11 +585,11 @@ const BugPanel = () => {
                     </div>
 
                     <div className="space-y-2">
-                        <label className="block text-sm font-medium text-[#36302A] items-center gap-2" htmlFor="company-filter">
+                        <label className="block text-sm font-medium text-[#36302A] items-center gap-2" htmlFor="email-filter">
                             <span className="text-lg">✉️</span>Filter By Email
                         </label>
                         <input
-                            id="company-filter"
+                            id="email-filter"
                             type="text"
                             value={selectedEmail}
                             onChange={handleEmailChange}
