@@ -456,6 +456,7 @@ const AdminPanel = () => {
               setSelectedDate("");
               setSignedUp("");
               setSelectedName("");
+              setSelectedCompany("");
               setFilteredInquiries(inquiries);
               toast.success("Filters cleared!");
             }}
