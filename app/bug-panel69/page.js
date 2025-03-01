@@ -35,6 +35,7 @@ const BugPanel = () => {
     const [filteredBugs, setFilteredBugs] = useState([]);
     const [selectedDate, setSelectedDate] = useState("");
     const [selectedPriority, setSelectedPriority] = useState("");
+    const [selectedEmail, setselectedEmail] = useState("")
     const [currentPage, setCurrentPage] = useState(1);
     const [isDeleting, setIsDeleting] = useState(false);
     const [isDeletingAll, setIsDeletingAll] = useState(false);
@@ -183,12 +184,15 @@ const BugPanel = () => {
     const handleDateChange = (e) => {
         setSelectedDate(e.target.value);
     };
+    const handleEmailChange = (e) => {
+        setselectedEmail(e.target.value);
+    };
 
     const handlePriorityChange = (e) => {
         setSelectedPriority(e.target.value);
     };
 
-    const handleSubjectChange = (e) =>{
+    const handleSubjectChange = (e) => {
         setSelectedSubject(e.target.value);
     }
 
@@ -210,6 +214,13 @@ const BugPanel = () => {
             });
         }
 
+        if (selectedEmail && selectedEmail.trim() !== "") {
+            filtered = filtered.filter(bug =>
+                bug.email &&
+                bug.email.toLowerCase().includes(selectedEmail.toLowerCase())
+            );
+        }
+
         if (selectedPriority) {
             filtered = filtered.filter(bug => bug.priority === selectedPriority);
         }
@@ -218,7 +229,7 @@ const BugPanel = () => {
             filtered = filtered.filter(bug => bug.status === selectedStatus);
         }
 
-        if(selectedSubject){
+        if (selectedSubject) {
             filtered = filtered.filter(bug => bug.subject === selectedSubject);
         }
 
@@ -570,6 +581,20 @@ const BugPanel = () => {
                             value={selectedDate}
                             onChange={handleDateChange}
                             className="w-full border border-red-200 rounded-lg px-4 py-2.5 shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-200"
+                        />
+                    </div>
+
+                    <div className="space-y-2">
+                        <label className="block text-sm font-medium text-[#36302A] items-center gap-2" htmlFor="company-filter">
+                            <span className="text-lg">✉️</span>Filter By Email
+                        </label>
+                        <input
+                            id="company-filter"
+                            type="text"
+                            value={selectedEmail}
+                            onChange={handleEmailChange}
+                            placeholder="Enter Email"
+                            className="w-full border border-[#36302A]/20 rounded-lg px-4 py-2.5 shadow-sm focus:outline-none focus:ring-2 focus:ring-[#36302A] focus:border-transparent transition-all duration-200 placeholder-[#36302A]/60"
                         />
                     </div>
 
