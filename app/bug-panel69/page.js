@@ -671,7 +671,8 @@ const BugPanel = () => {
                             setSelectedDate("");
                             setSelectedPriority("");
                             setSelectedStatus("");
-                            setSelectedSubject("");
+                            setSelectedSubject("");  
+                            setselectedEmail("");
                             setFilteredBugs(bugs);
                             toast.success("Filters cleared!");
                         }}
