@@ -6,6 +6,7 @@ import Footer from "./components/Footer";
 import { Toaster } from "sonner";
 import LenisProvider from "./components/providers/LenisProvider";
 import Chatbot from "./components/Chatbot";
+import { DevToolsBlocker } from "@/utils/devToolsBlocker";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -40,6 +41,7 @@ export default function RootLayout({ children }) {
           </main>
           <Footer />
           {isProduction && <Chatbot />}
+          {isProduction && <DevToolsBlocker />}
         </div>
         <Toaster />
       </body>
