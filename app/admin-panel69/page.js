@@ -33,6 +33,8 @@ const AdminPanel = () => {
   const [inquiries, setInquiries] = useState([]);
   const [filteredInquiries, setFilteredInquiries] = useState([]);
   const [selectedDate, setSelectedDate] = useState("");
+  const [selectedName, setSelectedName] = useState("");
+  const [selectedCompany, setSelectedCompany] = useState("");
   const [signedUp, setSignedUp] = useState("")
   const [currentPage, setCurrentPage] = useState(1);
   const [issyncing, setIssyncing] = useState(false);
@@ -112,12 +114,36 @@ const AdminPanel = () => {
     setSelectedDate(e.target.value);
   };
 
+  const handleNameChange = (e) => { 
+    setSelectedName(e.target.value);
+  };
+
+  const handleCompanyChange = (e) =>{
+    setSelectedCompany(e.target.value);
+  }
+
   const handleSignUpChange = (e) => {
     setSignedUp(e.target.value);
   };
 
   const handleFetchData = async () => {
     let filtered = inquiries;
+
+    //Brand Name filteration code...
+    if(selectedCompany && selectedCompany.trim() !== ""){
+      filtered = filtered.filter(inquiry => 
+        inquiry.company && 
+        inquiry.company.toLowerCase().includes(selectedCompany.toLowerCase())
+      );
+    }
+
+    //Name filteration code...
+    if (selectedName && selectedName.trim() !== "") {
+      filtered = filtered.filter(inquiry => 
+        inquiry.firstName && 
+        inquiry.firstName.toLowerCase().includes(selectedName.toLowerCase())
+      );
+    }
 
     // Apply date filter if selected
     if (selectedDate) {
@@ -350,9 +376,9 @@ const AdminPanel = () => {
         whileInView="visible"
         viewport={{ once: true }}
       >
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 bg-white p-6 rounded-xl shadow-sm border border-[#36302A]/10">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8 bg-white p-6 rounded-xl shadow-sm border border-[#36302A]/10">
           <div className="space-y-2">
-            <label className="block text-sm font-medium text-[#36302A] flex items-center gap-2" htmlFor="date-filter">
+            <label className="block text-sm font-medium text-[#36302A] items-center gap-2" htmlFor="date-filter">
               <span className="text-lg">📅</span> Filter by Date
             </label>
             <input
@@ -365,7 +391,35 @@ const AdminPanel = () => {
           </div>
 
           <div className="space-y-2">
-            <label className="block text-sm font-medium text-[#36302A] flex items-center gap-2" htmlFor="signup-filter">
+            <label className="block text-sm font-medium text-[#36302A] items-center gap-2" htmlFor="name-filter">
+              <span className="text-lg">👤</span>Filter By FirstName
+            </label>
+            <input
+            id="name-filter"
+            type="text"
+            value={selectedName}
+            onChange={handleNameChange}
+            placeholder="Enter FirstName"
+            className="w-full border border-[#36302A]/20 rounded-lg px-4 py-2.5 shadow-sm focus:outline-none focus:ring-2 focus:ring-[#36302A] focus:border-transparent transition-all duration-200 placeholder-[#36302A]/60"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-[#36302A] items-center gap-2" htmlFor="company-filter">
+              <span className="text-lg">🏢</span>Filter By BrandName
+            </label>
+            <input
+            id="company-filter"
+            type="text"
+            value={selectedCompany}
+            onChange={handleCompanyChange}
+            placeholder="Enter BrandName"
+            className="w-full border border-[#36302A]/20 rounded-lg px-4 py-2.5 shadow-sm focus:outline-none focus:ring-2 focus:ring-[#36302A] focus:border-transparent transition-all duration-200 placeholder-[#36302A]/60"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-[#36302A] items-center gap-2" htmlFor="signup-filter">
               <span className="text-lg">✉️</span> Newsletter Signup Status
             </label>
             <select
@@ -401,6 +455,7 @@ const AdminPanel = () => {
             onClick={() => {
               setSelectedDate("");
               setSignedUp("");
+              setSelectedName("");
               setFilteredInquiries(inquiries);
               toast.success("Filters cleared!");
             }}

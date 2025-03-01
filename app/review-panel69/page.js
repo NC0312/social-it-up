@@ -576,7 +576,7 @@ const ReviewPanel = () => {
             >
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8 bg-white p-6 rounded-xl shadow-sm border border-green-100">
                     <div className="space-y-2">
-                        <label className="block text-sm font-medium text-green-800 flex items-center gap-2" htmlFor="date-filter">
+                        <label className="block text-sm font-medium text-green-800 items-center gap-2" htmlFor="date-filter">
                             <span className="text-lg">📅</span> Filter by Date
                         </label>
                         <input
@@ -590,7 +590,7 @@ const ReviewPanel = () => {
 
                     {/* Similar enhancements for other filter inputs */}
                     <div className="space-y-2">
-                        <label className="block text-sm font-medium text-green-800 flex items-center gap-2" htmlFor="signup-filter">
+                        <label className="block text-sm font-medium text-green-800 items-center gap-2" htmlFor="signup-filter">
                             <span className="text-lg">📝</span> Newsletter Signup
                         </label>
                         <select
@@ -607,7 +607,7 @@ const ReviewPanel = () => {
 
                     {/* Enhanced Priority Filter */}
                     <div className="space-y-2">
-                        <label className="block text-sm font-medium text-green-800 flex items-center gap-2" htmlFor="priority-filter">
+                        <label className="block text-sm font-medium text-green-800 items-center gap-2" htmlFor="priority-filter">
                             <span className="text-lg">🎯</span> Priority Level
                         </label>
                         <select
@@ -626,7 +626,7 @@ const ReviewPanel = () => {
 
                     {/* Enhanced Client Status Filter */}
                     <div className="space-y-2">
-                        <label className="block text-sm font-medium text-green-800 flex items-center gap-2" htmlFor="client-status-filter">
+                        <label className="block text-sm font-medium text-green-800 items-center gap-2" htmlFor="client-status-filter">
                             <span className="text-lg">📊</span> Client Status
                         </label>
                         <select

@@ -41,6 +41,7 @@ const BugPanel = () => {
     const [loadingNotifications, setLoadingNotifications] = useState({});
     const [issyncing, setIssyncing] = useState(false);
     const [selectedStatus, setSelectedStatus] = useState("");
+    const [selectedSubject, setSelectedSubject] = useState("");
     const [selectedItems, setSelectedItems] = useState(new Set());
     const [selectAll, setSelectAll] = useState(false);
     const entriesPerPage = 20;
@@ -187,6 +188,10 @@ const BugPanel = () => {
         setSelectedPriority(e.target.value);
     };
 
+    const handleSubjectChange = (e) =>{
+        setSelectedSubject(e.target.value);
+    }
+
     const handleStatusChange = (e) => {
         setSelectedStatus(e.target.value);
     };
@@ -211,6 +216,10 @@ const BugPanel = () => {
 
         if (selectedStatus) {
             filtered = filtered.filter(bug => bug.status === selectedStatus);
+        }
+
+        if(selectedSubject){
+            filtered = filtered.filter(bug => bug.subject === selectedSubject);
         }
 
         setFilteredBugs(filtered);
@@ -550,9 +559,9 @@ const BugPanel = () => {
                 whileInView="visible"
                 viewport={{ once: true }}
             >
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 bg-white p-6 rounded-xl shadow-sm border border-red-100">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8 bg-white p-6 rounded-xl shadow-sm border border-red-100">
                     <div className="space-y-2">
-                        <label className="block text-sm font-medium text-red-800 flex items-center gap-2" htmlFor="date-filter">
+                        <label className="block text-sm font-medium text-red-800 items-center gap-2" htmlFor="date-filter">
                             <span className="text-lg">📅</span> Filter by Date
                         </label>
                         <input
@@ -565,7 +574,7 @@ const BugPanel = () => {
                     </div>
 
                     <div className="space-y-2">
-                        <label className="block text-sm font-medium text-red-800 flex items-center gap-2" htmlFor="priority-filter">
+                        <label className="block text-sm font-medium text-red-800 items-center gap-2" htmlFor="priority-filter">
                             <span className="text-lg">🎯</span> Priority Level
                         </label>
                         <select
@@ -583,7 +592,7 @@ const BugPanel = () => {
                     </div>
 
                     <div className="space-y-2">
-                        <label className="block text-sm font-medium text-red-800 flex items-center gap-2" htmlFor="status-filter">
+                        <label className="block text-sm font-medium text-red-800 items-center gap-2" htmlFor="status-filter">
                             <span className="text-lg">📊</span> Bug Status
                         </label>
                         <select
@@ -595,6 +604,23 @@ const BugPanel = () => {
                             <option value="">All Statuses</option>
                             <option value="resolved">Resolved</option>
                             <option value="unresolved">Unresolved</option>
+                        </select>
+                    </div>
+
+                    <div className="space-y-2">
+                        <label className="block text-sm font-medium text-red-800 items-center gap-2" htmlFor="subject-filter">
+                            <span className="text-lg">📊</span> Subject
+                        </label>
+                        <select
+                            id="subject-filter"
+                            value={selectedSubject}
+                            onChange={handleSubjectChange}
+                            className="w-full border border-red-200 rounded-lg px-4 py-2.5 shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-200 bg-white"
+                        >
+                            <option value="">All Subjects</option>
+                            <option value="bug">Bugs</option>
+                            <option value="form-issue">Form-Issue</option>
+                            <option value="others">Others</option>
                         </select>
                     </div>
                 </div>
@@ -620,6 +646,7 @@ const BugPanel = () => {
                             setSelectedDate("");
                             setSelectedPriority("");
                             setSelectedStatus("");
+                            setSelectedSubject("");
                             setFilteredBugs(bugs);
                             toast.success("Filters cleared!");
                         }}
