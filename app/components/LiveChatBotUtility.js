@@ -4,7 +4,8 @@ class GeminiChatbot {
         this.apiKey = apiKey;
         this.websiteInfo = websiteInfo;
         this.conversations = new Map();
-        this.API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent';
+        // Updated API URL to use the latest endpoint
+        this.API_URL = 'https://generativelanguage.googleapis.com/v1/models/gemini-1.5-pro:generateContent';
     }
 
     // Initialize context for the chatbot
@@ -27,32 +28,28 @@ class GeminiChatbot {
                 }
             },
             contact: this.websiteInfo.contact,
-
         };
     }
 
     // Format context into a system message
     #formatContextMessage() {
         const context = this.#createContext();
-        const clientsList = context.work.getClientList();
+        const clientsList = context.work.data.map(item => item.name).join(', ');
+
         return `You are a helpful assistant for ${context.websiteName}. 
         Website Information:
         - Description: ${context.description}
         - Features/Functionalities/Functionality: ${context.features.join(', ')}
         - Contact/Inquiry/Submission/Form: ${context.contact}
-        - Work/Clients/Partners: ${context.work}
 
-          const clientsList = context.clientInfo.clients.join(", ");
+        Client Information:
+        We have worked with several distinguished clients including: ${clientsList}
 
-          Client Information:
-          We have worked with several distinguished clients including:${clientsList}
-
-           Instructions for client-related queries:
-    - When users ask about clients, partners, or work, list all clients
-    - Mention that we have worked with: ${clientsList}
-    - If asked about specific clients, confirm if they are in our list
-    -Please help users with their questions about our website. If you don't know something, direct them to ${context.contact}
-
+        Instructions for client-related queries:
+        - When users ask about clients, partners, or work, list all clients
+        - Mention that we have worked with: ${clientsList}
+        - If asked about specific clients, confirm if they are in our list
+        - Please help users with their questions about our website. If you don't know something, direct them to ${context.contact}
 
         Common FAQs:
         ${Object.entries(context.faq).map(([q, a]) => `Q: ${q}\nA: ${a}`).join('\n')}
@@ -117,6 +114,7 @@ class GeminiChatbot {
             const data = await response.json();
 
             if (!response.ok) {
+                console.error('API Error:', data);
                 throw new Error(data.error?.message || 'Gemini API error');
             }
 
