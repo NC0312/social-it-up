@@ -37,6 +37,8 @@ const ReviewPanel = () => {
     const [signedUp, setSignedUp] = useState("");
     const [selectedPriority, setSelectedPriority] = useState("");
     const [selectedClientStatus, setSelectedClientStatus] = useState("");
+    const [selectedName, setSelectedName] = useState("");
+    const [selectedCompany, setSelectedCompany] = useState("");
     const [currentPage, setCurrentPage] = useState(1);
     const [isDeleting, setIsDeleting] = useState(false);
     const [isDeletingAll, setIsDeletingAll] = useState(false);
@@ -185,6 +187,14 @@ const ReviewPanel = () => {
         setSignedUp(e.target.value);
     };
 
+    const handleNameChange = (e) => {
+        setSelectedName(e.target.value);
+    };
+
+    const handleCompanyChange = (e) => {
+        setSelectedCompany(e.target.value);
+    }
+
     const handlePriorityChange = (e) => {
         setSelectedPriority(e.target.value);
     };
@@ -205,6 +215,22 @@ const ReviewPanel = () => {
                 const reviewDate = new Date(review.movedToReviewAt.seconds * 1000);
                 return reviewDate >= selectedDateStart && reviewDate <= selectedDateEnd;
             });
+        }
+
+        //Brand Name filteration code...
+        if (selectedCompany && selectedCompany.trim() !== "") {
+            filtered = filtered.filter(review =>
+                review.company &&
+                review.company.toLowerCase().includes(selectedCompany.toLowerCase())
+            );
+        }
+
+        //Name filteration code...
+        if (selectedName && selectedName.trim() !== "") {
+            filtered = filtered.filter(review =>
+                review.firstName &&
+                review.firstName.toLowerCase().includes(selectedName.toLowerCase())
+            );
         }
 
         if (signedUp) {
@@ -574,71 +600,100 @@ const ReviewPanel = () => {
                 whileInView="visible"
                 viewport={{ once: true }}
             >
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8 bg-white p-6 rounded-xl shadow-sm border border-green-100">
-                    <div className="space-y-2">
-                        <label className="block text-sm font-medium text-green-800 items-center gap-2" htmlFor="date-filter">
-                            <span className="text-lg">📅</span> Filter by Date
-                        </label>
-                        <input
-                            id="date-filter"
-                            type="date"
-                            value={selectedDate}
-                            onChange={handleDateChange}
-                            className="w-full border border-green-200 rounded-lg px-4 py-2.5 shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200"
-                        />
-                    </div>
+                <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        {/* First row - most important filters */}
+                        <div className="space-y-2">
+                            <label className="flex items-center gap-1 text-sm font-medium text-gray-700" htmlFor="date-filter">
+                                <span>📅</span> Date
+                            </label>
+                            <input
+                                id="date-filter"
+                                type="date"
+                                value={selectedDate}
+                                onChange={handleDateChange}
+                                className="w-full border border-gray-200 rounded-lg p-2 focus:ring-1 focus:ring-green-500"
+                            />
+                        </div>
 
-                    {/* Similar enhancements for other filter inputs */}
-                    <div className="space-y-2">
-                        <label className="block text-sm font-medium text-green-800 items-center gap-2" htmlFor="signup-filter">
-                            <span className="text-lg">📝</span> Newsletter Signup
-                        </label>
-                        <select
-                            id="signup-filter"
-                            value={signedUp}
-                            onChange={handleSignUpChange}
-                            className="w-full border border-green-200 rounded-lg px-4 py-2.5 shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 bg-white"
-                        >
-                            <option value="">All Signups</option>
-                            <option value="Yes">Subscribed</option>
-                            <option value="No">Not Subscribed</option>
-                        </select>
-                    </div>
+                        <div className="space-y-2">
+                            <label className="flex items-center gap-1 text-sm font-medium text-gray-700" htmlFor="name-filter">
+                                <span>👤</span> Name
+                            </label>
+                            <input
+                                id="name-filter"
+                                type="text"
+                                value={selectedName}
+                                onChange={handleNameChange}
+                                placeholder="Enter FirstName"
+                                className="w-full border border-gray-200 rounded-lg p-2 focus:ring-1 focus:ring-green-500"
+                            />
+                        </div>
 
-                    {/* Enhanced Priority Filter */}
-                    <div className="space-y-2">
-                        <label className="block text-sm font-medium text-green-800 items-center gap-2" htmlFor="priority-filter">
-                            <span className="text-lg">🎯</span> Priority Level
-                        </label>
-                        <select
-                            id="priority-filter"
-                            value={selectedPriority}
-                            onChange={handlePriorityChange}
-                            className="w-full border border-green-200 rounded-lg px-4 py-2.5 shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 bg-white"
-                        >
-                            <option value="">All Priorities</option>
-                            <option value="low">Low Priority</option>
-                            <option value="medium">Medium Priority</option>
-                            <option value="high">High Priority</option>
-                            <option value="highest">Highest Priority</option>
-                        </select>
-                    </div>
+                        <div className="space-y-2">
+                            <label className="flex items-center gap-1 text-sm font-medium text-gray-700" htmlFor="company-filter">
+                                <span>🏢</span> Brand
+                            </label>
+                            <input
+                                id="company-filter"
+                                type="text"
+                                value={selectedCompany}
+                                onChange={handleCompanyChange}
+                                placeholder="Enter BrandName"
+                                className="w-full border border-gray-200 rounded-lg p-2 focus:ring-1 focus:ring-green-500"
+                            />
+                        </div>
 
-                    {/* Enhanced Client Status Filter */}
-                    <div className="space-y-2">
-                        <label className="block text-sm font-medium text-green-800 items-center gap-2" htmlFor="client-status-filter">
-                            <span className="text-lg">📊</span> Client Status
-                        </label>
-                        <select
-                            id="client-status-filter"
-                            value={selectedClientStatus}
-                            onChange={handleClientStatusChange}
-                            className="w-full border border-green-200 rounded-lg px-4 py-2.5 shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 bg-white"
-                        >
-                            <option value="">All Statuses</option>
-                            <option value="Pending">Pending</option>
-                            <option value="Reached out">Reached Out</option>
-                        </select>
+                        {/* Second row - additional filters with dropdown */}
+                        <div className="space-y-2">
+                            <label className="flex items-center gap-1 text-sm font-medium text-gray-700" htmlFor="priority-filter">
+                                <span>🎯</span> Priority
+                            </label>
+                            <select
+                                id="priority-filter"
+                                value={selectedPriority}
+                                onChange={handlePriorityChange}
+                                className="w-full border border-gray-200 rounded-lg p-2 focus:ring-1 focus:ring-green-500 bg-white"
+                            >
+                                <option value="">All Priorities</option>
+                                <option value="low">Low</option>
+                                <option value="medium">Medium</option>
+                                <option value="high">High</option>
+                                <option value="highest">Highest</option>
+                            </select>
+                        </div>
+
+                        <div className="space-y-2">
+                            <label className="flex items-center gap-1 text-sm font-medium text-gray-700" htmlFor="client-status-filter">
+                                <span>📊</span> Status
+                            </label>
+                            <select
+                                id="client-status-filter"
+                                value={selectedClientStatus}
+                                onChange={handleClientStatusChange}
+                                className="w-full border border-gray-200 rounded-lg p-2 focus:ring-1 focus:ring-green-500 bg-white"
+                            >
+                                <option value="">All Statuses</option>
+                                <option value="Pending">Pending</option>
+                                <option value="Reached out">Reached Out</option>
+                            </select>
+                        </div>
+
+                        <div className="space-y-2">
+                            <label className="flex items-center gap-1 text-sm font-medium text-gray-700" htmlFor="signup-filter">
+                                <span>📝</span> Newsletter
+                            </label>
+                            <select
+                                id="signup-filter"
+                                value={signedUp}
+                                onChange={handleSignUpChange}
+                                className="w-full border border-gray-200 rounded-lg p-2 focus:ring-1 focus:ring-green-500 bg-white"
+                            >
+                                <option value="">All Signups</option>
+                                <option value="Yes">Subscribed</option>
+                                <option value="No">Not Subscribed</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
             </motion.div>
@@ -649,6 +704,7 @@ const ReviewPanel = () => {
                 initial="hidden"
                 whileInView="visible"
                 viewport={{ once: true }}
+                className="py-4"
             >
                 <div className="flex flex-wrap gap-4 mb-8">
                     <button

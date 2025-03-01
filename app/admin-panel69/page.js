@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import { MdDeleteForever, MdContentCopy } from "react-icons/md";
 import { useRouter } from "next/navigation";
 import { MdOutlineSaveAlt } from "react-icons/md";
-import { FaArrowRight, FaExternalLinkAlt, FaSync } from "react-icons/fa";
+import { FaArrowRight, FaExternalLinkAlt, FaFileExcel, FaSync } from "react-icons/fa";
 import { motion } from "framer-motion";
 import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Settings, Table, List, LayoutGrid } from "lucide-react";
 import { Pagination } from "../components/Pagination";
@@ -114,11 +114,11 @@ const AdminPanel = () => {
     setSelectedDate(e.target.value);
   };
 
-  const handleNameChange = (e) => { 
+  const handleNameChange = (e) => {
     setSelectedName(e.target.value);
   };
 
-  const handleCompanyChange = (e) =>{
+  const handleCompanyChange = (e) => {
     setSelectedCompany(e.target.value);
   }
 
@@ -130,17 +130,17 @@ const AdminPanel = () => {
     let filtered = inquiries;
 
     //Brand Name filteration code...
-    if(selectedCompany && selectedCompany.trim() !== ""){
-      filtered = filtered.filter(inquiry => 
-        inquiry.company && 
+    if (selectedCompany && selectedCompany.trim() !== "") {
+      filtered = filtered.filter(inquiry =>
+        inquiry.company &&
         inquiry.company.toLowerCase().includes(selectedCompany.toLowerCase())
       );
     }
 
     //Name filteration code...
     if (selectedName && selectedName.trim() !== "") {
-      filtered = filtered.filter(inquiry => 
-        inquiry.firstName && 
+      filtered = filtered.filter(inquiry =>
+        inquiry.firstName &&
         inquiry.firstName.toLowerCase().includes(selectedName.toLowerCase())
       );
     }
@@ -176,6 +176,59 @@ const AdminPanel = () => {
     } else {
       toast.warning("No data matches the selected filters.");
     }
+  };
+
+  const convertToCSV = (data) => {
+    const headers = ["Timestamp", "FirstName", "LastName", "Email", "SignedUp", "DialCode", "PhoneNumber", "BrandName", "Services", "Socials", "Website", "Messages"];
+    const csvRows = [headers.join(',')];
+
+    for (const inquiry of data) {
+      const row = [
+        inquiry.timestamp ? new Date(inquiry.timestamp.seconds * 1000).toLocaleString() : "N/A",
+        inquiry.firstName || "",
+        inquiry.lastName || "",
+        inquiry.email || "",
+        inquiry.isChecked ? "Yes" : "No",
+        inquiry.phoneDialCode || "",
+        `"${inquiry.phoneNumber || ""}"`,
+        inquiry.company || "",
+        inquiry.services || "",
+        inquiry.socials || "",
+        inquiry.website || "",
+        `"${(inquiry.messages || "").replace(/"/g, '""')}"`
+      ];
+      csvRows.push(row.map(field => `"${String(field).replace(/"/g, '""')}"`).join(','));
+    }
+
+    return csvRows.join('\n');
+  };
+
+  const handleDownloadCSV = () => {
+    if (filteredInquiries.length > 1000) {
+      toast.info("Preparing CSV for download. This may take a moment for large datasets...");
+    }
+
+    setTimeout(() => {
+      try {
+        const csvContent = convertToCSV(filteredInquiries);
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement("a");
+
+        if (link.download !== undefined) {
+          const url = URL.createObjectURL(blob);
+          link.setAttribute("href", url);
+          link.setAttribute("download", `inquiries_${new Date().toISOString().split('T')[0]}.csv`);
+          link.style.visibility = 'hidden';
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          toast.success("CSV downloaded successfully!");
+        }
+      } catch (error) {
+        console.error("Error generating CSV:", error);
+        toast.error("Failed to generate CSV. Please try again.");
+      }
+    }, 100);
   };
 
   // Delete inquiry from Firestore
@@ -395,12 +448,12 @@ const AdminPanel = () => {
               <span className="text-lg">👤</span>Filter By FirstName
             </label>
             <input
-            id="name-filter"
-            type="text"
-            value={selectedName}
-            onChange={handleNameChange}
-            placeholder="Enter FirstName"
-            className="w-full border border-[#36302A]/20 rounded-lg px-4 py-2.5 shadow-sm focus:outline-none focus:ring-2 focus:ring-[#36302A] focus:border-transparent transition-all duration-200 placeholder-[#36302A]/60"
+              id="name-filter"
+              type="text"
+              value={selectedName}
+              onChange={handleNameChange}
+              placeholder="Enter FirstName"
+              className="w-full border border-[#36302A]/20 rounded-lg px-4 py-2.5 shadow-sm focus:outline-none focus:ring-2 focus:ring-[#36302A] focus:border-transparent transition-all duration-200 placeholder-[#36302A]/60"
             />
           </div>
 
@@ -409,12 +462,12 @@ const AdminPanel = () => {
               <span className="text-lg">🏢</span>Filter By BrandName
             </label>
             <input
-            id="company-filter"
-            type="text"
-            value={selectedCompany}
-            onChange={handleCompanyChange}
-            placeholder="Enter BrandName"
-            className="w-full border border-[#36302A]/20 rounded-lg px-4 py-2.5 shadow-sm focus:outline-none focus:ring-2 focus:ring-[#36302A] focus:border-transparent transition-all duration-200 placeholder-[#36302A]/60"
+              id="company-filter"
+              type="text"
+              value={selectedCompany}
+              onChange={handleCompanyChange}
+              placeholder="Enter BrandName"
+              className="w-full border border-[#36302A]/20 rounded-lg px-4 py-2.5 shadow-sm focus:outline-none focus:ring-2 focus:ring-[#36302A] focus:border-transparent transition-all duration-200 placeholder-[#36302A]/60"
             />
           </div>
 
@@ -463,6 +516,13 @@ const AdminPanel = () => {
           >
             <MdDeleteForever className="text-xl" />
             Clear Filters
+          </button>
+          <button
+            onClick={handleDownloadCSV}
+            className="px-6 py-2.5 bg-[#36302A] text-white font-semibold rounded-lg shadow-lg hover:bg-[#2C2925] transition-all duration-200 flex items-center gap-2 hover:scale-105"
+          >
+            <FaFileExcel className="text-xl" />
+            <span className="hidden md:inline">Export CSV</span>
           </button>
           <button
             onClick={syncData}
