@@ -720,6 +720,8 @@ const ReviewPanel = () => {
                             setSignedUp("");
                             setSelectedPriority("");
                             setSelectedClientStatus("");
+                            setSelectedName("");
+                            setSelectedCompany("");
                             setFilteredReviews(reviews);
                             toast.success("Filters cleared!");
                         }}
