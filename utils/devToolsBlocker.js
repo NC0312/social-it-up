@@ -7,7 +7,6 @@ export const DevToolsBlocker = () => {
   useEffect(() => {
     if (process.env.NEXT_PUBLIC_ENV !== "production") return;
 
-    // Function to check if DevTools is open
     const checkDevTools = () => {
       const widthThreshold = window.outerWidth - window.innerWidth > 160;
       const heightThreshold = window.outerHeight - window.innerHeight > 160;
@@ -19,7 +18,6 @@ export const DevToolsBlocker = () => {
       }
     };
 
-    // Detect DevTools via debugger trick
     const detectDebugger = () => {
       const startTime = performance.now();
       const endTime = performance.now();
@@ -28,7 +26,6 @@ export const DevToolsBlocker = () => {
       }
     };
 
-    // Prevent shortcuts
     const preventShortcuts = (e) => {
       if (e.key === "F12" || e.keyCode === 123) e.preventDefault();
       if (
@@ -41,7 +38,7 @@ export const DevToolsBlocker = () => {
 
     window.addEventListener("resize", checkDevTools);
     window.addEventListener("keydown", preventShortcuts);
-    setInterval(detectDebugger, 1000); // Check debugger every second
+    setInterval(detectDebugger, 1000); 
 
     return () => {
       window.removeEventListener("resize", checkDevTools);
