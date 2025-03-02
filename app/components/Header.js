@@ -17,13 +17,13 @@ import {
 } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { toast } from "sonner";
-import { User, LogOut, Settings } from 'lucide-react';
+import { LogOut, Settings } from 'lucide-react';
 
 const REVIEW_PANEL_ROUTE = "/review-panel69";
 const BUG_PANEL_ROUTE = "/bug-panel69";
 
 function Header() {
-  const { admin, isAuthenticated, loading, logout } = useAdminAuth();
+  const { admin: currentAdmin, isAuthenticated, loading, logout } = useAdminAuth();
   const router = useRouter();
   const pathname = usePathname();
   const [active, setActive] = useState("Home");
@@ -120,8 +120,7 @@ function Header() {
 
       setApprovedAdmins(approvedList);
     } catch (error) {
-      // console.error("Error fetching admins:", error);
-      // toast.error("Failed to fetch admins");
+      console.error(error);
     } finally {
       setIsLoading(false);
     }
@@ -132,6 +131,18 @@ function Header() {
   };
 
   const isDevelopment = process.env.NEXT_PUBLIC_ENV === "development";
+
+  // Get admin's first letter from name
+  const getAdminInitial = () => {
+    if (!currentAdmin) return 'A';
+    if (currentAdmin.firstName && currentAdmin.firstName.length > 0) {
+      return currentAdmin.firstName.charAt(0).toUpperCase();
+    }
+    if (currentAdmin.username && currentAdmin.username.length > 0) {
+      return currentAdmin.username.charAt(0).toUpperCase();
+    }
+    return 'A';
+  };
 
   return (
     <div className="border-b border-[#575553] relative">
@@ -220,8 +231,8 @@ function Header() {
               </li>
             ))}
 
-            {/* User icon with dropdown (when authenticated) */}
-            {isAuthenticated ? (
+            {/* Display admin first letter instead of user icon */}
+            {(isAuthenticated && isDevelopment) ? (
               <li
                 className={`relative cursor-pointer ${isDevelopment || pathname === REVIEW_PANEL_ROUTE || pathname === BUG_PANEL_ROUTE
                   ? "text-white"
@@ -231,23 +242,23 @@ function Header() {
               >
                 <div className="relative">
                   <div
-                    className="flex items-center gap-1 cursor-pointer"
+                    className="flex items-center justify-center w-8 h-8 rounded-full bg-white text-blue-600 font-bold cursor-pointer"
                     onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
                     onMouseEnter={() => setHoveredItem("Profile")}
                     onMouseLeave={() => setHoveredItem(null)}
                   >
-                    <User size={20} />
+                    {getAdminInitial()}
                   </div>
 
                   {isProfileDropdownOpen && (
                     <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50">
                       <div className="px-4 py-2 text-sm text-gray-700 border-b border-gray-100">
-                        <div className="font-medium">@{admin?.username}</div>
-                        <div className="text-xs text-gray-500 capitalize">{admin?.role || 'admin'}</div>
+                        <div className="font-medium">@{currentAdmin?.username}</div>
+                        <div className="text-xs text-gray-500 capitalize">{currentAdmin?.role || 'admin'}</div>
                       </div>
                       <Link
                         href="/profile"
-                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-[#2563EB] hover:text-white transition flex items-center"
+                        className="px-4 py-2 text-sm text-gray-700 hover:bg-[#2563EB] hover:text-white transition flex items-center"
                       >
                         <Settings size={16} className="mr-2" />
                         Profile Settings
@@ -261,10 +272,30 @@ function Header() {
                       </button>
                     </div>
                   )}
+                </div>
+              </li>
+            ) : (
+              // Show login only in development mode
+              process.env.NEXT_PUBLIC_ENV !== "production" && (
+                <li
+                  className={`relative cursor-pointer ${isDevelopment || pathname === REVIEW_PANEL_ROUTE || pathname === BUG_PANEL_ROUTE
+                    ? "text-white"
+                    : "text-[#575553]"
+                    } text-md font-medium`}
+                  onMouseEnter={() => setHoveredItem("Login")}
+                  onMouseLeave={() => setHoveredItem(null)}
+                >
+                  <Link
+                    href="/login"
+                    passHref
+                    onClick={() => setActive("Login")}
+                  >
+                    Login
+                  </Link>
 
-                  {(active === "Profile" || hoveredItem === "Profile") && (
+                  {(active === "Login" || hoveredItem === "Login") && (
                     <motion.div
-                      layoutId={active === "Profile" ? "activeUnderline" : "hoverUnderline"}
+                      layoutId={active === "Login" ? "activeUnderline" : "hoverUnderline"}
                       className={`absolute bottom-0 left-0 ${isDevelopment || pathname === REVIEW_PANEL_ROUTE || pathname === BUG_PANEL_ROUTE
                         ? "bg-white"
                         : "bg-[#575553]"
@@ -272,7 +303,7 @@ function Header() {
                       style={{
                         height: "2px",
                         width: "100%",
-                        opacity: hoveredItem === "Profile" && active !== "Profile" ? 0.6 : 1
+                        opacity: hoveredItem === "Login" && active !== "Login" ? 0.6 : 1
                       }}
                       initial={{ width: "0%" }}
                       animate={{ width: "100%" }}
@@ -280,49 +311,12 @@ function Header() {
                       transition={{ duration: 0.2 }}
                     />
                   )}
-                </div>
-              </li>
-            ) : (
-              // Keep your existing login link for non-authenticated users
-              <li
-                className={`relative cursor-pointer ${isDevelopment || pathname === REVIEW_PANEL_ROUTE || pathname === BUG_PANEL_ROUTE
-                  ? "text-white"
-                  : "text-[#575553]"
-                  } text-md font-medium`}
-                onMouseEnter={() => setHoveredItem("Login")}
-                onMouseLeave={() => setHoveredItem(null)}
-              >
-                <Link
-                  href="/login"
-                  passHref
-                  onClick={() => setActive("Login")}
-                >
-                  Login
-                </Link>
-
-                {(active === "Login" || hoveredItem === "Login") && (
-                  <motion.div
-                    layoutId={active === "Login" ? "activeUnderline" : "hoverUnderline"}
-                    className={`absolute bottom-0 left-0 ${isDevelopment || pathname === REVIEW_PANEL_ROUTE || pathname === BUG_PANEL_ROUTE
-                      ? "bg-white"
-                      : "bg-[#575553]"
-                      }`}
-                    style={{
-                      height: "2px",
-                      width: "100%",
-                      opacity: hoveredItem === "Login" && active !== "Login" ? 0.6 : 1
-                    }}
-                    initial={{ width: "0%" }}
-                    animate={{ width: "100%" }}
-                    exit={{ width: "0%" }}
-                    transition={{ duration: 0.2 }}
-                  />
-                )}
-              </li>
+                </li>
+              )
             )}
 
             {/* Admin Dropdown */}
-            {isDevelopment && isAuthenticated &&(
+            {isDevelopment && isAuthenticated && (
               <div className="relative" ref={dropdownRef}>
                 <button
                   onClick={() => setIsDropdownOpen(!isDropdownOpen)}
@@ -353,7 +347,7 @@ function Header() {
         {/* Development Mode Text */}
         {isDevelopment && isAuthenticated && (
           <div className="absolute left-1/4 transform -translate-x-1/2 ml-36 md:ml-0 text-white text-xs md:text-lg font-light md:font-semibold" style={{ userSelect: "none" }}>
-            Hi, {admin?.role === 'superAdmin' ? 'SuperAdmin' : 'Admin'}!👋
+            Hi, {currentAdmin?.role === 'superAdmin' ? 'SuperAdmin' : 'Admin'}!👋
           </div>
         )}
 

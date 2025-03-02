@@ -6,7 +6,7 @@ export function middleware(request) {
   const env = process.env.NEXT_PUBLIC_ENV
   
 
-  const protectedRoutes = ['/admin-panel69', '/review-panel69', '/bug-panel69','/rating-dashboard69']
+  const protectedRoutes = ['/admin-panel69', '/review-panel69', '/bug-panel69','/rating-dashboard69', '/login']
   
 
   const isProtectedRoute = protectedRoutes.some(route => 
@@ -27,6 +27,7 @@ export const config = {
     '/admin-panel69/:path*',
     '/review-panel69/:path*',
     '/bug-panel69/:path*',
+    '/login/:path*',
     '/rating-dashboard69/:path*'
   ]
 }

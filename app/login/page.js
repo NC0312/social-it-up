@@ -5,6 +5,8 @@ import { FaInfoCircle } from "react-icons/fa";
 import { ImSpinner8 } from 'react-icons/im';
 import { useAdminAuth } from '../components/providers/AdminAuthProvider'; // Import your auth context
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 const Auth = () => {
     const router = useRouter();
@@ -34,6 +36,13 @@ const Auth = () => {
     // Shared state
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [formSubmitMessage, setFormSubmitMessage] = useState('');
+
+    // Login visibility
+    const [showLoginPassword, setShowLoginPassword] = useState(false);
+
+    // Register visibility
+    const [showRegisterPassword, setShowRegisterPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
     const fadeInUp = {
         hidden: { opacity: 0, y: 20 },
@@ -253,9 +262,10 @@ const Auth = () => {
             <div className="flex flex-col md:flex-row items-stretch h-auto">
                 {/* Image Section */}
                 <div className="w-full md:w-1/2 md:absolute md:right-0 md:top-0 md:bottom-0 z-10">
-                    <img
+                    <Image
                         src="/inquire-image.jpeg"
                         alt="Authentication"
+                        fill
                         className="w-full h-full object-cover"
                     />
                 </div>
@@ -329,16 +339,25 @@ const Auth = () => {
                                     <label className="text-sm text-[#36302A]">
                                         Password <span className="text-[#86807A] ml-1">(required)</span>
                                     </label>
-                                    <input
-                                        type="password"
-                                        value={password}
-                                        onChange={(e) => {
-                                            setPassword(e.target.value);
-                                            if (passwordError) setPasswordError('');
-                                        }}
-                                        className="bg-[#EFE7DD] text-[#36302A] border border-transparent focus:outline-none focus:ring-1 focus:ring-[#36302A] hover:border-[#36302A] px-3 py-2 rounded-lg w-full"
-                                        placeholder="Enter your password"
-                                    />
+                                    <div className="relative">
+                                        <input
+                                            type={showLoginPassword ? "password" : "text"}
+                                            value={password}
+                                            onChange={(e) => {
+                                                setPassword(e.target.value);
+                                                if (passwordError) setPasswordError('');
+                                            }}
+                                            className="bg-[#EFE7DD] text-[#36302A] border border-transparent focus:outline-none focus:ring-1 focus:ring-[#36302A] hover:border-[#36302A] px-3 py-2 rounded-lg w-full"
+                                            placeholder="Enter your password"
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowLoginPassword(!showLoginPassword)}
+                                            className="absolute right-3 top-1/2 -translate-y-1/2 text-[#36302A]"
+                                        >
+                                            {showLoginPassword ? <FaEyeSlash /> : <FaEye />}
+                                        </button>
+                                    </div>
                                     {passwordError && (
                                         <p className="text-sm text-red-600 mt-1 flex items-center gap-1"><FaInfoCircle />{passwordError}</p>
                                     )}
@@ -475,18 +494,26 @@ const Auth = () => {
                                     <label className="text-sm text-[#36302A]">
                                         Password <span className="text-[#86807A] ml-1">(required)</span>
                                     </label>
-                                    <input
-                                        type="password"
-                                        value={registerPassword}
-                                        onChange={(e) => {
-                                            setRegisterPassword(e.target.value);
-                                            if (registerPasswordError) setRegisterPasswordError('');
-                                            // Clear confirm password error if it exists and we're changing the password
-                                            if (confirmPasswordError && confirmPassword) setConfirmPasswordError('');
-                                        }}
-                                        className="bg-[#EFE7DD] text-[#36302A] border border-transparent focus:outline-none focus:ring-1 focus:ring-[#36302A] hover:border-[#36302A] px-3 py-2 rounded-lg w-full"
-                                        placeholder="Create a password"
-                                    />
+                                    <div className="relative">
+                                        <input
+                                            type={showRegisterPassword ? "password" : "text"}
+                                            value={registerPassword}
+                                            onChange={(e) => {
+                                                setRegisterPassword(e.target.value);
+                                                if (registerPasswordError) setRegisterPasswordError('');
+                                                if (confirmPasswordError && confirmPassword) setConfirmPasswordError('');
+                                            }}
+                                            className="bg-[#EFE7DD] text-[#36302A] border border-transparent focus:outline-none focus:ring-1 focus:ring-[#36302A] hover:border-[#36302A] px-3 py-2 rounded-lg w-full"
+                                            placeholder="Create a password"
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowRegisterPassword(!showRegisterPassword)}
+                                            className="absolute right-3 top-1/2 -translate-y-1/2 text-[#36302A]"
+                                        >
+                                            {showRegisterPassword ? <FaEyeSlash /> : <FaEye />}
+                                        </button>
+                                    </div>
                                     {registerPasswordError && (
                                         <p className="text-sm text-red-600 mt-1 flex items-center gap-1"><FaInfoCircle />{registerPasswordError}</p>
                                     )}
@@ -496,16 +523,25 @@ const Auth = () => {
                                     <label className="text-sm text-[#36302A]">
                                         Confirm Password <span className="text-[#86807A] ml-1">(required)</span>
                                     </label>
-                                    <input
-                                        type="password"
-                                        value={confirmPassword}
-                                        onChange={(e) => {
-                                            setConfirmPassword(e.target.value);
-                                            if (confirmPasswordError) setConfirmPasswordError('');
-                                        }}
-                                        className="bg-[#EFE7DD] text-[#36302A] border border-transparent focus:outline-none focus:ring-1 focus:ring-[#36302A] hover:border-[#36302A] px-3 py-2 rounded-lg w-full"
-                                        placeholder="Confirm your password"
-                                    />
+                                    <div className="relative">
+                                        <input
+                                            type={showConfirmPassword ? "password" : "text"}
+                                            value={confirmPassword}
+                                            onChange={(e) => {
+                                                setConfirmPassword(e.target.value);
+                                                if (confirmPasswordError) setConfirmPasswordError('');
+                                            }}
+                                            className="bg-[#EFE7DD] text-[#36302A] border border-transparent focus:outline-none focus:ring-1 focus:ring-[#36302A] hover:border-[#36302A] px-3 py-2 rounded-lg w-full"
+                                            placeholder="Confirm your password"
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                            className="absolute right-3 top-1/2 -translate-y-1/2 text-[#36302A]"
+                                        >
+                                            {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
+                                        </button>
+                                    </div>
                                     {confirmPasswordError && (
                                         <p className="text-sm text-red-600 mt-1 flex items-center gap-1"><FaInfoCircle />{confirmPasswordError}</p>
                                     )}
