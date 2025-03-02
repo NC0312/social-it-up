@@ -7,6 +7,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { Loader2, Users, Smile, TrendingDown, TrendingUp } from 'lucide-react';
+import ProtectedRoute from '../components/ProtectedRoutes';
 
 const DynamicRatingsDashboard = () => {
     const [ratingsData, setRatingsData] = useState([]);
@@ -121,104 +122,106 @@ const DynamicRatingsDashboard = () => {
     const leastCommon = getLeastCommonRating();
 
     return (
-        <div className="min-h-screen p-4 md:p-8">
-            <Card className="w-full max-w-5xl mx-auto overflow-hidden rounded-3xl border-0 bg-[#36302A] shadow-2xl">
-                <CardHeader className="space-y-8 pb-8 px-6 pt-6">
-                    <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#2A1F3D] to-[#1F1915]">
-                        <div className="absolute inset-0 opacity-20" />
-                        <div className="relative p-8 md:p-12">
-                            <div className="flex flex-col items-center space-y-4">
-                                <div className="bg-gradient-to-r from-amber-200 to-amber-400 bg-clip-text">
-                                    <CardTitle className="text-3xl md:text-5xl font-bold text-transparent text-center">
-                                        Customer Satisfaction Metrics
-                                    </CardTitle>
-                                </div>
-                                <p className="text-gray-400 text-center max-w-2xl text-sm md:text-base">
-                                    Real-time analysis of user feedback and satisfaction ratings across our platform
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div className="bg-gradient-to-br from-[#4A443E] to-[#36302A] p-6 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <h3 className="text-lg text-gray-300 mb-2">Total Responses</h3>
-                                    <p className="text-4xl font-bold text-white">{totalRatings.toLocaleString()}</p>
-                                </div>
-                                <Users className="w-12 h-12 text-white/30" />
-                            </div>
-                        </div>
-                        <div className="bg-gradient-to-br from-[#5A544E] to-[#36302A] p-6 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <h3 className="text-lg text-gray-300 mb-2">Most Common</h3>
-                                    <p className="text-4xl font-bold text-white">
-                                        {mostCommon.emoji} <span className="text-xl">({mostCommon.percentage}%)</span>
+        <ProtectedRoute>
+            <div className="min-h-screen p-4 md:p-8">
+                <Card className="w-full max-w-5xl mx-auto overflow-hidden rounded-3xl border-0 bg-[#36302A] shadow-2xl">
+                    <CardHeader className="space-y-8 pb-8 px-6 pt-6">
+                        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#2A1F3D] to-[#1F1915]">
+                            <div className="absolute inset-0 opacity-20" />
+                            <div className="relative p-8 md:p-12">
+                                <div className="flex flex-col items-center space-y-4">
+                                    <div className="bg-gradient-to-r from-amber-200 to-amber-400 bg-clip-text">
+                                        <CardTitle className="text-3xl md:text-5xl font-bold text-transparent text-center">
+                                            Customer Satisfaction Metrics
+                                        </CardTitle>
+                                    </div>
+                                    <p className="text-gray-400 text-center max-w-2xl text-sm md:text-base">
+                                        Real-time analysis of user feedback and satisfaction ratings across our platform
                                     </p>
                                 </div>
-                                <TrendingUp className="w-12 h-12 text-white/30" />
                             </div>
                         </div>
-                        <div className="bg-gradient-to-br from-[#4A443E] to-[#36302A] p-6 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <h3 className="text-lg text-gray-300 mb-2">Least Common</h3>
-                                    <p className="text-4xl font-bold text-white">
-                                        {leastCommon.emoji} <span className="text-xl">({leastCommon.percentage}%)</span>
-                                    </p>
-                                </div>
-                                <TrendingDown className="w-12 h-12 text-white/30" />
-                            </div>
-                        </div>
-                    </div>
-                </CardHeader>
 
-                <CardContent className="p-4 md:p-8">
-                    {isLoading ? (
-                        <div className="flex items-center justify-center h-[400px]">
-                            <Loader2 className="w-16 h-16 text-white/30 animate-spin" />
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div className="bg-gradient-to-br from-[#4A443E] to-[#36302A] p-6 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <h3 className="text-lg text-gray-300 mb-2">Total Responses</h3>
+                                        <p className="text-4xl font-bold text-white">{totalRatings.toLocaleString()}</p>
+                                    </div>
+                                    <Users className="w-12 h-12 text-white/30" />
+                                </div>
+                            </div>
+                            <div className="bg-gradient-to-br from-[#5A544E] to-[#36302A] p-6 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <h3 className="text-lg text-gray-300 mb-2">Most Common</h3>
+                                        <p className="text-4xl font-bold text-white">
+                                            {mostCommon.emoji} <span className="text-xl">({mostCommon.percentage}%)</span>
+                                        </p>
+                                    </div>
+                                    <TrendingUp className="w-12 h-12 text-white/30" />
+                                </div>
+                            </div>
+                            <div className="bg-gradient-to-br from-[#4A443E] to-[#36302A] p-6 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <h3 className="text-lg text-gray-300 mb-2">Least Common</h3>
+                                        <p className="text-4xl font-bold text-white">
+                                            {leastCommon.emoji} <span className="text-xl">({leastCommon.percentage}%)</span>
+                                        </p>
+                                    </div>
+                                    <TrendingDown className="w-12 h-12 text-white/30" />
+                                </div>
+                            </div>
                         </div>
-                    ) : (
-                        <div className="h-[600px] md:h-[600px] w-full">
-                            <ResponsiveContainer width="100%" height="100%" >
-                                <PieChart>
-                                    <Pie
-                                        data={ratingsData}
-                                        cx="50%"
-                                        cy="50%"
-                                        labelLine={false}
-                                        label={renderCustomLabel}
-                                        outerRadius={window.innerWidth < 768 ? 120 : 180}
-                                        innerRadius={window.innerWidth < 768 ? 60 : 80}
-                                        fill="#8884d8"
-                                        dataKey="count"
-                                        onMouseEnter={(_, index) => setHoveredIndex(index)}
-                                        onMouseLeave={() => setHoveredIndex(null)}
-                                    >
-                                        {ratingsData.map((entry, index) => (
-                                            <Cell
-                                                key={`cell-${index}`}
-                                                fill={entry.color}
-                                                opacity={hoveredIndex === null || hoveredIndex === index ? 1 : 0.6}
-                                            />
-                                        ))}
-                                    </Pie>
-                                    <Tooltip content={<CustomTooltip />} />
-                                    <Legend 
-                                        content={<CustomLegend />}
-                                        wrapperStyle={{
-                                            paddingTop: window.innerWidth < 768 ? '20px' : '40px'
-                                        }}
-                                    />
-                                </PieChart>
-                            </ResponsiveContainer>
-                        </div>
-                    )}
-                </CardContent>
-            </Card>
-        </div>
+                    </CardHeader>
+
+                    <CardContent className="p-4 md:p-8">
+                        {isLoading ? (
+                            <div className="flex items-center justify-center h-[400px]">
+                                <Loader2 className="w-16 h-16 text-white/30 animate-spin" />
+                            </div>
+                        ) : (
+                            <div className="h-[600px] md:h-[600px] w-full">
+                                <ResponsiveContainer width="100%" height="100%" >
+                                    <PieChart>
+                                        <Pie
+                                            data={ratingsData}
+                                            cx="50%"
+                                            cy="50%"
+                                            labelLine={false}
+                                            label={renderCustomLabel}
+                                            outerRadius={window.innerWidth < 768 ? 120 : 180}
+                                            innerRadius={window.innerWidth < 768 ? 60 : 80}
+                                            fill="#8884d8"
+                                            dataKey="count"
+                                            onMouseEnter={(_, index) => setHoveredIndex(index)}
+                                            onMouseLeave={() => setHoveredIndex(null)}
+                                        >
+                                            {ratingsData.map((entry, index) => (
+                                                <Cell
+                                                    key={`cell-${index}`}
+                                                    fill={entry.color}
+                                                    opacity={hoveredIndex === null || hoveredIndex === index ? 1 : 0.6}
+                                                />
+                                            ))}
+                                        </Pie>
+                                        <Tooltip content={<CustomTooltip />} />
+                                        <Legend
+                                            content={<CustomLegend />}
+                                            wrapperStyle={{
+                                                paddingTop: window.innerWidth < 768 ? '20px' : '40px'
+                                            }}
+                                        />
+                                    </PieChart>
+                                </ResponsiveContainer>
+                            </div>
+                        )}
+                    </CardContent>
+                </Card>
+            </div>
+        </ProtectedRoute>
     );
 };
 
