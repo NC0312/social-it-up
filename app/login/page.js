@@ -493,7 +493,7 @@ const Auth = () => {
 
                                 <div className="flex flex-col py-1">
                                     <label className="text-sm text-[#36302A]">
-                                        Password<span className="text-[#86807A] ml-1">(required)</span>
+                                        Password <span className="text-[#86807A] ml-1">(required)</span>
                                     </label>
                                     <div className="relative">
                                     <input
