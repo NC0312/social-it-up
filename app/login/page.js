@@ -36,6 +36,7 @@ const Auth = () => {
     // Shared state
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [formSubmitMessage, setFormSubmitMessage] = useState('');
+    
 
     // Login visibility
     const [showLoginPassword, setShowLoginPassword] = useState(false);
@@ -340,8 +341,8 @@ const Auth = () => {
                                         Password <span className="text-[#86807A] ml-1">(required)</span>
                                     </label>
                                     <div className="relative">
-                                        <input
-                                            type={showLoginPassword ? "password" : "text"}
+                                    <input
+                                            type={showLoginPassword ? "text" : "password"}
                                             value={password}
                                             onChange={(e) => {
                                                 setPassword(e.target.value);
@@ -495,8 +496,8 @@ const Auth = () => {
                                         Password <span className="text-[#86807A] ml-1">(required)</span>
                                     </label>
                                     <div className="relative">
-                                        <input
-                                            type={showRegisterPassword ? "password" : "text"}
+                                    <input
+                                            type={showRegisterPassword ? "text" : "password"}
                                             value={registerPassword}
                                             onChange={(e) => {
                                                 setRegisterPassword(e.target.value);
@@ -524,8 +525,8 @@ const Auth = () => {
                                         Confirm Password <span className="text-[#86807A] ml-1">(required)</span>
                                     </label>
                                     <div className="relative">
-                                        <input
-                                            type={showConfirmPassword ? "password" : "text"}
+                                    <input
+                                            type={showConfirmPassword ? "text" : "password"}
                                             value={confirmPassword}
                                             onChange={(e) => {
                                                 setConfirmPassword(e.target.value);
