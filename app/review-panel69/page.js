@@ -14,6 +14,7 @@ import PriorityDisplay from "../components/PriorityDisplay";
 import { AlertCircle, Badge, CheckCircle } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Pagination } from "../components/Pagination";
+import ProtectedRoute from "../components/ProtectedRoutes";
 
 const ReviewPanel = () => {
     const fadeInLeft = {
@@ -559,374 +560,376 @@ const ReviewPanel = () => {
     };
 
     return (
-        <div className="p-4 md:p-8 bg-gradient-to-b from-green-50 to-white min-h-screen">
-            <motion.div
-                variants={fadeInLeft}
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true }}
-            >
-                <div className="flex flex-col md:flex-row justify-between items-center border-b border-green-300/50 py-6 pb-4 mb-8">
-                    <div className="flex items-center gap-3">
-                        <h1 className="text-4xl md:text-6xl font-serif font-bold bg-gradient-to-r from-green-800 to-green-600 bg-clip-text text-transparent">
-                            Review Panel
-                        </h1>
-                        <span className="text-4xl animate-bounce">📋</span>
+        <ProtectedRoute>
+            <div className="p-4 md:p-8 bg-gradient-to-b from-green-50 to-white min-h-screen">
+                <motion.div
+                    variants={fadeInLeft}
+                    initial="hidden"
+                    whileInView="visible"
+                    viewport={{ once: true }}
+                >
+                    <div className="flex flex-col md:flex-row justify-between items-center border-b border-green-300/50 py-6 pb-4 mb-8">
+                        <div className="flex items-center gap-3">
+                            <h1 className="text-4xl md:text-6xl font-serif font-bold bg-gradient-to-r from-green-800 to-green-600 bg-clip-text text-transparent">
+                                Review Panel
+                            </h1>
+                            <span className="text-4xl animate-bounce">📋</span>
+                        </div>
+                        <div className="flex items-center gap-4">
+                            <button
+                                onClick={() => router.push('/admin-panel69')}
+                                className="px-4 py-2.5 bg-green-600 text-white font-semibold rounded-lg shadow-lg hover:bg-green-700 transition-all duration-200 flex items-center gap-2 hover:translate-x-[-4px]"
+                            >
+                                <FaArrowLeft className="text-lg" />
+                                <span>Back to Admin Panel</span>
+                            </button>
+                            <button
+                                onClick={handleDeleteAllReviews}
+                                disabled={isDeletingAll}
+                                className="px-4 py-2.5 bg-red-600/90 text-white font-semibold rounded-lg shadow-lg hover:bg-red-700 transition-all duration-200 flex items-center gap-2 hover:scale-105"
+                            >
+                                <MdDeleteForever className="text-xl" />
+                                <span>{isDeletingAll ? 'Deleting...' : 'Delete All'}</span>
+                            </button>
+                        </div>
                     </div>
-                    <div className="flex items-center gap-4">
+                </motion.div>
+
+                {/* Enhanced Filter Section */}
+                <motion.div
+                    variants={fadeInRight}
+                    initial="hidden"
+                    whileInView="visible"
+                    viewport={{ once: true }}
+                >
+                    <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            {/* First row - most important filters */}
+                            <div className="space-y-2">
+                                <label className="flex items-center gap-1 text-sm font-medium text-gray-700" htmlFor="date-filter">
+                                    <span>📅</span> Date
+                                </label>
+                                <input
+                                    id="date-filter"
+                                    type="date"
+                                    value={selectedDate}
+                                    onChange={handleDateChange}
+                                    className="w-full border border-gray-200 rounded-lg p-2 focus:ring-1 focus:ring-green-500"
+                                />
+                            </div>
+
+                            <div className="space-y-2">
+                                <label className="flex items-center gap-1 text-sm font-medium text-gray-700" htmlFor="name-filter">
+                                    <span>👤</span> Name
+                                </label>
+                                <input
+                                    id="name-filter"
+                                    type="text"
+                                    value={selectedName}
+                                    onChange={handleNameChange}
+                                    placeholder="Enter FirstName"
+                                    className="w-full border border-gray-200 rounded-lg p-2 focus:ring-1 focus:ring-green-500"
+                                />
+                            </div>
+
+                            <div className="space-y-2">
+                                <label className="flex items-center gap-1 text-sm font-medium text-gray-700" htmlFor="company-filter">
+                                    <span>🏢</span> Brand
+                                </label>
+                                <input
+                                    id="company-filter"
+                                    type="text"
+                                    value={selectedCompany}
+                                    onChange={handleCompanyChange}
+                                    placeholder="Enter BrandName"
+                                    className="w-full border border-gray-200 rounded-lg p-2 focus:ring-1 focus:ring-green-500"
+                                />
+                            </div>
+
+                            {/* Second row - additional filters with dropdown */}
+                            <div className="space-y-2">
+                                <label className="flex items-center gap-1 text-sm font-medium text-gray-700" htmlFor="priority-filter">
+                                    <span>🎯</span> Priority
+                                </label>
+                                <select
+                                    id="priority-filter"
+                                    value={selectedPriority}
+                                    onChange={handlePriorityChange}
+                                    className="w-full border border-gray-200 rounded-lg p-2 focus:ring-1 focus:ring-green-500 bg-white"
+                                >
+                                    <option value="">All Priorities</option>
+                                    <option value="low">Low</option>
+                                    <option value="medium">Medium</option>
+                                    <option value="high">High</option>
+                                    <option value="highest">Highest</option>
+                                </select>
+                            </div>
+
+                            <div className="space-y-2">
+                                <label className="flex items-center gap-1 text-sm font-medium text-gray-700" htmlFor="client-status-filter">
+                                    <span>📊</span> Status
+                                </label>
+                                <select
+                                    id="client-status-filter"
+                                    value={selectedClientStatus}
+                                    onChange={handleClientStatusChange}
+                                    className="w-full border border-gray-200 rounded-lg p-2 focus:ring-1 focus:ring-green-500 bg-white"
+                                >
+                                    <option value="">All Statuses</option>
+                                    <option value="Pending">Pending</option>
+                                    <option value="Reached out">Reached Out</option>
+                                </select>
+                            </div>
+
+                            <div className="space-y-2">
+                                <label className="flex items-center gap-1 text-sm font-medium text-gray-700" htmlFor="signup-filter">
+                                    <span>📝</span> Newsletter
+                                </label>
+                                <select
+                                    id="signup-filter"
+                                    value={signedUp}
+                                    onChange={handleSignUpChange}
+                                    className="w-full border border-gray-200 rounded-lg p-2 focus:ring-1 focus:ring-green-500 bg-white"
+                                >
+                                    <option value="">All Signups</option>
+                                    <option value="Yes">Subscribed</option>
+                                    <option value="No">Not Subscribed</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </motion.div>
+
+                {/* Enhanced Action Buttons */}
+                <motion.div
+                    variants={fadeInLeft}
+                    initial="hidden"
+                    whileInView="visible"
+                    viewport={{ once: true }}
+                    className="py-4"
+                >
+                    <div className="flex flex-wrap gap-4 mb-8">
                         <button
-                            onClick={() => router.push('/admin-panel69')}
-                            className="px-4 py-2.5 bg-green-600 text-white font-semibold rounded-lg shadow-lg hover:bg-green-700 transition-all duration-200 flex items-center gap-2 hover:translate-x-[-4px]"
+                            onClick={handleFetchData}
+                            className="px-6 py-2.5 bg-green-600 text-white font-semibold rounded-lg shadow-lg hover:bg-green-700 transition-all duration-200 flex items-center gap-2 hover:scale-105"
                         >
-                            <FaArrowLeft className="text-lg" />
-                            <span>Back to Admin Panel</span>
+                            <span className="text-lg">🔍</span>
+                            Apply Filters
                         </button>
                         <button
-                            onClick={handleDeleteAllReviews}
-                            disabled={isDeletingAll}
-                            className="px-4 py-2.5 bg-red-600/90 text-white font-semibold rounded-lg shadow-lg hover:bg-red-700 transition-all duration-200 flex items-center gap-2 hover:scale-105"
+                            onClick={() => {
+                                setSelectedDate("");
+                                setSignedUp("");
+                                setSelectedPriority("");
+                                setSelectedClientStatus("");
+                                setSelectedName("");
+                                setSelectedCompany("");
+                                setFilteredReviews(reviews);
+                                toast.success("Filters cleared!");
+                            }}
+                            className="px-6 py-2.5 bg-red-600/90 text-white font-semibold rounded-lg shadow-lg hover:bg-red-700 transition-all duration-200 flex items-center gap-2 hover:scale-105"
                         >
                             <MdDeleteForever className="text-xl" />
-                            <span>{isDeletingAll ? 'Deleting...' : 'Delete All'}</span>
+                            Clear Filters
+                        </button>
+                        <button
+                            onClick={handleDownloadCSV}
+                            className="px-6 py-2.5 bg-green-600 text-white font-semibold rounded-lg shadow-lg hover:bg-green-700 transition-all duration-200 flex items-center gap-2 hover:scale-105"
+                        >
+                            <FaFileExcel className="text-xl" />
+                            <span className="hidden md:inline">Export CSV</span>
+                        </button>
+                        <button
+                            onClick={syncData}
+                            disabled={issyncing}
+                            className="px-6 py-2.5 bg-green-600 text-white font-semibold rounded-lg shadow-lg hover:bg-green-700 transition-all duration-200 flex items-center gap-2 hover:scale-105 disabled:opacity-50"
+                        >
+                            <FaSync className={`text-xl ${issyncing ? 'animate-spin' : ''}`} />
+                            <span>{issyncing ? 'Syncing...' : 'Sync Data'}</span>
                         </button>
                     </div>
-                </div>
-            </motion.div>
+                </motion.div>
 
-            {/* Enhanced Filter Section */}
-            <motion.div
-                variants={fadeInRight}
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true }}
-            >
-                <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        {/* First row - most important filters */}
-                        <div className="space-y-2">
-                            <label className="flex items-center gap-1 text-sm font-medium text-gray-700" htmlFor="date-filter">
-                                <span>📅</span> Date
-                            </label>
-                            <input
-                                id="date-filter"
-                                type="date"
-                                value={selectedDate}
-                                onChange={handleDateChange}
-                                className="w-full border border-gray-200 rounded-lg p-2 focus:ring-1 focus:ring-green-500"
-                            />
-                        </div>
-
-                        <div className="space-y-2">
-                            <label className="flex items-center gap-1 text-sm font-medium text-gray-700" htmlFor="name-filter">
-                                <span>👤</span> Name
-                            </label>
-                            <input
-                                id="name-filter"
-                                type="text"
-                                value={selectedName}
-                                onChange={handleNameChange}
-                                placeholder="Enter FirstName"
-                                className="w-full border border-gray-200 rounded-lg p-2 focus:ring-1 focus:ring-green-500"
-                            />
-                        </div>
-
-                        <div className="space-y-2">
-                            <label className="flex items-center gap-1 text-sm font-medium text-gray-700" htmlFor="company-filter">
-                                <span>🏢</span> Brand
-                            </label>
-                            <input
-                                id="company-filter"
-                                type="text"
-                                value={selectedCompany}
-                                onChange={handleCompanyChange}
-                                placeholder="Enter BrandName"
-                                className="w-full border border-gray-200 rounded-lg p-2 focus:ring-1 focus:ring-green-500"
-                            />
-                        </div>
-
-                        {/* Second row - additional filters with dropdown */}
-                        <div className="space-y-2">
-                            <label className="flex items-center gap-1 text-sm font-medium text-gray-700" htmlFor="priority-filter">
-                                <span>🎯</span> Priority
-                            </label>
-                            <select
-                                id="priority-filter"
-                                value={selectedPriority}
-                                onChange={handlePriorityChange}
-                                className="w-full border border-gray-200 rounded-lg p-2 focus:ring-1 focus:ring-green-500 bg-white"
-                            >
-                                <option value="">All Priorities</option>
-                                <option value="low">Low</option>
-                                <option value="medium">Medium</option>
-                                <option value="high">High</option>
-                                <option value="highest">Highest</option>
-                            </select>
-                        </div>
-
-                        <div className="space-y-2">
-                            <label className="flex items-center gap-1 text-sm font-medium text-gray-700" htmlFor="client-status-filter">
-                                <span>📊</span> Status
-                            </label>
-                            <select
-                                id="client-status-filter"
-                                value={selectedClientStatus}
-                                onChange={handleClientStatusChange}
-                                className="w-full border border-gray-200 rounded-lg p-2 focus:ring-1 focus:ring-green-500 bg-white"
-                            >
-                                <option value="">All Statuses</option>
-                                <option value="Pending">Pending</option>
-                                <option value="Reached out">Reached Out</option>
-                            </select>
-                        </div>
-
-                        <div className="space-y-2">
-                            <label className="flex items-center gap-1 text-sm font-medium text-gray-700" htmlFor="signup-filter">
-                                <span>📝</span> Newsletter
-                            </label>
-                            <select
-                                id="signup-filter"
-                                value={signedUp}
-                                onChange={handleSignUpChange}
-                                className="w-full border border-gray-200 rounded-lg p-2 focus:ring-1 focus:ring-green-500 bg-white"
-                            >
-                                <option value="">All Signups</option>
-                                <option value="Yes">Subscribed</option>
-                                <option value="No">Not Subscribed</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-            </motion.div>
-
-            {/* Enhanced Action Buttons */}
-            <motion.div
-                variants={fadeInLeft}
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true }}
-                className="py-4"
-            >
-                <div className="flex flex-wrap gap-4 mb-8">
-                    <button
-                        onClick={handleFetchData}
-                        className="px-6 py-2.5 bg-green-600 text-white font-semibold rounded-lg shadow-lg hover:bg-green-700 transition-all duration-200 flex items-center gap-2 hover:scale-105"
-                    >
-                        <span className="text-lg">🔍</span>
-                        Apply Filters
-                    </button>
-                    <button
-                        onClick={() => {
-                            setSelectedDate("");
-                            setSignedUp("");
-                            setSelectedPriority("");
-                            setSelectedClientStatus("");
-                            setSelectedName("");
-                            setSelectedCompany("");
-                            setFilteredReviews(reviews);
-                            toast.success("Filters cleared!");
-                        }}
-                        className="px-6 py-2.5 bg-red-600/90 text-white font-semibold rounded-lg shadow-lg hover:bg-red-700 transition-all duration-200 flex items-center gap-2 hover:scale-105"
-                    >
-                        <MdDeleteForever className="text-xl" />
-                        Clear Filters
-                    </button>
-                    <button
-                        onClick={handleDownloadCSV}
-                        className="px-6 py-2.5 bg-green-600 text-white font-semibold rounded-lg shadow-lg hover:bg-green-700 transition-all duration-200 flex items-center gap-2 hover:scale-105"
-                    >
-                        <FaFileExcel className="text-xl" />
-                        <span className="hidden md:inline">Export CSV</span>
-                    </button>
-                    <button
-                        onClick={syncData}
-                        disabled={issyncing}
-                        className="px-6 py-2.5 bg-green-600 text-white font-semibold rounded-lg shadow-lg hover:bg-green-700 transition-all duration-200 flex items-center gap-2 hover:scale-105 disabled:opacity-50"
-                    >
-                        <FaSync className={`text-xl ${issyncing ? 'animate-spin' : ''}`} />
-                        <span>{issyncing ? 'Syncing...' : 'Sync Data'}</span>
-                    </button>
-                </div>
-            </motion.div>
-
-            <motion.div
-                variants={fadeInUp}
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true }}
-            >
-                <div className="relative w-full overflow-hidden bg-white shadow-md rounded-lg">
-                    <div
-                        className="overflow-x-auto scrollbar-hide"
-                        style={{
-                            scrollbarWidth: "none",
-                            msOverflowStyle: "none",
-                            WebkitOverflowScrolling: "touch",
-                        }}
-                    >
-                        <table className="min-w-full table-auto border-collapse border border-green-200">
-                            <thead className="bg-green-600 text-white">
-                                <tr>
-                                    {[
-                                        "Action",
-                                        "Priority",
-                                        "ChangePriority",
-                                        "Client Status",
-                                        "Update Status",
-                                        "Timestamp",
-                                        "FirstName",
-                                        "LastName",
-                                        "Email",
-                                        "Notify",
-                                        "SignedUp",
-                                        "DialCode",
-                                        "PhoneNumber",
-                                        "BrandName",
-                                        "Services",
-                                        "Socials",
-                                        "Website",
-                                        "Messages",
-                                    ].map((header) => (
-                                        <th
-                                            key={header}
-                                            className="border border-green-500 px-4 md:px-4 py-2 md:py-4 text-left text-xs md:text-md md:text-base font-semibold"
-                                        >
-                                            {header}
-                                        </th>
-                                    ))}
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {displayedReviews.length > 0 ? (
-                                    displayedReviews.map((review) => (
-                                        <tr key={review.docId} className={`hover:bg-green-50 ${review.clientStatus === 'Reached out' ? 'opacity-50' : ''}`}>
-                                            <td className="border border-green-200 px-4 md:px-7 py-2 md:py-2 text-xs md:text-base">
-                                                <button
-                                                    onClick={() => handleDeleteReview(review.docId)}
-                                                    className="text-red-500 hover:text-red-700 text-lg md:text-2xl"
-                                                    title="Delete"
-                                                >
-                                                    <MdDeleteForever />
-                                                </button>
-                                            </td>
-                                            <td className="border border-green-200 px-4 py-2 text-sm md:text-base">
-                                                <PriorityDisplay priority={review.priority} />
-                                            </td>
-                                            <td className="border border-green-200 px-4 py-2 text-sm md:text-base">
-                                                <select
-                                                    value={review.priority}
-                                                    onChange={(e) => handlePriorityUpdate(review.docId, e.target.value)}
-                                                    className="w-full border border-green-300 rounded-lg px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 bg-white"
-                                                >
-                                                    <option value="low">Low</option>
-                                                    <option value="medium">Medium</option>
-                                                    <option value="high">High</option>
-                                                    <option value="highest">Highest</option>
-                                                </select>
-                                            </td>
-                                            <td className="border border-green-200 px-4 py-2">
-                                                <StatusCell status={review.clientStatus} />
-                                            </td>
-                                            <td className="border border-green-200 px-4 py-2">
-                                                <UpdateStatusCell
-                                                    status={review.clientStatus}
-                                                    onUpdate={() => handleClientStatusUpdate(review.docId, review.clientStatus)}
-                                                    disabled={review.clientStatus === 'Reached out'}
-                                                />
-                                            </td>
-                                            <td className="border border-green-200 px-4 py-2 font-serif text-sm md:text-base whitespace-nowrap">
-                                                {review.movedToReviewAt
-                                                    ? new Date(review.movedToReviewAt.seconds * 1000).toLocaleString()
-                                                    : "N/A"}
-                                            </td>
-                                            <td className="border border-green-200 px-4 py-2 font-serif text-sm md:text-base">
-                                                {review.firstName}
-                                            </td>
-                                            <td className="border border-green-200 px-4 py-2 font-serif text-sm md:text-base">
-                                                {review.lastName}
-                                            </td>
-                                            <td className="border border-green-200 px-4 py-2 font-serif text-sm md:text-base" style={{ userSelect: "none" }}>
-                                                <CopyableText text={review.email} type="Email" />
-                                            </td>
-                                            <td className="border border-green-200 px-4 py-2 text-sm md:text-base">
-                                                <button
-                                                    onClick={() => handleSendNotification(review.email, review.firstName, review.docId)}
-                                                    className={`px-2 py-1 rounded-md transition-colors duration-200 flex items-center space-x-1 ${review.clientStatus === 'Reached out'
-                                                        ? 'bg-gray-400 cursor-not-allowed'
-                                                        : 'bg-green-500 hover:bg-green-600 text-white'
-                                                        }`}
-                                                    title={review.clientStatus === 'Reached out' ? 'Already reached out' : 'Send Notification'}
-                                                    disabled={loadingNotifications[review.docId] || review.clientStatus === 'Reached out'}
-                                                >
-                                                    {loadingNotifications[review.docId] ? (
-                                                        <span className="animate-spin">⌛</span>
-                                                    ) : (
-                                                        <HiBellAlert className="text-sm md:text-base" />
-                                                    )}
-                                                    <span className="hidden md:inline">
-                                                        {loadingNotifications[review.docId] ? 'Sending...' : 'Notify'}
-                                                    </span>
-                                                </button>
-                                            </td>
-                                            <td className="border border-green-200 px-4 py-2 font-serif text-sm md:text-base">
-                                                {review.isChecked ? "Yes" : "No"}
-                                            </td>
-                                            <td className="border border-green-200 px-4 py-2 font-serif text-sm md:text-base">
-                                                {review.phoneDialCode}
-                                            </td>
-                                            <td className="border border-green-200 px-4 py-2 font-serif text-sm md:text-base" style={{ userSelect: "none" }}>
-                                                <CopyableText
-                                                    text={`${review.phoneNumber}`}
-                                                    type="Phone number"
-                                                />
-                                            </td>
-                                            <td className="border border-green-200 px-4 py-2 font-serif text-sm md:text-base" style={{ userSelect: "none" }}>
-                                                <CopyableText
-                                                    text={`${review.company}`}
-                                                    type="Brand Name"
-                                                />
-                                            </td>
-                                            <td className="border border-green-200 px-4 py-2 font-serif text-sm md:text-base">
-                                                {review.services}
-                                            </td>
-                                            <td className="border border-green-200 px-4 py-2 font-serif text-sm md:text-base">
-                                                <ExternalLink url={review.socials} />
-                                            </td>
-                                            <td className="border border-green-200 px-4 py-2 font-serif text-sm md:text-base">
-                                                <ExternalLink url={review.website} />
-                                            </td>
-                                            <td className="border border-green-200 px-4 py-2 font-serif text-sm md:text-base">
-                                                {review.messages}
-                                            </td>
-
-                                        </tr>
-                                    ))
-                                ) : (
+                <motion.div
+                    variants={fadeInUp}
+                    initial="hidden"
+                    whileInView="visible"
+                    viewport={{ once: true }}
+                >
+                    <div className="relative w-full overflow-hidden bg-white shadow-md rounded-lg">
+                        <div
+                            className="overflow-x-auto scrollbar-hide"
+                            style={{
+                                scrollbarWidth: "none",
+                                msOverflowStyle: "none",
+                                WebkitOverflowScrolling: "touch",
+                            }}
+                        >
+                            <table className="min-w-full table-auto border-collapse border border-green-200">
+                                <thead className="bg-green-600 text-white">
                                     <tr>
-                                        <td colSpan="18" className="text-center py-4">
-                                            No data available
-                                        </td>
+                                        {[
+                                            "Action",
+                                            "Priority",
+                                            "ChangePriority",
+                                            "Client Status",
+                                            "Update Status",
+                                            "Timestamp",
+                                            "FirstName",
+                                            "LastName",
+                                            "Email",
+                                            "Notify",
+                                            "SignedUp",
+                                            "DialCode",
+                                            "PhoneNumber",
+                                            "BrandName",
+                                            "Services",
+                                            "Socials",
+                                            "Website",
+                                            "Messages",
+                                        ].map((header) => (
+                                            <th
+                                                key={header}
+                                                className="border border-green-500 px-4 md:px-4 py-2 md:py-4 text-left text-xs md:text-md md:text-base font-semibold"
+                                            >
+                                                {header}
+                                            </th>
+                                        ))}
                                     </tr>
-                                )}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </motion.div>
+                                </thead>
+                                <tbody>
+                                    {displayedReviews.length > 0 ? (
+                                        displayedReviews.map((review) => (
+                                            <tr key={review.docId} className={`hover:bg-green-50 ${review.clientStatus === 'Reached out' ? 'opacity-50' : ''}`}>
+                                                <td className="border border-green-200 px-4 md:px-7 py-2 md:py-2 text-xs md:text-base">
+                                                    <button
+                                                        onClick={() => handleDeleteReview(review.docId)}
+                                                        className="text-red-500 hover:text-red-700 text-lg md:text-2xl"
+                                                        title="Delete"
+                                                    >
+                                                        <MdDeleteForever />
+                                                    </button>
+                                                </td>
+                                                <td className="border border-green-200 px-4 py-2 text-sm md:text-base">
+                                                    <PriorityDisplay priority={review.priority} />
+                                                </td>
+                                                <td className="border border-green-200 px-4 py-2 text-sm md:text-base">
+                                                    <select
+                                                        value={review.priority}
+                                                        onChange={(e) => handlePriorityUpdate(review.docId, e.target.value)}
+                                                        className="w-full border border-green-300 rounded-lg px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 bg-white"
+                                                    >
+                                                        <option value="low">Low</option>
+                                                        <option value="medium">Medium</option>
+                                                        <option value="high">High</option>
+                                                        <option value="highest">Highest</option>
+                                                    </select>
+                                                </td>
+                                                <td className="border border-green-200 px-4 py-2">
+                                                    <StatusCell status={review.clientStatus} />
+                                                </td>
+                                                <td className="border border-green-200 px-4 py-2">
+                                                    <UpdateStatusCell
+                                                        status={review.clientStatus}
+                                                        onUpdate={() => handleClientStatusUpdate(review.docId, review.clientStatus)}
+                                                        disabled={review.clientStatus === 'Reached out'}
+                                                    />
+                                                </td>
+                                                <td className="border border-green-200 px-4 py-2 font-serif text-sm md:text-base whitespace-nowrap">
+                                                    {review.movedToReviewAt
+                                                        ? new Date(review.movedToReviewAt.seconds * 1000).toLocaleString()
+                                                        : "N/A"}
+                                                </td>
+                                                <td className="border border-green-200 px-4 py-2 font-serif text-sm md:text-base">
+                                                    {review.firstName}
+                                                </td>
+                                                <td className="border border-green-200 px-4 py-2 font-serif text-sm md:text-base">
+                                                    {review.lastName}
+                                                </td>
+                                                <td className="border border-green-200 px-4 py-2 font-serif text-sm md:text-base" style={{ userSelect: "none" }}>
+                                                    <CopyableText text={review.email} type="Email" />
+                                                </td>
+                                                <td className="border border-green-200 px-4 py-2 text-sm md:text-base">
+                                                    <button
+                                                        onClick={() => handleSendNotification(review.email, review.firstName, review.docId)}
+                                                        className={`px-2 py-1 rounded-md transition-colors duration-200 flex items-center space-x-1 ${review.clientStatus === 'Reached out'
+                                                            ? 'bg-gray-400 cursor-not-allowed'
+                                                            : 'bg-green-500 hover:bg-green-600 text-white'
+                                                            }`}
+                                                        title={review.clientStatus === 'Reached out' ? 'Already reached out' : 'Send Notification'}
+                                                        disabled={loadingNotifications[review.docId] || review.clientStatus === 'Reached out'}
+                                                    >
+                                                        {loadingNotifications[review.docId] ? (
+                                                            <span className="animate-spin">⌛</span>
+                                                        ) : (
+                                                            <HiBellAlert className="text-sm md:text-base" />
+                                                        )}
+                                                        <span className="hidden md:inline">
+                                                            {loadingNotifications[review.docId] ? 'Sending...' : 'Notify'}
+                                                        </span>
+                                                    </button>
+                                                </td>
+                                                <td className="border border-green-200 px-4 py-2 font-serif text-sm md:text-base">
+                                                    {review.isChecked ? "Yes" : "No"}
+                                                </td>
+                                                <td className="border border-green-200 px-4 py-2 font-serif text-sm md:text-base">
+                                                    {review.phoneDialCode}
+                                                </td>
+                                                <td className="border border-green-200 px-4 py-2 font-serif text-sm md:text-base" style={{ userSelect: "none" }}>
+                                                    <CopyableText
+                                                        text={`${review.phoneNumber}`}
+                                                        type="Phone number"
+                                                    />
+                                                </td>
+                                                <td className="border border-green-200 px-4 py-2 font-serif text-sm md:text-base" style={{ userSelect: "none" }}>
+                                                    <CopyableText
+                                                        text={`${review.company}`}
+                                                        type="Brand Name"
+                                                    />
+                                                </td>
+                                                <td className="border border-green-200 px-4 py-2 font-serif text-sm md:text-base">
+                                                    {review.services}
+                                                </td>
+                                                <td className="border border-green-200 px-4 py-2 font-serif text-sm md:text-base">
+                                                    <ExternalLink url={review.socials} />
+                                                </td>
+                                                <td className="border border-green-200 px-4 py-2 font-serif text-sm md:text-base">
+                                                    <ExternalLink url={review.website} />
+                                                </td>
+                                                <td className="border border-green-200 px-4 py-2 font-serif text-sm md:text-base">
+                                                    {review.messages}
+                                                </td>
 
-            {/* Pagination */}
-            {filteredReviews.length > 0 && (
-                <Pagination
-                    currentPage={currentPage}
-                    totalPages={totalPages}
-                    totalRecords={filteredReviews.length}
-                    startIndex={startIndex}
-                    endIndex={endIndex}
-                    onPageChange={handlePageChange}
-                    pageButtonsStyles={"bg-green-500 hover:bg-green-600 font-serif"}
-                    recordInfoStyles={"text-gray-800 font-serif"}
-                />
-            )}
-        </div>
+                                            </tr>
+                                        ))
+                                    ) : (
+                                        <tr>
+                                            <td colSpan="18" className="text-center py-4">
+                                                No data available
+                                            </td>
+                                        </tr>
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </motion.div>
+
+                {/* Pagination */}
+                {filteredReviews.length > 0 && (
+                    <Pagination
+                        currentPage={currentPage}
+                        totalPages={totalPages}
+                        totalRecords={filteredReviews.length}
+                        startIndex={startIndex}
+                        endIndex={endIndex}
+                        onPageChange={handlePageChange}
+                        pageButtonsStyles={"bg-green-500 hover:bg-green-600 font-serif"}
+                        recordInfoStyles={"text-gray-800 font-serif"}
+                    />
+                )}
+            </div>
+        </ProtectedRoute>
     );
 };
 

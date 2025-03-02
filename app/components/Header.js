@@ -5,20 +5,36 @@ import { FaBars, FaTimes } from "react-icons/fa";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { AnimatePresence } from "framer-motion";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Menu } from 'lucide-react';
+import { useAdminAuth } from "./providers/AdminAuthProvider";
+import {
+  collection,
+  query,
+  where,
+  getDocs,
+  orderBy
+} from 'firebase/firestore';
+import { db } from '../lib/firebase';
+import { toast } from "sonner";
+import { LogOut, Settings } from 'lucide-react';
 
 const REVIEW_PANEL_ROUTE = "/review-panel69";
 const BUG_PANEL_ROUTE = "/bug-panel69";
-const RATING_DASHBOARD_ROUTE = "/rating-dashboard69";
 
 function Header() {
+  const { admin: currentAdmin, isAuthenticated, loading, logout } = useAdminAuth();
+  const router = useRouter();
   const pathname = usePathname();
   const [active, setActive] = useState("Home");
   const [hoveredItem, setHoveredItem] = useState(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [approvedAdmins, setApprovedAdmins] = useState([]);
+  const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
+  const profileDropdownRef = useRef(null);
 
   useEffect(() => {
     const routeToActiveMap = {
@@ -27,6 +43,7 @@ function Header() {
       "/work": "Work",
       "/services": "Services",
       "/inquire": "Inquire",
+      "/login": "Login",
     };
     setActive(routeToActiveMap[pathname] || "Home");
   }, [pathname]);
@@ -34,7 +51,8 @@ function Header() {
   const adminLinks = [
     { href: '/admin-panel69', label: 'Admin Panel' },
     { href: '/bug-panel69', label: 'Bugs & Issues' },
-    { href: '/rating-dashboard69', label: 'Rating Dashboard' }
+    { href: '/rating-dashboard69', label: 'Rating Dashboard' },
+    { href: '/admin-management69', label: 'Admin Management' }
   ];
 
   useEffect(() => {
@@ -50,6 +68,20 @@ function Header() {
     };
   }, []);
 
+  // Add outside click handler for profile dropdown
+  useEffect(() => {
+    const handleProfileClickOutside = (event) => {
+      if (profileDropdownRef.current && !profileDropdownRef.current.contains(event.target)) {
+        setIsProfileDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleProfileClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleProfileClickOutside);
+    };
+  }, []);
+
   useEffect(() => {
     if (isMenuOpen) {
       document.body.style.overflow = "hidden";
@@ -62,11 +94,55 @@ function Header() {
     };
   }, [isMenuOpen]);
 
+  // Fetch admins on component mount
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchAdmins();
+    }
+  }, [isAuthenticated, loading]);
+
+  const fetchAdmins = async () => {
+    try {
+      setIsLoading(true);
+
+      // Fetch approved admins
+      const approvedQuery = query(
+        collection(db, "admins"),
+        where("status", "==", "approved"),
+        orderBy("createdAt", "desc")
+      );
+      const approvedSnapshot = await getDocs(approvedQuery);
+      const approvedList = approvedSnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+        createdAt: doc.data().createdAt?.toDate?.() || new Date()
+      }));
+
+      setApprovedAdmins(approvedList);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleMenuToggle = () => {
     setIsMenuOpen(!isMenuOpen);
   };
 
   const isDevelopment = process.env.NEXT_PUBLIC_ENV === "development";
+
+  // Get admin's first letter from name
+  const getAdminInitial = () => {
+    if (!currentAdmin) return 'A';
+    if (currentAdmin.firstName && currentAdmin.firstName.length > 0) {
+      return currentAdmin.firstName.charAt(0).toUpperCase();
+    }
+    if (currentAdmin.username && currentAdmin.username.length > 0) {
+      return currentAdmin.username.charAt(0).toUpperCase();
+    }
+    return 'A';
+  };
 
   return (
     <div className="border-b border-[#575553] relative">
@@ -120,8 +196,8 @@ function Header() {
               <li
                 key={item}
                 className={`relative cursor-pointer ${isDevelopment || pathname === REVIEW_PANEL_ROUTE || pathname === BUG_PANEL_ROUTE
-                    ? "text-white"
-                    : "text-[#575553]"
+                  ? "text-white"
+                  : "text-[#575553]"
                   } text-md font-medium`}
                 onMouseEnter={() => setHoveredItem(item)}
                 onMouseLeave={() => setHoveredItem(null)}
@@ -138,8 +214,8 @@ function Header() {
                   <motion.div
                     layoutId={active === item ? "activeUnderline" : "hoverUnderline"}
                     className={`absolute bottom-0 left-0 ${isDevelopment || pathname === REVIEW_PANEL_ROUTE || pathname === BUG_PANEL_ROUTE
-                        ? "bg-white"
-                        : "bg-[#575553]"
+                      ? "bg-white"
+                      : "bg-[#575553]"
                       }`}
                     style={{
                       height: "2px",
@@ -155,8 +231,92 @@ function Header() {
               </li>
             ))}
 
+            {/* Display admin first letter instead of user icon */}
+            {(isAuthenticated && isDevelopment) ? (
+              <li
+                className={`relative cursor-pointer ${isDevelopment || pathname === REVIEW_PANEL_ROUTE || pathname === BUG_PANEL_ROUTE
+                  ? "text-white"
+                  : "text-[#575553]"
+                  } text-md font-medium`}
+                ref={profileDropdownRef}
+              >
+                <div className="relative">
+                  <div
+                    className="flex items-center justify-center w-8 h-8 rounded-full bg-white text-blue-600 font-bold cursor-pointer"
+                    onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
+                    onMouseEnter={() => setHoveredItem("Profile")}
+                    onMouseLeave={() => setHoveredItem(null)}
+                  >
+                    {getAdminInitial()}
+                  </div>
+
+                  {isProfileDropdownOpen && (
+                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50">
+                      <div className="px-4 py-2 text-sm text-gray-700 border-b border-gray-100">
+                        <div className="font-medium">@{currentAdmin?.username}</div>
+                        <div className="text-xs text-gray-500 capitalize">{currentAdmin?.role || 'admin'}</div>
+                      </div>
+                      <Link
+                        href="/profile"
+                        className="px-4 py-2 text-sm text-gray-700 hover:bg-[#2563EB] hover:text-white transition flex items-center"
+                      >
+                        <Settings size={16} className="mr-2" />
+                        Profile Settings
+                      </Link>
+                      <button
+                        onClick={logout}
+                        className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition flex items-center"
+                      >
+                        <LogOut size={16} className="mr-2" />
+                        Logout
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </li>
+            ) : (
+              // Show login only in development mode
+              process.env.NEXT_PUBLIC_ENV !== "production" && (
+                <li
+                  className={`relative cursor-pointer ${isDevelopment || pathname === REVIEW_PANEL_ROUTE || pathname === BUG_PANEL_ROUTE
+                    ? "text-white"
+                    : "text-[#575553]"
+                    } text-md font-medium`}
+                  onMouseEnter={() => setHoveredItem("Login")}
+                  onMouseLeave={() => setHoveredItem(null)}
+                >
+                  <Link
+                    href="/login"
+                    passHref
+                    onClick={() => setActive("Login")}
+                  >
+                    Login
+                  </Link>
+
+                  {(active === "Login" || hoveredItem === "Login") && (
+                    <motion.div
+                      layoutId={active === "Login" ? "activeUnderline" : "hoverUnderline"}
+                      className={`absolute bottom-0 left-0 ${isDevelopment || pathname === REVIEW_PANEL_ROUTE || pathname === BUG_PANEL_ROUTE
+                        ? "bg-white"
+                        : "bg-[#575553]"
+                        }`}
+                      style={{
+                        height: "2px",
+                        width: "100%",
+                        opacity: hoveredItem === "Login" && active !== "Login" ? 0.6 : 1
+                      }}
+                      initial={{ width: "0%" }}
+                      animate={{ width: "100%" }}
+                      exit={{ width: "0%" }}
+                      transition={{ duration: 0.2 }}
+                    />
+                  )}
+                </li>
+              )
+            )}
+
             {/* Admin Dropdown */}
-            {isDevelopment && (
+            {isDevelopment && isAuthenticated && (
               <div className="relative" ref={dropdownRef}>
                 <button
                   onClick={() => setIsDropdownOpen(!isDropdownOpen)}
@@ -184,11 +344,10 @@ function Header() {
           </ul>
         </div>
 
-        {/* Rest of the component remains the same */}
         {/* Development Mode Text */}
-        {isDevelopment && (
+        {isDevelopment && isAuthenticated && (
           <div className="absolute left-1/4 transform -translate-x-1/2 ml-36 md:ml-0 text-white text-xs md:text-lg font-light md:font-semibold" style={{ userSelect: "none" }}>
-            Hi,Admin!👋
+            Hi, {currentAdmin?.role === 'superAdmin' ? 'SuperAdmin' : 'Admin'}!👋
           </div>
         )}
 
@@ -266,6 +425,50 @@ function Header() {
                 </li>
               ))}
 
+              {/* User menu for Mobile Menu */}
+              {isAuthenticated ? (
+                <>
+                  <li className="pt-4">
+                    <Link
+                      href="/profile"
+                      className="px-4 py-2 bg-[#36302A] text-white rounded-md hover:bg-opacity-90 transition flex items-center justify-center"
+                      onClick={handleMenuToggle}
+                    >
+                      <Settings size={16} className="mr-2" />
+                      Profile Settings
+                    </Link>
+                  </li>
+                  <li className="pt-4">
+                    <button
+                      onClick={() => {
+                        logout();
+                        handleMenuToggle();
+                      }}
+                      className="w-full px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition flex items-center justify-center"
+                    >
+                      <LogOut size={16} className="mr-2" />
+                      Logout
+                    </button>
+                  </li>
+                </>
+              ) : (
+                <li
+                  className={`cursor-pointer text-[#575553] text-lg font-medium pb-0.25 ${active === "Login" ? "border-b border-[#575553]" : ""
+                    }`}
+                >
+                  <Link
+                    href="/login"
+                    passHref
+                    onClick={() => {
+                      setActive("Login");
+                      setIsMenuOpen(false);
+                    }}
+                  >
+                    Login
+                  </Link>
+                </li>
+              )}
+
               {isDevelopment && (
                 <li className="pt-6">
                   <Link
@@ -308,4 +511,3 @@ function Header() {
 }
 
 export default Header;
-

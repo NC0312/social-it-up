@@ -9,8 +9,8 @@ import { useRouter } from "next/navigation";
 import { MdOutlineSaveAlt } from "react-icons/md";
 import { FaArrowRight, FaExternalLinkAlt, FaFileExcel, FaSync } from "react-icons/fa";
 import { motion } from "framer-motion";
-import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Settings, Table, List, LayoutGrid } from "lucide-react";
 import { Pagination } from "../components/Pagination";
+import ProtectedRoute from "../components/ProtectedRoutes";
 
 
 const AdminPanel = () => {
@@ -384,311 +384,312 @@ const AdminPanel = () => {
   };
 
   return (
-    <div className="p-4 md:p-8 bg-gradient-to-b from-[#FAF4ED] to-white min-h-screen">
-      {/* Enhanced Header Section */}
-      <motion.div
-        variants={fadeInLeft}
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true }}
-      >
-        <div className="flex flex-col md:flex-row justify-between items-center border-b border-[#36302A]/50 py-6 pb-4 mb-8">
-          <div className="flex items-center gap-3">
-            <h1 className="text-4xl md:text-6xl font-serif font-bold bg-gradient-to-r from-[#36302A] to-[#5a4c3f] bg-clip-text text-transparent">
-              Admin Panel
-            </h1>
-            <span className="text-4xl animate-bounce">👨‍💻</span>
+    <ProtectedRoute>
+      <div className="p-4 md:p-8 bg-gradient-to-b from-[#FAF4ED] to-white min-h-screen">
+        {/* Enhanced Header Section */}
+        <motion.div
+          variants={fadeInLeft}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+        >
+          <div className="flex flex-col md:flex-row justify-between items-center border-b border-[#36302A]/50 py-6 pb-4 mb-8">
+            <div className="flex items-center gap-3">
+              <h1 className="text-4xl md:text-6xl font-serif font-bold bg-gradient-to-r from-[#36302A] to-[#5a4c3f] bg-clip-text text-transparent">
+                Admin Panel
+              </h1>
+              <span className="text-4xl animate-bounce">👨‍💻</span>
+            </div>
+            <div className="flex items-center gap-4">
+              <button
+                onClick={() => router.push('/review-panel69')}
+                className="px-4 py-2.5 bg-[#36302A] text-[#FAF4ED] font-semibold rounded-lg shadow-lg hover:bg-[#2C2925] transition-all duration-200 flex items-center gap-2"
+              >
+                <span>Review Panel</span>
+                <FaArrowRight className="text-lg" />
+              </button>
+              <button
+                onClick={() => {
+                  if (window.confirm('Are you sure you want to delete all data? This action cannot be undone.')) {
+                    handleDeleteAll();
+                  }
+                }}
+                className="px-4 py-2.5 bg-red-600/90 text-[#FAF4ED] font-semibold rounded-lg shadow-lg hover:bg-red-700 transition-all duration-200 flex items-center gap-2"
+              >
+                <MdDeleteForever className="text-xl" />
+                <span>Delete All</span>
+              </button>
+            </div>
           </div>
-          <div className="flex items-center gap-4">
+        </motion.div>
+
+        {/* Enhanced Filter Section */}
+        <motion.div
+          variants={fadeInRight}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+        >
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8 bg-white p-6 rounded-xl shadow-sm border border-[#36302A]/10">
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-[#36302A] items-center gap-2" htmlFor="date-filter">
+                <span className="text-lg">📅</span> Filter by Date
+              </label>
+              <input
+                id="date-filter"
+                type="date"
+                value={selectedDate}
+                onChange={handleDateChange}
+                className="w-full border border-[#36302A]/20 rounded-lg px-4 py-2.5 shadow-sm focus:outline-none focus:ring-2 focus:ring-[#36302A] focus:border-transparent transition-all duration-200"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-[#36302A] items-center gap-2" htmlFor="name-filter">
+                <span className="text-lg">👤</span>Filter By FirstName
+              </label>
+              <input
+                id="name-filter"
+                type="text"
+                value={selectedName}
+                onChange={handleNameChange}
+                placeholder="Enter FirstName"
+                className="w-full border border-[#36302A]/20 rounded-lg px-4 py-2.5 shadow-sm focus:outline-none focus:ring-2 focus:ring-[#36302A] focus:border-transparent transition-all duration-200 placeholder-[#36302A]/60"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-[#36302A] items-center gap-2" htmlFor="company-filter">
+                <span className="text-lg">🏢</span>Filter By BrandName
+              </label>
+              <input
+                id="company-filter"
+                type="text"
+                value={selectedCompany}
+                onChange={handleCompanyChange}
+                placeholder="Enter BrandName"
+                className="w-full border border-[#36302A]/20 rounded-lg px-4 py-2.5 shadow-sm focus:outline-none focus:ring-2 focus:ring-[#36302A] focus:border-transparent transition-all duration-200 placeholder-[#36302A]/60"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-[#36302A] items-center gap-2" htmlFor="signup-filter">
+                <span className="text-lg">✉️</span> Newsletter Signup Status
+              </label>
+              <select
+                id="signup-filter"
+                value={signedUp}
+                onChange={handleSignUpChange}
+                className="w-full border border-[#36302A]/20 rounded-lg px-4 py-2.5 shadow-sm focus:outline-none focus:ring-2 focus:ring-[#36302A] focus:border-transparent transition-all duration-200 bg-white"
+              >
+                <option value="">All Signups</option>
+                <option value="Yes">Signed Up</option>
+                <option value="No">Not Signed Up</option>
+              </select>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Enhanced Action Buttons */}
+        <motion.div
+          variants={fadeInLeft}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+        >
+          <div className="flex flex-wrap gap-4 mb-8">
             <button
-              onClick={() => router.push('/review-panel69')}
-              className="px-4 py-2.5 bg-[#36302A] text-[#FAF4ED] font-semibold rounded-lg shadow-lg hover:bg-[#2C2925] transition-all duration-200 flex items-center gap-2"
+              onClick={handleFetchData}
+              className="px-6 py-2.5 bg-[#36302A] text-[#FAF4ED] font-semibold rounded-lg shadow-lg hover:bg-[#2C2925] transition-all duration-200 flex items-center gap-2 hover:scale-105"
             >
-              <span>Review Panel</span>
-              <FaArrowRight className="text-lg" />
+              <span className="text-lg">🔍</span>
+              Apply Filters
             </button>
             <button
               onClick={() => {
-                if (window.confirm('Are you sure you want to delete all data? This action cannot be undone.')) {
-                  handleDeleteAll();
-                }
+                setSelectedDate("");
+                setSignedUp("");
+                setSelectedName("");
+                setFilteredInquiries(inquiries);
+                toast.success("Filters cleared!");
               }}
-              className="px-4 py-2.5 bg-red-600/90 text-[#FAF4ED] font-semibold rounded-lg shadow-lg hover:bg-red-700 transition-all duration-200 flex items-center gap-2"
+              className="px-6 py-2.5 bg-red-600/90 text-[#FAF4ED] font-semibold rounded-lg shadow-lg hover:bg-red-700 transition-all duration-200 flex items-center gap-2 hover:scale-105"
             >
               <MdDeleteForever className="text-xl" />
-              <span>Delete All</span>
+              Clear Filters
+            </button>
+            <button
+              onClick={handleDownloadCSV}
+              className="px-6 py-2.5 bg-[#36302A] text-white font-semibold rounded-lg shadow-lg hover:bg-[#2C2925] transition-all duration-200 flex items-center gap-2 hover:scale-105"
+            >
+              <FaFileExcel className="text-xl" />
+              <span className="hidden md:inline">Export CSV</span>
+            </button>
+            <button
+              onClick={syncData}
+              disabled={issyncing}
+              className="px-6 py-2.5 bg-[#36302A] text-[#FAF4ED] font-semibold rounded-lg shadow-lg hover:bg-[#2C2925] transition-all duration-200 flex items-center gap-2 hover:scale-105 disabled:opacity-50"
+            >
+              <FaSync className={`text-xl ${issyncing ? 'animate-spin' : ''}`} />
+              <span>{issyncing ? 'Syncing...' : 'Sync Data'}</span>
             </button>
           </div>
-        </div>
-      </motion.div>
+        </motion.div>
 
-      {/* Enhanced Filter Section */}
-      <motion.div
-        variants={fadeInRight}
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true }}
-      >
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8 bg-white p-6 rounded-xl shadow-sm border border-[#36302A]/10">
-          <div className="space-y-2">
-            <label className="block text-sm font-medium text-[#36302A] items-center gap-2" htmlFor="date-filter">
-              <span className="text-lg">📅</span> Filter by Date
-            </label>
-            <input
-              id="date-filter"
-              type="date"
-              value={selectedDate}
-              onChange={handleDateChange}
-              className="w-full border border-[#36302A]/20 rounded-lg px-4 py-2.5 shadow-sm focus:outline-none focus:ring-2 focus:ring-[#36302A] focus:border-transparent transition-all duration-200"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <label className="block text-sm font-medium text-[#36302A] items-center gap-2" htmlFor="name-filter">
-              <span className="text-lg">👤</span>Filter By FirstName
-            </label>
-            <input
-              id="name-filter"
-              type="text"
-              value={selectedName}
-              onChange={handleNameChange}
-              placeholder="Enter FirstName"
-              className="w-full border border-[#36302A]/20 rounded-lg px-4 py-2.5 shadow-sm focus:outline-none focus:ring-2 focus:ring-[#36302A] focus:border-transparent transition-all duration-200 placeholder-[#36302A]/60"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <label className="block text-sm font-medium text-[#36302A] items-center gap-2" htmlFor="company-filter">
-              <span className="text-lg">🏢</span>Filter By BrandName
-            </label>
-            <input
-              id="company-filter"
-              type="text"
-              value={selectedCompany}
-              onChange={handleCompanyChange}
-              placeholder="Enter BrandName"
-              className="w-full border border-[#36302A]/20 rounded-lg px-4 py-2.5 shadow-sm focus:outline-none focus:ring-2 focus:ring-[#36302A] focus:border-transparent transition-all duration-200 placeholder-[#36302A]/60"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <label className="block text-sm font-medium text-[#36302A] items-center gap-2" htmlFor="signup-filter">
-              <span className="text-lg">✉️</span> Newsletter Signup Status
-            </label>
-            <select
-              id="signup-filter"
-              value={signedUp}
-              onChange={handleSignUpChange}
-              className="w-full border border-[#36302A]/20 rounded-lg px-4 py-2.5 shadow-sm focus:outline-none focus:ring-2 focus:ring-[#36302A] focus:border-transparent transition-all duration-200 bg-white"
-            >
-              <option value="">All Signups</option>
-              <option value="Yes">Signed Up</option>
-              <option value="No">Not Signed Up</option>
-            </select>
-          </div>
-        </div>
-      </motion.div>
-
-      {/* Enhanced Action Buttons */}
-      <motion.div
-        variants={fadeInLeft}
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true }}
-      >
-        <div className="flex flex-wrap gap-4 mb-8">
-          <button
-            onClick={handleFetchData}
-            className="px-6 py-2.5 bg-[#36302A] text-[#FAF4ED] font-semibold rounded-lg shadow-lg hover:bg-[#2C2925] transition-all duration-200 flex items-center gap-2 hover:scale-105"
-          >
-            <span className="text-lg">🔍</span>
-            Apply Filters
-          </button>
-          <button
-            onClick={() => {
-              setSelectedDate("");
-              setSignedUp("");
-              setSelectedName("");
-              setSelectedCompany("");
-              setFilteredInquiries(inquiries);
-              toast.success("Filters cleared!");
-            }}
-            className="px-6 py-2.5 bg-red-600/90 text-[#FAF4ED] font-semibold rounded-lg shadow-lg hover:bg-red-700 transition-all duration-200 flex items-center gap-2 hover:scale-105"
-          >
-            <MdDeleteForever className="text-xl" />
-            Clear Filters
-          </button>
-          <button
-            onClick={handleDownloadCSV}
-            className="px-6 py-2.5 bg-[#36302A] text-white font-semibold rounded-lg shadow-lg hover:bg-[#2C2925] transition-all duration-200 flex items-center gap-2 hover:scale-105"
-          >
-            <FaFileExcel className="text-xl" />
-            <span className="hidden md:inline">Export CSV</span>
-          </button>
-          <button
-            onClick={syncData}
-            disabled={issyncing}
-            className="px-6 py-2.5 bg-[#36302A] text-[#FAF4ED] font-semibold rounded-lg shadow-lg hover:bg-[#2C2925] transition-all duration-200 flex items-center gap-2 hover:scale-105 disabled:opacity-50"
-          >
-            <FaSync className={`text-xl ${issyncing ? 'animate-spin' : ''}`} />
-            <span>{issyncing ? 'Syncing...' : 'Sync Data'}</span>
-          </button>
-        </div>
-      </motion.div>
-
-      {/* Enhanced Table Section */}
-      <motion.div
-        variants={fadeInUp}
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true }}
-      >
-        <div className="relative w-full overflow-hidden bg-white shadow-md rounded-lg">
-          <div className="overflow-x-auto scrollbar-hide">
-            <table className="min-w-full table-auto border-collapse border border-[#36302A]/20">
-              <thead className="bg-[#36302A] text-[#FAF4ED]">
-                <tr>
-                  {[
-                    "Action",
-                    "Timestamp",
-                    "FirstName",
-                    "LastName",
-                    "Email",
-                    "SignedUp",
-                    "DialCode",
-                    "PhoneNumber",
-                    "BrandName",
-                    "Services",
-                    "Socials",
-                    "Website",
-                    "Messages",
-                  ].map((header) => (
-                    <th
-                      key={header}
-                      className="border border-[#36302A]/50 px-4 py-4 text-left font-semibold text-sm md:text-base"
-                    >
-                      {header}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {displayedInquiries.length > 0 ? (
-                  displayedInquiries.map((inquiry) => (
-                    <tr key={inquiry.id} className="hover:bg-[#F2EAE2]">
-                      <td className="border border-[#36302A] px-4 md:px-7 py-2 md:py-2 text-xs md:text-base">
-                        <div className="flex space-x-2">
-                          <button
-                            onClick={() => handleSaveToReview(inquiry)}
-                            className="text-green-500 hover:text-green-700 text-lg md:text-xl"
-                            title="Save to Review"
-                          >
-                            <MdOutlineSaveAlt />
-                          </button>
-                          <button
-                            onClick={() => handleDeleteInquiry(inquiry.id)}
-                            className="text-red-500 hover:text-red-700 text-lg md:text-2xl"
-                            title="Delete"
-                          >
-                            <MdDeleteForever />
-                          </button>
-                        </div>
-                      </td>
-                      <td className="border border-[#36302A] px-4 py-2 font-serif text-sm md:text-base whitespace-nowrap">
-                        {inquiry.timestamp
-                          ? new Date(
-                            inquiry.timestamp.seconds * 1000
-                          ).toLocaleString()
-                          : "N/A"}
-                      </td>
-                      <td className="border border-[#36302A] px-4 py-2 font-serif text-sm md:text-base">
-                        {inquiry.firstName}
-                      </td>
-                      <td className="border border-[#36302A] px-4 py-2 font-serif text-sm md:text-base">
-                        {inquiry.lastName}
-                      </td>
-                      {/* <td className="border border-[#36302A] px-4 py-2 font-serif text-sm md:text-base">
+        {/* Enhanced Table Section */}
+        <motion.div
+          variants={fadeInUp}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+        >
+          <div className="relative w-full overflow-hidden bg-white shadow-md rounded-lg">
+            <div className="overflow-x-auto scrollbar-hide">
+              <table className="min-w-full table-auto border-collapse border border-[#36302A]/20">
+                <thead className="bg-[#36302A] text-[#FAF4ED]">
+                  <tr>
+                    {[
+                      "Action",
+                      "Timestamp",
+                      "FirstName",
+                      "LastName",
+                      "Email",
+                      "SignedUp",
+                      "DialCode",
+                      "PhoneNumber",
+                      "BrandName",
+                      "Services",
+                      "Socials",
+                      "Website",
+                      "Messages",
+                    ].map((header) => (
+                      <th
+                        key={header}
+                        className="border border-[#36302A]/50 px-4 py-4 text-left font-semibold text-sm md:text-base"
+                      >
+                        {header}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {displayedInquiries.length > 0 ? (
+                    displayedInquiries.map((inquiry) => (
+                      <tr key={inquiry.id} className="hover:bg-[#F2EAE2]">
+                        <td className="border border-[#36302A] px-4 md:px-7 py-2 md:py-2 text-xs md:text-base">
+                          <div className="flex space-x-2">
+                            <button
+                              onClick={() => handleSaveToReview(inquiry)}
+                              className="text-green-500 hover:text-green-700 text-lg md:text-xl"
+                              title="Save to Review"
+                            >
+                              <MdOutlineSaveAlt />
+                            </button>
+                            <button
+                              onClick={() => handleDeleteInquiry(inquiry.id)}
+                              className="text-red-500 hover:text-red-700 text-lg md:text-2xl"
+                              title="Delete"
+                            >
+                              <MdDeleteForever />
+                            </button>
+                          </div>
+                        </td>
+                        <td className="border border-[#36302A] px-4 py-2 font-serif text-sm md:text-base whitespace-nowrap">
+                          {inquiry.timestamp
+                            ? new Date(
+                              inquiry.timestamp.seconds * 1000
+                            ).toLocaleString()
+                            : "N/A"}
+                        </td>
+                        <td className="border border-[#36302A] px-4 py-2 font-serif text-sm md:text-base">
+                          {inquiry.firstName}
+                        </td>
+                        <td className="border border-[#36302A] px-4 py-2 font-serif text-sm md:text-base">
+                          {inquiry.lastName}
+                        </td>
+                        {/* <td className="border border-[#36302A] px-4 py-2 font-serif text-sm md:text-base">
                         {inquiry.email}
                       </td> */}
-                      <td className="border border-[#36302A] px-4 py-2 font-serif text-sm md:text-base" style={{ userSelect: "none" }}>
-                        <CopyableText text={inquiry.email} type="Email" />
-                      </td>
-                      <td className="border border-[#36302A] px-4 py-2 font-serif text-sm md:text-base">
-                        {inquiry.isChecked ? "Yes" : "No"}
-                      </td>
+                        <td className="border border-[#36302A] px-4 py-2 font-serif text-sm md:text-base" style={{ userSelect: "none" }}>
+                          <CopyableText text={inquiry.email} type="Email" />
+                        </td>
+                        <td className="border border-[#36302A] px-4 py-2 font-serif text-sm md:text-base">
+                          {inquiry.isChecked ? "Yes" : "No"}
+                        </td>
 
-                      <td className="border border-[#36302A] px-4 py-2 font-serif text-sm md:text-base">
-                        {inquiry.phoneDialCode}
-                      </td>
-                      {/* <td className="border border-[#36302A] px-4 py-2 font-serif text-sm md:text-base">
+                        <td className="border border-[#36302A] px-4 py-2 font-serif text-sm md:text-base">
+                          {inquiry.phoneDialCode}
+                        </td>
+                        {/* <td className="border border-[#36302A] px-4 py-2 font-serif text-sm md:text-base">
                         {inquiry.phoneNumber}
                       </td> */}
-                      <td className="border border-[#36302A] px-4 py-2 font-serif text-sm md:text-base" style={{ userSelect: "none" }}>
-                        <CopyableText
-                          text={`${inquiry.phoneNumber}`}
-                          type="Phone number"
-                        />
-                      </td>
+                        <td className="border border-[#36302A] px-4 py-2 font-serif text-sm md:text-base" style={{ userSelect: "none" }}>
+                          <CopyableText
+                            text={`${inquiry.phoneNumber}`}
+                            type="Phone number"
+                          />
+                        </td>
 
-                      {/* <td className="border border-[#36302A] px-4 py-2 font-serif text-sm md:text-base">
+                        {/* <td className="border border-[#36302A] px-4 py-2 font-serif text-sm md:text-base">
                         {inquiry.company}
                       </td> */}
-                      <td className="border border-[#36302A] px-4 py-2 font-serif text-sm md:text-base" style={{ userSelect: "none" }}>
-                        <CopyableText
-                          text={`${inquiry.company}`}
-                          type="Brand Name"
-                        />
-                      </td>
+                        <td className="border border-[#36302A] px-4 py-2 font-serif text-sm md:text-base" style={{ userSelect: "none" }}>
+                          <CopyableText
+                            text={`${inquiry.company}`}
+                            type="Brand Name"
+                          />
+                        </td>
 
-                      <td className="border border-[#36302A] px-4 py-2 font-serif text-sm md:text-base">
-                        {inquiry.services}
-                      </td>
+                        <td className="border border-[#36302A] px-4 py-2 font-serif text-sm md:text-base">
+                          {inquiry.services}
+                        </td>
 
-                      {/* <td className="border border-[#36302A] px-4 py-2 font-serif text-sm md:text-base">
+                        {/* <td className="border border-[#36302A] px-4 py-2 font-serif text-sm md:text-base">
                         {inquiry.socials}
                       </td> */}
-                      <td className="border border-[#36302A] px-4 py-2 font-serif text-sm md:text-base">
-                        <ExternalLink url={inquiry.socials} />
-                      </td>
+                        <td className="border border-[#36302A] px-4 py-2 font-serif text-sm md:text-base">
+                          <ExternalLink url={inquiry.socials} />
+                        </td>
 
-                      {/* <td className="border border-[#36302A] px-4 py-2 font-serif text-sm md:text-base">
+                        {/* <td className="border border-[#36302A] px-4 py-2 font-serif text-sm md:text-base">
                         {inquiry.website}
                       </td> */}
-                      <td className="border border-[#36302A] px-4 py-2 font-serif text-sm md:text-base">
-                        <ExternalLink url={inquiry.website} />
-                      </td>
-                      <td className="border border-[#36302A] px-4 py-2 font-serif text-sm md:text-base">
-                        {inquiry.messages}
+                        <td className="border border-[#36302A] px-4 py-2 font-serif text-sm md:text-base">
+                          <ExternalLink url={inquiry.website} />
+                        </td>
+                        <td className="border border-[#36302A] px-4 py-2 font-serif text-sm md:text-base">
+                          {inquiry.messages}
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan="13" className="text-center py-4">
+                        No data available
                       </td>
                     </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan="13" className="text-center py-4">
-                      No data available
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
-        </div>
-      </motion.div>
+        </motion.div>
 
-      {/* Pagination */}
-      {filteredInquiries.length > 0 && (
-        <Pagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          totalRecords={filteredInquiries.length}
-          startIndex={startIndex}
-          endIndex={endIndex}
-          onPageChange={handlePageChange}
-          pageButtonsStyles={"bg-[#36302A] hover:bg-[#2C2925] text-white font-serif"}
-          recordInfoStyles={"font-serif text-gray-800"}
-        />
-      )}
-    </div>
+        {/* Pagination */}
+        {filteredInquiries.length > 0 && (
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalRecords={filteredInquiries.length}
+            startIndex={startIndex}
+            endIndex={endIndex}
+            onPageChange={handlePageChange}
+            pageButtonsStyles={"bg-[#36302A] hover:bg-[#2C2925] text-white font-serif"}
+            recordInfoStyles={"font-serif text-gray-800"}
+          />
+        )}
+      </div>
+    </ProtectedRoute>
   );
 };
 

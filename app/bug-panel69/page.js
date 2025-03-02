@@ -14,6 +14,7 @@ import PriorityDisplay from "../components/PriorityDisplay";
 import { FaCheck } from "react-icons/fa";
 import { CheckCircle } from 'lucide-react';
 import { Pagination } from '../components/Pagination';
+import ProtectedRoute from '../components/ProtectedRoutes';
 
 const BugPanel = () => {
     const fadeInLeft = {
@@ -528,306 +529,308 @@ const BugPanel = () => {
     };
 
     return (
-        <div className="p-4 md:p-8 bg-gradient-to-b from-red-50 to-white min-h-screen">
-            {/* Enhanced Header Section */}
-            <motion.div
-                variants={fadeInLeft}
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true }}
-            >
-                <div className="flex flex-col md:flex-row justify-between items-center border-b border-red-300/50 py-6 pb-4 mb-8">
-                    <div className="flex items-center gap-3">
-                        <h1 className="text-4xl md:text-6xl font-serif font-bold bg-gradient-to-r from-red-800 to-red-600 bg-clip-text text-transparent">
-                            Bug Panel
-                        </h1>
-                        <span className="text-4xl animate-bounce">🐞</span>
-                    </div>
-                    <div className="flex items-center gap-4">
-                        {/* <button
+        <ProtectedRoute>
+            <div className="p-4 md:p-8 bg-gradient-to-b from-red-50 to-white min-h-screen">
+                {/* Enhanced Header Section */}
+                <motion.div
+                    variants={fadeInLeft}
+                    initial="hidden"
+                    whileInView="visible"
+                    viewport={{ once: true }}
+                >
+                    <div className="flex flex-col md:flex-row justify-between items-center border-b border-red-300/50 py-6 pb-4 mb-8">
+                        <div className="flex items-center gap-3">
+                            <h1 className="text-4xl md:text-6xl font-serif font-bold bg-gradient-to-r from-red-800 to-red-600 bg-clip-text text-transparent">
+                                Bug Panel
+                            </h1>
+                            <span className="text-4xl animate-bounce">🐞</span>
+                        </div>
+                        <div className="flex items-center gap-4">
+                            {/* <button
                             onClick={() => router.push('/admin-panel69')}
                             className="px-4 py-2.5 bg-red-600 text-white font-semibold rounded-lg shadow-lg hover:bg-red-700 transition-all duration-200 flex items-center gap-2 hover:translate-x-[-4px]"
                         >
                             <FaArrowLeft className="text-lg" />
                             <span>Back to Admin Panel</span>
                         </button> */}
+                            <button
+                                onClick={handleDeleteAllBugs}
+                                disabled={isDeletingAll}
+                                className="px-4 py-2.5 bg-red-600/90 text-white font-semibold rounded-lg shadow-lg hover:bg-red-700 transition-all duration-200 flex items-center gap-2 hover:scale-105"
+                            >
+                                <MdDeleteForever className="text-xl" />
+                                <span>{isDeletingAll ? 'Deleting...' : 'Delete All'}</span>
+                            </button>
+                        </div>
+                    </div>
+                </motion.div>
+
+                {/* Enhanced Filter Section */}
+                <motion.div
+                    variants={fadeInRight}
+                    initial="hidden"
+                    whileInView="visible"
+                    viewport={{ once: true }}
+                >
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8 bg-white p-6 rounded-xl shadow-sm border border-red-100">
+                        <div className="space-y-2">
+                            <label className="block text-sm font-medium text-red-800 items-center gap-2" htmlFor="date-filter">
+                                <span className="text-lg">📅</span> Filter by Date
+                            </label>
+                            <input
+                                id="date-filter"
+                                type="date"
+                                value={selectedDate}
+                                onChange={handleDateChange}
+                                className="w-full border border-red-200 rounded-lg px-4 py-2.5 shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-200"
+                            />
+                        </div>
+
+                        <div className="space-y-2">
+                            <label className="block text-sm font-medium text-[#36302A] items-center gap-2" htmlFor="email-filter">
+                                <span className="text-lg">✉️</span>Filter By Email
+                            </label>
+                            <input
+                                id="email-filter"
+                                type="text"
+                                value={selectedEmail}
+                                onChange={handleEmailChange}
+                                placeholder="Enter Email"
+                                className="w-full border border-[#36302A]/20 rounded-lg px-4 py-2.5 shadow-sm focus:outline-none focus:ring-2 focus:ring-[#36302A] focus:border-transparent transition-all duration-200 placeholder-[#36302A]/60"
+                            />
+                        </div>
+
+                        <div className="space-y-2">
+                            <label className="block text-sm font-medium text-red-800 items-center gap-2" htmlFor="priority-filter">
+                                <span className="text-lg">🎯</span> Priority Level
+                            </label>
+                            <select
+                                id="priority-filter"
+                                value={selectedPriority}
+                                onChange={handlePriorityChange}
+                                className="w-full border border-red-200 rounded-lg px-4 py-2.5 shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-200 bg-white"
+                            >
+                                <option value="">All Priorities</option>
+                                <option value="low">Low Priority</option>
+                                <option value="medium">Medium Priority</option>
+                                <option value="high">High Priority</option>
+                                <option value="highest">Highest Priority</option>
+                            </select>
+                        </div>
+
+                        <div className="space-y-2">
+                            <label className="block text-sm font-medium text-red-800 items-center gap-2" htmlFor="status-filter">
+                                <span className="text-lg">📊</span> Bug Status
+                            </label>
+                            <select
+                                id="status-filter"
+                                value={selectedStatus}
+                                onChange={handleStatusChange}
+                                className="w-full border border-red-200 rounded-lg px-4 py-2.5 shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-200 bg-white"
+                            >
+                                <option value="">All Statuses</option>
+                                <option value="resolved">Resolved</option>
+                                <option value="unresolved">Unresolved</option>
+                            </select>
+                        </div>
+
+                        <div className="space-y-2">
+                            <label className="block text-sm font-medium text-red-800 items-center gap-2" htmlFor="subject-filter">
+                                <span className="text-lg">📊</span> Subject
+                            </label>
+                            <select
+                                id="subject-filter"
+                                value={selectedSubject}
+                                onChange={handleSubjectChange}
+                                className="w-full border border-red-200 rounded-lg px-4 py-2.5 shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-200 bg-white"
+                            >
+                                <option value="">All Subjects</option>
+                                <option value="bug">Bugs</option>
+                                <option value="form-issue">Form-Issue</option>
+                                <option value="others">Others</option>
+                            </select>
+                        </div>
+                    </div>
+                </motion.div>
+
+                {/* Enhanced Action Buttons */}
+                <motion.div
+                    variants={fadeInLeft}
+                    initial="hidden"
+                    whileInView="visible"
+                    viewport={{ once: true }}
+                >
+                    <div className="flex flex-wrap gap-4 mb-8">
                         <button
-                            onClick={handleDeleteAllBugs}
-                            disabled={isDeletingAll}
-                            className="px-4 py-2.5 bg-red-600/90 text-white font-semibold rounded-lg shadow-lg hover:bg-red-700 transition-all duration-200 flex items-center gap-2 hover:scale-105"
+                            onClick={handleFetchData}
+                            className="px-6 py-2.5 bg-red-600 text-white font-semibold rounded-lg shadow-lg hover:bg-red-700 transition-all duration-200 flex items-center gap-2 hover:scale-105"
+                        >
+                            <span className="text-lg">🔍</span>
+                            Apply Filters
+                        </button>
+                        <button
+                            onClick={() => {
+                                setSelectedDate("");
+                                setSelectedPriority("");
+                                setSelectedStatus("");
+                                setSelectedSubject("");
+                                setselectedEmail("");
+                                setFilteredBugs(bugs);
+                                toast.success("Filters cleared!");
+                            }}
+                            className="px-6 py-2.5 bg-red-600/90 text-white font-semibold rounded-lg shadow-lg hover:bg-red-700 transition-all duration-200 flex items-center gap-2 hover:scale-105"
                         >
                             <MdDeleteForever className="text-xl" />
-                            <span>{isDeletingAll ? 'Deleting...' : 'Delete All'}</span>
+                            Clear Filters
+                        </button>
+                        <button
+                            onClick={handleDownloadCSV}
+                            className="px-6 py-2.5 bg-red-600 text-white font-semibold rounded-lg shadow-lg hover:bg-red-700 transition-all duration-200 flex items-center gap-2 hover:scale-105"
+                        >
+                            <FaFileExcel className="text-xl" />
+                            <span className="hidden md:inline">Export CSV</span>
+                        </button>
+                        <button
+                            onClick={syncData}
+                            disabled={issyncing}
+                            className="px-6 py-2.5 bg-red-600 text-white font-semibold rounded-lg shadow-lg hover:bg-red-700 transition-all duration-200 flex items-center gap-2 hover:scale-105 disabled:opacity-50"
+                        >
+                            <FaSync className={`text-xl ${issyncing ? 'animate-spin' : ''}`} />
+                            <span>{issyncing ? 'Syncing...' : 'Sync Data'}</span>
                         </button>
                     </div>
-                </div>
-            </motion.div>
+                </motion.div>
 
-            {/* Enhanced Filter Section */}
-            <motion.div
-                variants={fadeInRight}
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true }}
-            >
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8 bg-white p-6 rounded-xl shadow-sm border border-red-100">
-                    <div className="space-y-2">
-                        <label className="block text-sm font-medium text-red-800 items-center gap-2" htmlFor="date-filter">
-                            <span className="text-lg">📅</span> Filter by Date
-                        </label>
-                        <input
-                            id="date-filter"
-                            type="date"
-                            value={selectedDate}
-                            onChange={handleDateChange}
-                            className="w-full border border-red-200 rounded-lg px-4 py-2.5 shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-200"
-                        />
-                    </div>
-
-                    <div className="space-y-2">
-                        <label className="block text-sm font-medium text-[#36302A] items-center gap-2" htmlFor="email-filter">
-                            <span className="text-lg">✉️</span>Filter By Email
-                        </label>
-                        <input
-                            id="email-filter"
-                            type="text"
-                            value={selectedEmail}
-                            onChange={handleEmailChange}
-                            placeholder="Enter Email"
-                            className="w-full border border-[#36302A]/20 rounded-lg px-4 py-2.5 shadow-sm focus:outline-none focus:ring-2 focus:ring-[#36302A] focus:border-transparent transition-all duration-200 placeholder-[#36302A]/60"
-                        />
-                    </div>
-
-                    <div className="space-y-2">
-                        <label className="block text-sm font-medium text-red-800 items-center gap-2" htmlFor="priority-filter">
-                            <span className="text-lg">🎯</span> Priority Level
-                        </label>
-                        <select
-                            id="priority-filter"
-                            value={selectedPriority}
-                            onChange={handlePriorityChange}
-                            className="w-full border border-red-200 rounded-lg px-4 py-2.5 shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-200 bg-white"
-                        >
-                            <option value="">All Priorities</option>
-                            <option value="low">Low Priority</option>
-                            <option value="medium">Medium Priority</option>
-                            <option value="high">High Priority</option>
-                            <option value="highest">Highest Priority</option>
-                        </select>
-                    </div>
-
-                    <div className="space-y-2">
-                        <label className="block text-sm font-medium text-red-800 items-center gap-2" htmlFor="status-filter">
-                            <span className="text-lg">📊</span> Bug Status
-                        </label>
-                        <select
-                            id="status-filter"
-                            value={selectedStatus}
-                            onChange={handleStatusChange}
-                            className="w-full border border-red-200 rounded-lg px-4 py-2.5 shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-200 bg-white"
-                        >
-                            <option value="">All Statuses</option>
-                            <option value="resolved">Resolved</option>
-                            <option value="unresolved">Unresolved</option>
-                        </select>
-                    </div>
-
-                    <div className="space-y-2">
-                        <label className="block text-sm font-medium text-red-800 items-center gap-2" htmlFor="subject-filter">
-                            <span className="text-lg">📊</span> Subject
-                        </label>
-                        <select
-                            id="subject-filter"
-                            value={selectedSubject}
-                            onChange={handleSubjectChange}
-                            className="w-full border border-red-200 rounded-lg px-4 py-2.5 shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-200 bg-white"
-                        >
-                            <option value="">All Subjects</option>
-                            <option value="bug">Bugs</option>
-                            <option value="form-issue">Form-Issue</option>
-                            <option value="others">Others</option>
-                        </select>
-                    </div>
-                </div>
-            </motion.div>
-
-            {/* Enhanced Action Buttons */}
-            <motion.div
-                variants={fadeInLeft}
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true }}
-            >
-                <div className="flex flex-wrap gap-4 mb-8">
-                    <button
-                        onClick={handleFetchData}
-                        className="px-6 py-2.5 bg-red-600 text-white font-semibold rounded-lg shadow-lg hover:bg-red-700 transition-all duration-200 flex items-center gap-2 hover:scale-105"
-                    >
-                        <span className="text-lg">🔍</span>
-                        Apply Filters
-                    </button>
-                    <button
-                        onClick={() => {
-                            setSelectedDate("");
-                            setSelectedPriority("");
-                            setSelectedStatus("");
-                            setSelectedSubject("");  
-                            setselectedEmail("");
-                            setFilteredBugs(bugs);
-                            toast.success("Filters cleared!");
-                        }}
-                        className="px-6 py-2.5 bg-red-600/90 text-white font-semibold rounded-lg shadow-lg hover:bg-red-700 transition-all duration-200 flex items-center gap-2 hover:scale-105"
-                    >
-                        <MdDeleteForever className="text-xl" />
-                        Clear Filters
-                    </button>
-                    <button
-                        onClick={handleDownloadCSV}
-                        className="px-6 py-2.5 bg-red-600 text-white font-semibold rounded-lg shadow-lg hover:bg-red-700 transition-all duration-200 flex items-center gap-2 hover:scale-105"
-                    >
-                        <FaFileExcel className="text-xl" />
-                        <span className="hidden md:inline">Export CSV</span>
-                    </button>
-                    <button
-                        onClick={syncData}
-                        disabled={issyncing}
-                        className="px-6 py-2.5 bg-red-600 text-white font-semibold rounded-lg shadow-lg hover:bg-red-700 transition-all duration-200 flex items-center gap-2 hover:scale-105 disabled:opacity-50"
-                    >
-                        <FaSync className={`text-xl ${issyncing ? 'animate-spin' : ''}`} />
-                        <span>{issyncing ? 'Syncing...' : 'Sync Data'}</span>
-                    </button>
-                </div>
-            </motion.div>
-
-            {/* Enhanced Table Section */}
-            <motion.div
-                variants={fadeInUp}
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true }}
-            >
-                <div className="relative w-full overflow-hidden bg-white shadow-md rounded-lg">
-                    <div className="overflow-x-auto scrollbar-hide">
-                        <table className="min-w-full table-auto border-collapse border border-red-200">
-                            <thead className="bg-red-600 text-white">
-                                <tr>
-                                    {[
-                                        "Action",
-                                        "Bug Status",
-                                        "Update status",
-                                        "Priority",
-                                        "Change Priority",
-                                        "Timestamp",
-                                        "Email",
-                                        "Notify",
-                                        "Subject",
-                                        "Message"
-                                    ].map((header) => (
-                                        <th key={header} className="border border-red-500 px-4 py-4 text-left font-semibold">
-                                            {header}
-                                        </th>
-                                    ))}
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {displayedBugs.length > 0 ? (
-                                    displayedBugs.map((bug) => (
-                                        <tr key={bug.docId} className={`hover:bg-red-50 ${bug.status === 'resolved' ? 'opacity-50' : ''}`}>
-                                            <td className="border border-red-200 px-4 md:px-7 py-2 md:py-2 text-xs md:text-base">
-                                                <div className="flex space-x-2">
-                                                    <button
-                                                        onClick={() => handleDeleteBug(bug.docId)}
-                                                        className="text-red-500 hover:text-red-700 text-lg md:text-2xl"
-                                                        title="Delete"
+                {/* Enhanced Table Section */}
+                <motion.div
+                    variants={fadeInUp}
+                    initial="hidden"
+                    whileInView="visible"
+                    viewport={{ once: true }}
+                >
+                    <div className="relative w-full overflow-hidden bg-white shadow-md rounded-lg">
+                        <div className="overflow-x-auto scrollbar-hide">
+                            <table className="min-w-full table-auto border-collapse border border-red-200">
+                                <thead className="bg-red-600 text-white">
+                                    <tr>
+                                        {[
+                                            "Action",
+                                            "Bug Status",
+                                            "Update status",
+                                            "Priority",
+                                            "Change Priority",
+                                            "Timestamp",
+                                            "Email",
+                                            "Notify",
+                                            "Subject",
+                                            "Message"
+                                        ].map((header) => (
+                                            <th key={header} className="border border-red-500 px-4 py-4 text-left font-semibold">
+                                                {header}
+                                            </th>
+                                        ))}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {displayedBugs.length > 0 ? (
+                                        displayedBugs.map((bug) => (
+                                            <tr key={bug.docId} className={`hover:bg-red-50 ${bug.status === 'resolved' ? 'opacity-50' : ''}`}>
+                                                <td className="border border-red-200 px-4 md:px-7 py-2 md:py-2 text-xs md:text-base">
+                                                    <div className="flex space-x-2">
+                                                        <button
+                                                            onClick={() => handleDeleteBug(bug.docId)}
+                                                            className="text-red-500 hover:text-red-700 text-lg md:text-2xl"
+                                                            title="Delete"
+                                                        >
+                                                            <MdDeleteForever />
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                                <td className="border border-red-200 px-4 py-2 text-sm md:text-base">
+                                                    <StatusCell status={bug.status} />
+                                                </td>
+                                                <td className="border border-red-200 px-8 py-2">
+                                                    <UpdateStatusCell
+                                                        onResolve={() => handleMarkAsResolved(bug.docId)}
+                                                        isResolved={bug.status === 'resolved'}
+                                                    />
+                                                </td>
+                                                <td className="border border-red-200 px-4 py-2 text-sm md:text-base">
+                                                    <PriorityDisplay priority={bug.priority} />
+                                                </td>
+                                                <td className="border border-red-200 px-4 py-2 text-sm md:text-base">
+                                                    <select
+                                                        value={bug.priority}
+                                                        onChange={(e) => handlePriorityUpdate(bug.docId, e.target.value)}
+                                                        className="w-full border border-red-300 rounded-lg px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-red-500 bg-white"
                                                     >
-                                                        <MdDeleteForever />
+                                                        <option value="low">Low</option>
+                                                        <option value="medium">Medium</option>
+                                                        <option value="high">High</option>
+                                                        <option value="highest">Highest</option>
+                                                    </select>
+                                                </td>
+                                                <td className="border border-red-200 px-4 py-2 font-serif text-sm md:text-base whitespace-nowrap">
+                                                    {bug.timestamp
+                                                        ? new Date(bug.timestamp.seconds * 1000).toLocaleString()
+                                                        : "N/A"}
+                                                </td>
+                                                <td className="border border-red-200 px-4 py-2 font-serif text-sm md:text-base" style={{ userSelect: "none" }}>
+                                                    <CopyableText text={bug.email} type="Email" />
+                                                </td>
+                                                <td className="border border-red-200 px-4 py-2 text-sm md:text-base">
+                                                    <button
+                                                        onClick={() => handleSendNotification(bug.email, bug.subject, bug.docId)}
+                                                        className={`px-2 py-1 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors duration-200 flex items-center space-x-1 ${bug.status === 'resolved' ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                                        title="Send Notification"
+                                                        disabled={loadingNotifications[bug.docId] || bug.status === 'resolved'}
+                                                    >
+                                                        {loadingNotifications[bug.docId] ? (
+                                                            <span className="animate-spin">⌛</span>
+                                                        ) : (
+                                                            <HiBellAlert className="text-sm md:text-base" />
+                                                        )}
+                                                        <span className="hidden md:inline">
+                                                            {loadingNotifications[bug.docId] ? 'Sending...' : 'Notify'}
+                                                        </span>
                                                     </button>
-                                                </div>
-                                            </td>
-                                            <td className="border border-red-200 px-4 py-2 text-sm md:text-base">
-                                                <StatusCell status={bug.status} />
-                                            </td>
-                                            <td className="border border-red-200 px-8 py-2">
-                                                <UpdateStatusCell
-                                                    onResolve={() => handleMarkAsResolved(bug.docId)}
-                                                    isResolved={bug.status === 'resolved'}
-                                                />
-                                            </td>
-                                            <td className="border border-red-200 px-4 py-2 text-sm md:text-base">
-                                                <PriorityDisplay priority={bug.priority} />
-                                            </td>
-                                            <td className="border border-red-200 px-4 py-2 text-sm md:text-base">
-                                                <select
-                                                    value={bug.priority}
-                                                    onChange={(e) => handlePriorityUpdate(bug.docId, e.target.value)}
-                                                    className="w-full border border-red-300 rounded-lg px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-red-500 bg-white"
-                                                >
-                                                    <option value="low">Low</option>
-                                                    <option value="medium">Medium</option>
-                                                    <option value="high">High</option>
-                                                    <option value="highest">Highest</option>
-                                                </select>
-                                            </td>
-                                            <td className="border border-red-200 px-4 py-2 font-serif text-sm md:text-base whitespace-nowrap">
-                                                {bug.timestamp
-                                                    ? new Date(bug.timestamp.seconds * 1000).toLocaleString()
-                                                    : "N/A"}
-                                            </td>
-                                            <td className="border border-red-200 px-4 py-2 font-serif text-sm md:text-base" style={{ userSelect: "none" }}>
-                                                <CopyableText text={bug.email} type="Email" />
-                                            </td>
-                                            <td className="border border-red-200 px-4 py-2 text-sm md:text-base">
-                                                <button
-                                                    onClick={() => handleSendNotification(bug.email, bug.subject, bug.docId)}
-                                                    className={`px-2 py-1 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors duration-200 flex items-center space-x-1 ${bug.status === 'resolved' ? 'opacity-50 cursor-not-allowed' : ''}`}
-                                                    title="Send Notification"
-                                                    disabled={loadingNotifications[bug.docId] || bug.status === 'resolved'}
-                                                >
-                                                    {loadingNotifications[bug.docId] ? (
-                                                        <span className="animate-spin">⌛</span>
-                                                    ) : (
-                                                        <HiBellAlert className="text-sm md:text-base" />
-                                                    )}
-                                                    <span className="hidden md:inline">
-                                                        {loadingNotifications[bug.docId] ? 'Sending...' : 'Notify'}
-                                                    </span>
-                                                </button>
-                                            </td>
-                                            <td className="border border-red-200 px-4 py-2 font-serif text-sm md:text-base">
-                                                {bug.subject}
-                                            </td>
-                                            <td className="border border-red-200 px-4 py-2 font-serif text-sm md:text-base">
-                                                {bug.message}
+                                                </td>
+                                                <td className="border border-red-200 px-4 py-2 font-serif text-sm md:text-base">
+                                                    {bug.subject}
+                                                </td>
+                                                <td className="border border-red-200 px-4 py-2 font-serif text-sm md:text-base">
+                                                    {bug.message}
+                                                </td>
+                                            </tr>
+                                        ))
+                                    ) : (
+                                        <tr>
+                                            <td colSpan="9" className="text-center py-4">
+                                                No data available
                                             </td>
                                         </tr>
-                                    ))
-                                ) : (
-                                    <tr>
-                                        <td colSpan="9" className="text-center py-4">
-                                            No data available
-                                        </td>
-                                    </tr>
-                                )}
-                            </tbody>
-                        </table>
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
-                </div>
-            </motion.div>
+                </motion.div>
 
-            {/* Enhanced Pagination */}
-            {filteredBugs.length > 0 && (
-                <Pagination
-                    currentPage={currentPage}
-                    totalPages={totalPages}
-                    totalRecords={filteredBugs.length}
-                    startIndex={startIndex}
-                    endIndex={endIndex}
-                    onPageChange={handlePageChange}
-                    pageButtonsStyles={"bg-red-600 hover:bg-[#2C2925] text-white font-serif"}
-                    recordInfoStyles={"text-gray-800 font-serif"}
-                />
-            )}
-        </div>
+                {/* Enhanced Pagination */}
+                {filteredBugs.length > 0 && (
+                    <Pagination
+                        currentPage={currentPage}
+                        totalPages={totalPages}
+                        totalRecords={filteredBugs.length}
+                        startIndex={startIndex}
+                        endIndex={endIndex}
+                        onPageChange={handlePageChange}
+                        pageButtonsStyles={"bg-red-600 hover:bg-[#2C2925] text-white font-serif"}
+                        recordInfoStyles={"text-gray-800 font-serif"}
+                    />
+                )}
+            </div>
+        </ProtectedRoute>
     );
 };
 
