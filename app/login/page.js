@@ -3,7 +3,6 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FaInfoCircle } from "react-icons/fa";
 import { ImSpinner8 } from 'react-icons/im';
-import ReCAPTCHA from "react-google-recaptcha";
 import { useAdminAuth } from '../components/providers/AdminAuthProvider'; // Import your auth context
 import { useRouter } from 'next/navigation';
 
@@ -35,7 +34,6 @@ const Auth = () => {
     // Shared state
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [formSubmitMessage, setFormSubmitMessage] = useState('');
-    const [recaptchaValue, setRecaptchaValue] = useState(null);
 
     const fadeInUp = {
         hidden: { opacity: 0, y: 20 },
@@ -144,9 +142,6 @@ const Auth = () => {
         return true;
     };
 
-    const handleRecaptchaChange = (value) => {
-        setRecaptchaValue(value);
-    };
 
     // Login form submission
     const handleLoginSubmit = async (e) => {
@@ -166,13 +161,6 @@ const Auth = () => {
             return;
         }
 
-        // Check reCAPTCHA only if form validation passed
-        if (!recaptchaValue) {
-            setFormSubmitMessage("Please complete the reCAPTCHA.");
-            setIsSubmitting(false);
-            return;
-        }
-
         try {
             // Call the login function from your auth context
             const result = await login(emailOrUsername, password);
@@ -185,12 +173,6 @@ const Auth = () => {
                     setEmailOrUsername("");
                     setPassword("");
                 }
-
-                // Reset reCAPTCHA
-                if (typeof window !== 'undefined' && window.grecaptcha) {
-                    window.grecaptcha.reset();
-                }
-                setRecaptchaValue(null);
 
                 // Redirect after a short delay
                 setTimeout(() => {
@@ -231,13 +213,6 @@ const Auth = () => {
             return;
         }
 
-        // Check reCAPTCHA
-        if (!recaptchaValue) {
-            setFormSubmitMessage("Please complete the reCAPTCHA.");
-            setIsSubmitting(false);
-            return;
-        }
-
         try {
             // Call the register function from your auth context
             const result = await register(registerEmail, registerUsername, registerPassword, gender);
@@ -263,13 +238,6 @@ const Auth = () => {
                 // Show error message
                 setFormSubmitMessage(result.error || "Registration failed. Please try again.");
             }
-
-            // Reset reCAPTCHA
-            if (typeof window !== 'undefined' && window.grecaptcha) {
-                window.grecaptcha.reset();
-            }
-            setRecaptchaValue(null);
-
         } catch (error) {
             console.error("Error during registration: ", error);
             setFormSubmitMessage(
@@ -411,14 +379,6 @@ const Auth = () => {
                                         </motion.div>
                                     )}
                                 </AnimatePresence>
-
-                                <ReCAPTCHA
-                                    sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY}
-                                    onChange={handleRecaptchaChange}
-                                    className="mt-6"
-                                />
-
-                                <p className="text-xs text-gray-500 mt-2">This site is protected by reCAPTCHA and the Google <a href="https://policies.google.com/privacy" className="underline">Privacy Policy</a> and <a href="https://policies.google.com/terms" className="underline">Terms of Service</a> apply.</p>
 
                                 <motion.button
                                     type="submit"
@@ -608,14 +568,6 @@ const Auth = () => {
                                         </motion.div>
                                     )}
                                 </AnimatePresence>
-
-                                <ReCAPTCHA
-                                    sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY}
-                                    onChange={handleRecaptchaChange}
-                                    className="mt-6"
-                                />
-
-                                <p className="text-xs text-gray-500 mt-2">This site is protected by reCAPTCHA and the Google <a href="https://policies.google.com/privacy" className="underline">Privacy Policy</a> and <a href="https://policies.google.com/terms" className="underline">Terms of Service</a> apply.</p>
 
                                 <motion.button
                                     type="submit"
