@@ -5,6 +5,7 @@ import { useAdminAuth } from "../components/providers/AdminAuthProvider";
 import { doc, updateDoc, getDoc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { toast } from "sonner";
+import { motion, AnimatePresence } from "framer-motion";
 import {
     User,
     Mail,
@@ -16,7 +17,10 @@ import {
     X,
     Eye,
     EyeOff,
-    Key
+    Key,
+    LogOut,
+    Trash2,
+    ChevronRight
 } from 'lucide-react';
 import Image from "next/image";
 
@@ -34,6 +38,7 @@ export default function ProfilePage() {
         confirmPassword: '',
     });
     const [errors, setErrors] = useState({});
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
     useEffect(() => {
         // Redirect if not authenticated
@@ -175,28 +180,91 @@ export default function ProfilePage() {
 
     if (loading || isLoading) {
         return (
-            <div className="flex items-center justify-center min-h-screen">
-                <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-[#2563EB]"></div>
+            <div className="flex items-center justify-center min-h-screen bg-[#FAF4ED]">
+                <div className="relative">
+                    <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-[#36302A]"></div>
+                    <div className="absolute inset-0 flex items-center justify-center text-[#36302A] font-medium">
+                        Loading
+                    </div>
+                </div>
             </div>
         );
     }
 
+    const cardVariants = {
+        hidden: { opacity: 0, y: 20 },
+        visible: {
+            opacity: 1,
+            y: 0,
+            transition: {
+                duration: 0.6,
+                ease: [0.22, 1, 0.36, 1]
+            }
+        }
+    };
+
+    const fieldVariants = {
+        hidden: { opacity: 0, x: -10 },
+        visible: custom => ({
+            opacity: 1,
+            x: 0,
+            transition: {
+                delay: custom * 0.1,
+                duration: 0.4
+            }
+        }),
+        exit: { opacity: 0, x: 10 }
+    };
+
     return (
-        <div className="min-h-screen bg-[rgb(250,244,237)] py-12 px-4 sm:px-6 lg:px-8">
-            <div className="max-w-4xl mx-auto">
+        <div className="min-h-screen bg-[#FAF4ED] py-12 px-4 sm:px-6 lg:px-8">
+            <motion.div
+                className="max-w-4xl mx-auto"
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+            >
                 {/* Header */}
                 <div className="text-center mb-10">
-                    <h1 className="text-3xl font-bold text-[#36302A]">Profile Settings</h1>
-                    <p className="mt-2 text-[#575553]">Manage your account information and preferences</p>
+                    <motion.h1
+                        className="text-3xl font-bold text-[#36302A]"
+                        initial={{ opacity: 0, y: -20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.5, delay: 0.2 }}
+                    >
+                        Profile Settings
+                    </motion.h1>
+                    <motion.p
+                        className="mt-2 text-[#86807A]"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ duration: 0.5, delay: 0.3 }}
+                    >
+                        Manage your account information and preferences
+                    </motion.p>
                 </div>
 
                 {/* Profile Content */}
-                <div className="bg-white shadow-lg rounded-lg overflow-hidden">
+                <motion.div
+                    className="bg-white shadow-xl rounded-xl overflow-hidden"
+                    variants={cardVariants}
+                    initial="hidden"
+                    animate="visible"
+                >
                     {/* Profile Header */}
-                    <div className="bg-[#2563EB] px-6 py-8 text-white relative">
-                        <div className="flex items-center">
+                    <div className="bg-gradient-to-r from-[#36302A] to-[#514840] px-6 py-10 text-white relative">
+                        <motion.div
+                            className="flex flex-col md:flex-row md:items-center gap-6"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ duration: 0.6, delay: 0.4 }}
+                        >
                             <div className="relative inline-block">
-                                <div className="h-24 w-24 rounded-full bg-white/30 flex items-center justify-center text-white">
+                                <motion.div
+                                    className="h-24 w-24 rounded-full bg-white/20 flex items-center justify-center text-white shadow-lg border-2 border-white/30"
+                                    whileHover={{ scale: 1.05 }}
+                                    transition={{ type: "spring", stiffness: 300, damping: 15 }}
+                                >
                                     {userData?.photoURL ? (
                                         <Image
                                             src={userData.photoURL}
@@ -206,232 +274,390 @@ export default function ProfilePage() {
                                             className="rounded-full object-cover"
                                         />
                                     ) : (
-                                        <User size={48} />
+                                        <User size={48} strokeWidth={1.5} />
                                     )}
-                                </div>
+                                </motion.div>
                             </div>
-                            <div className="ml-6">
-                                <h2 className="text-2xl font-bold">{userData?.displayName || userData?.username || "Admin User"}</h2>
-                                <p className="text-blue-100 flex items-center mt-1">
-                                    <Shield size={16} className="mr-1" />
+                            <div>
+                                <motion.h2
+                                    className="text-2xl md:text-3xl font-bold"
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ duration: 0.4, delay: 0.5 }}
+                                >
+                                    {userData?.username || "Admin User"}
+                                </motion.h2>
+                                <motion.p
+                                    className="text-white/80 flex items-center mt-2"
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ duration: 0.4, delay: 0.6 }}
+                                >
+                                    <Shield size={16} className="mr-2" />
                                     <span className="capitalize">{userData?.role || "Admin"}</span>
-                                </p>
-                                <p className="text-blue-100 flex items-center mt-1">
-                                    <Mail size={16} className="mr-1" />
+                                </motion.p>
+                                <motion.p
+                                    className="text-white/80 flex items-center mt-1"
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ duration: 0.4, delay: 0.7 }}
+                                >
+                                    <Mail size={16} className="mr-2" />
                                     {userData?.email}
-                                </p>
+                                </motion.p>
                             </div>
-                        </div>
+                        </motion.div>
                     </div>
 
                     {/* Profile Information */}
-                    <div className="p-6">
-                        <div className="flex justify-between items-center mb-6">
+                    <div className="p-6 md:p-8">
+                        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
                             <h3 className="text-xl font-semibold text-[#36302A]">Account Information</h3>
-                            <button
+                            <motion.button
                                 onClick={() => setIsEditing(!isEditing)}
-                                className={`px-4 py-2 rounded-md flex items-center ${isEditing ? "bg-red-100 text-red-600" : "bg-blue-100 text-[#2563EB]"
+                                className={`px-4 py-2 rounded-lg flex items-center transition-colors duration-300 ${isEditing
+                                    ? "bg-[#EFE7DD] text-[#36302A]"
+                                    : "bg-[#36302A] text-white"
                                     }`}
+                                whileHover={{ scale: 1.03 }}
+                                whileTap={{ scale: 0.97 }}
                             >
                                 {isEditing ? (
                                     <>
-                                        <X size={16} className="mr-1" />
+                                        <X size={18} className="mr-2" />
                                         Cancel
                                     </>
                                 ) : (
                                     <>
-                                        <Edit2 size={16} className="mr-1" />
+                                        <Edit2 size={18} className="mr-2" />
                                         Edit Profile
                                     </>
                                 )}
-                            </button>
+                            </motion.button>
                         </div>
 
-                        {isEditing ? (
-                            <form onSubmit={handleSubmit}>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                                    <div>
-                                        <label className="block text-sm font-medium text-[#575553] mb-1">
-                                            Username
-                                        </label>
-                                        <div className="relative">
-                                            <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-[#575553]">
-                                                <User size={18} />
-                                            </span>
-                                            <input
-                                                type="text"
-                                                name="username"
-                                                value={formData.username}
-                                                onChange={handleChange}
-                                                className={`block w-full pl-10 pr-3 py-2 border ${errors.username ? "border-red-500" : "border-gray-300"
-                                                    } rounded-md shadow-sm focus:ring-[#2563EB] focus:border-[#2563EB]`}
-                                            />
-                                        </div>
-                                        {errors.username && (
-                                            <p className="mt-1 text-sm text-red-600">{errors.username}</p>
-                                        )}
+                        <AnimatePresence mode="wait">
+                            {isEditing ? (
+                                <motion.form
+                                    key="edit-form"
+                                    onSubmit={handleSubmit}
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    exit={{ opacity: 0 }}
+                                    transition={{ duration: 0.3 }}
+                                >
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                                        <motion.div custom={0} variants={fieldVariants} initial="hidden" animate="visible" exit="exit">
+                                            <label className="block text-sm font-medium text-[#86807A] mb-2">
+                                                Username
+                                            </label>
+                                            <div className="relative">
+                                                <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-[#86807A]">
+                                                    <User size={18} />
+                                                </span>
+                                                <input
+                                                    type="text"
+                                                    name="username"
+                                                    value={formData.username}
+                                                    onChange={handleChange}
+                                                    className={`block w-full pl-10 pr-3 py-3 bg-[#EFE7DD] border-transparent focus:border-[#36302A] focus:ring focus:ring-[#36302A]/20 ${errors.username ? "border-red-500 bg-red-50" : ""
+                                                        } rounded-lg transition-colors duration-200`}
+                                                />
+                                            </div>
+                                            {errors.username && (
+                                                <motion.p
+                                                    initial={{ opacity: 0, y: -10 }}
+                                                    animate={{ opacity: 1, y: 0 }}
+                                                    className="mt-1 text-sm text-red-600 flex items-center"
+                                                >
+                                                    <X size={14} className="mr-1" />
+                                                    {errors.username}
+                                                </motion.p>
+                                            )}
+                                        </motion.div>
+
+                                        <motion.div custom={1} variants={fieldVariants} initial="hidden" animate="visible" exit="exit">
+                                            <label className="block text-sm font-medium text-[#86807A] mb-2">
+                                                Email Address
+                                            </label>
+                                            <div className="relative">
+                                                <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-[#86807A]">
+                                                    <Mail size={18} />
+                                                </span>
+                                                <input
+                                                    type="email"
+                                                    name="email"
+                                                    value={formData.email}
+                                                    onChange={handleChange}
+                                                    className={`block w-full pl-10 pr-3 py-3 bg-[#EFE7DD] border-transparent focus:border-[#36302A] focus:ring focus:ring-[#36302A]/20 ${errors.email ? "border-red-500 bg-red-50" : ""
+                                                        } rounded-lg transition-colors duration-200`}
+                                                />
+                                            </div>
+                                            {errors.email && (
+                                                <motion.p
+                                                    initial={{ opacity: 0, y: -10 }}
+                                                    animate={{ opacity: 1, y: 0 }}
+                                                    className="mt-1 text-sm text-red-600 flex items-center"
+                                                >
+                                                    <X size={14} className="mr-1" />
+                                                    {errors.email}
+                                                </motion.p>
+                                            )}
+                                        </motion.div>
+
+                                        <motion.div custom={2} variants={fieldVariants} initial="hidden" animate="visible" exit="exit">
+                                            <label className="block text-sm font-medium text-[#86807A] mb-2">
+                                                New Password (leave blank to keep current)
+                                            </label>
+                                            <div className="relative">
+                                                <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-[#86807A]">
+                                                    <Key size={18} />
+                                                </span>
+                                                <input
+                                                    type={showPassword ? "text" : "password"}
+                                                    name="password"
+                                                    value={formData.password}
+                                                    onChange={handleChange}
+                                                    className={`block w-full pl-10 pr-10 py-3 bg-[#EFE7DD] border-transparent focus:border-[#36302A] focus:ring focus:ring-[#36302A]/20 ${errors.password ? "border-red-500 bg-red-50" : ""
+                                                        } rounded-lg transition-colors duration-200`}
+                                                />
+                                                <motion.button
+                                                    type="button"
+                                                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-[#86807A]"
+                                                    onClick={() => setShowPassword(!showPassword)}
+                                                    whileHover={{ scale: 1.1 }}
+                                                    whileTap={{ scale: 0.9 }}
+                                                >
+                                                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                                </motion.button>
+                                            </div>
+                                            {errors.password && (
+                                                <motion.p
+                                                    initial={{ opacity: 0, y: -10 }}
+                                                    animate={{ opacity: 1, y: 0 }}
+                                                    className="mt-1 text-sm text-red-600 flex items-center"
+                                                >
+                                                    <X size={14} className="mr-1" />
+                                                    {errors.password}
+                                                </motion.p>
+                                            )}
+                                        </motion.div>
+
+                                        <motion.div custom={3} variants={fieldVariants} initial="hidden" animate="visible" exit="exit">
+                                            <label className="block text-sm font-medium text-[#86807A] mb-2">
+                                                Confirm New Password
+                                            </label>
+                                            <div className="relative">
+                                                <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-[#86807A]">
+                                                    <Key size={18} />
+                                                </span>
+                                                <input
+                                                    type={showPassword ? "text" : "password"}
+                                                    name="confirmPassword"
+                                                    value={formData.confirmPassword}
+                                                    onChange={handleChange}
+                                                    className={`block w-full pl-10 pr-3 py-3 bg-[#EFE7DD] border-transparent focus:border-[#36302A] focus:ring focus:ring-[#36302A]/20 ${errors.confirmPassword ? "border-red-500 bg-red-50" : ""
+                                                        } rounded-lg transition-colors duration-200`}
+                                                />
+                                            </div>
+                                            {errors.confirmPassword && (
+                                                <motion.p
+                                                    initial={{ opacity: 0, y: -10 }}
+                                                    animate={{ opacity: 1, y: 0 }}
+                                                    className="mt-1 text-sm text-red-600 flex items-center"
+                                                >
+                                                    <X size={14} className="mr-1" />
+                                                    {errors.confirmPassword}
+                                                </motion.p>
+                                            )}
+                                        </motion.div>
                                     </div>
 
-                                    <div>
-                                        <label className="block text-sm font-medium text-[#575553] mb-1">
-                                            Email Address
-                                        </label>
-                                        <div className="relative">
-                                            <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-[#575553]">
-                                                <Mail size={18} />
-                                            </span>
-                                            <input
-                                                type="email"
-                                                name="email"
-                                                value={formData.email}
-                                                onChange={handleChange}
-                                                className={`block w-full pl-10 pr-3 py-2 border ${errors.email ? "border-red-500" : "border-gray-300"
-                                                    } rounded-md shadow-sm focus:ring-[#2563EB] focus:border-[#2563EB]`}
-                                            />
-                                        </div>
-                                        {errors.email && (
-                                            <p className="mt-1 text-sm text-red-600">{errors.email}</p>
-                                        )}
-                                    </div>
-
-                                    <div>
-                                        <label className="block text-sm font-medium text-[#575553] mb-1">
-                                            New Password (leave blank to keep current)
-                                        </label>
-                                        <div className="relative">
-                                            <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-[#575553]">
-                                                <Key size={18} />
-                                            </span>
-                                            <input
-                                                type={showPassword ? "text" : "password"}
-                                                name="password"
-                                                value={formData.password}
-                                                onChange={handleChange}
-                                                className={`block w-full pl-10 pr-10 py-2 border ${errors.password ? "border-red-500" : "border-gray-300"
-                                                    } rounded-md shadow-sm focus:ring-[#2563EB] focus:border-[#2563EB]`}
-                                            />
-                                            <button
-                                                type="button"
-                                                className="absolute inset-y-0 right-0 pr-3 flex items-center text-[#575553]"
-                                                onClick={() => setShowPassword(!showPassword)}
-                                            >
-                                                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                                            </button>
-                                        </div>
-                                        {errors.password && (
-                                            <p className="mt-1 text-sm text-red-600">{errors.password}</p>
-                                        )}
-                                    </div>
-
-                                    <div>
-                                        <label className="block text-sm font-medium text-[#575553] mb-1">
-                                            Confirm New Password
-                                        </label>
-                                        <div className="relative">
-                                            <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-[#575553]">
-                                                <Key size={18} />
-                                            </span>
-                                            <input
-                                                type={showPassword ? "text" : "password"}
-                                                name="confirmPassword"
-                                                value={formData.confirmPassword}
-                                                onChange={handleChange}
-                                                className={`block w-full pl-10 pr-3 py-2 border ${errors.confirmPassword ? "border-red-500" : "border-gray-300"
-                                                    } rounded-md shadow-sm focus:ring-[#2563EB] focus:border-[#2563EB]`}
-                                            />
-                                        </div>
-                                        {errors.confirmPassword && (
-                                            <p className="mt-1 text-sm text-red-600">{errors.confirmPassword}</p>
-                                        )}
-                                    </div>
-                                </div>
-
-                                <div className="flex justify-end">
-                                    <button
-                                        type="submit"
-                                        className="px-6 py-2 bg-[#2563EB] text-white rounded-md hover:bg-[#1d4ed8] flex items-center"
-                                        disabled={isLoading}
+                                    <motion.div
+                                        className="flex justify-end"
+                                        initial={{ opacity: 0, y: 20 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        transition={{ delay: 0.4 }}
                                     >
-                                        {isLoading ? (
-                                            <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white mr-2"></div>
-                                        ) : (
-                                            <Save size={18} className="mr-2" />
-                                        )}
-                                        Save Changes
-                                    </button>
-                                </div>
-                            </form>
-                        ) : (
-                            <div className="space-y-6">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div className="bg-gray-50 p-4 rounded-md">
-                                        <p className="text-sm text-[#575553] mb-1">Username</p>
-                                        <p className="font-medium text-[#36302A]">{userData?.username}</p>
-                                    </div>
+                                        <motion.button
+                                            type="submit"
+                                            className="px-6 py-3 bg-[#36302A] text-white rounded-lg flex items-center shadow-lg overflow-hidden relative"
+                                            disabled={isLoading}
+                                            whileHover={{ scale: 1.03, backgroundColor: "#514840" }}
+                                            whileTap={{ scale: 0.97 }}
+                                        >
+                                            {isLoading ? (
+                                                <div className="animate-spin rounded-full h-5 w-5 border-2 border-t-2 border-white mr-2"></div>
+                                            ) : (
+                                                <Save size={18} className="mr-2" />
+                                            )}
+                                            <span className="relative z-10">Save Changes</span>
+                                            <motion.div
+                                                className="absolute inset-0 bg-white opacity-0"
+                                                whileHover={{ opacity: 0.1 }}
+                                                transition={{ duration: 0.3 }}
+                                            />
+                                        </motion.button>
+                                    </motion.div>
+                                </motion.form>
+                            ) : (
+                                <motion.div
+                                    key="view-form"
+                                    className="space-y-8"
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    exit={{ opacity: 0 }}
+                                    transition={{ duration: 0.3 }}
+                                >
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <motion.div
+                                            className="bg-[#F8F2EA] p-5 rounded-lg border border-[#E2D9CE] hover:border-[#36302A] transition-colors duration-300 hover:shadow-md"
+                                            whileHover={{ y: -4, transition: { type: "spring", stiffness: 300, damping: 20 } }}
+                                            initial={{ opacity: 0, y: 20 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            transition={{ delay: 0.1 }}
+                                        >
+                                            <p className="text-sm font-medium text-[#86807A] mb-2 flex items-center">
+                                                <User size={16} className="mr-2 opacity-70" />
+                                                Username
+                                            </p>
+                                            <p className="font-semibold text-lg text-[#36302A]">{userData?.username}</p>
+                                        </motion.div>
 
-                                    <div className="bg-gray-50 p-4 rounded-md">
-                                        <p className="text-sm text-[#575553] mb-1">Display Name</p>
-                                        <p className="font-medium text-[#36302A]">{userData?.displayName || "Not set"}</p>
-                                    </div>
+                                        <motion.div
+                                            className="bg-[#F8F2EA] p-5 rounded-lg border border-[#E2D9CE] hover:border-[#36302A] transition-colors duration-300 hover:shadow-md"
+                                            whileHover={{ y: -4, transition: { type: "spring", stiffness: 300, damping: 20 } }}
+                                            initial={{ opacity: 0, y: 20 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            transition={{ delay: 0.2 }}
+                                        >
+                                            <p className="text-sm font-medium text-[#86807A] mb-2 flex items-center">
+                                                <Mail size={16} className="mr-2 opacity-70" />
+                                                Email Address
+                                            </p>
+                                            <p className="font-semibold text-lg text-[#36302A]">{userData?.email}</p>
+                                        </motion.div>
 
-                                    <div className="bg-gray-50 p-4 rounded-md">
-                                        <p className="text-sm text-[#575553] mb-1">Email Address</p>
-                                        <p className="font-medium text-[#36302A]">{userData?.email}</p>
-                                    </div>
+                                        <motion.div
+                                            className="bg-[#F8F2EA] p-5 rounded-lg border border-[#E2D9CE] hover:border-[#36302A] transition-colors duration-300 hover:shadow-md"
+                                            whileHover={{ y: -4, transition: { type: "spring", stiffness: 300, damping: 20 } }}
+                                            initial={{ opacity: 0, y: 20 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            transition={{ delay: 0.3 }}
+                                        >
+                                            <p className="text-sm font-medium text-[#86807A] mb-2 flex items-center">
+                                                <Shield size={16} className="mr-2 opacity-70" />
+                                                Role
+                                            </p>
+                                            <p className="font-semibold text-lg text-[#36302A] capitalize">
+                                                {userData?.role || "Admin"}
+                                            </p>
+                                        </motion.div>
 
-                                    <div className="bg-gray-50 p-4 rounded-md">
-                                        <p className="text-sm text-[#575553] mb-1">Role</p>
-                                        <p className="font-medium text-[#36302A] capitalize">{userData?.role || "Admin"}</p>
-                                    </div>
+                                        <motion.div
+                                            className="bg-[#F8F2EA] p-5 rounded-lg border border-[#E2D9CE] hover:border-[#36302A] transition-colors duration-300 hover:shadow-md"
+                                            whileHover={{ y: -4, transition: { type: "spring", stiffness: 300, damping: 20 } }}
+                                            initial={{ opacity: 0, y: 20 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            transition={{ delay: 0.4 }}
+                                        >
+                                            <p className="text-sm font-medium text-[#86807A] mb-2 flex items-center">
+                                                <Calendar size={16} className="mr-2 opacity-70" />
+                                                Account Created
+                                            </p>
+                                            <p className="font-semibold text-lg text-[#36302A]">
+                                                {userData?.createdAt.toLocaleDateString()}
+                                            </p>
+                                        </motion.div>
 
-                                    <div className="bg-gray-50 p-4 rounded-md">
-                                        <p className="text-sm text-[#575553] mb-1">Account Created</p>
-                                        <p className="font-medium text-[#36302A] flex items-center">
-                                            <Calendar size={16} className="mr-1 text-[#575553]" />
-                                            {userData?.createdAt.toLocaleDateString()}
-                                        </p>
+                                        <motion.div
+                                            className="md:col-span-2 bg-[#F8F2EA] p-5 rounded-lg border border-[#E2D9CE] hover:border-[#36302A] transition-colors duration-300 hover:shadow-md"
+                                            whileHover={{ y: -4, transition: { type: "spring", stiffness: 300, damping: 20 } }}
+                                            initial={{ opacity: 0, y: 20 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            transition={{ delay: 0.5 }}
+                                        >
+                                            <p className="text-sm font-medium text-[#86807A] mb-2 flex items-center">
+                                                <Clock size={16} className="mr-2 opacity-70" />
+                                                Last Login
+                                            </p>
+                                            <p className="font-semibold text-lg text-[#36302A]">
+                                                {userData?.lastLogin.toLocaleDateString()} at {userData?.lastLogin.toLocaleTimeString()}
+                                            </p>
+                                        </motion.div>
                                     </div>
-
-                                    <div className="bg-gray-50 p-4 rounded-md">
-                                        <p className="text-sm text-[#575553] mb-1">Last Login</p>
-                                        <p className="font-medium text-[#36302A] flex items-center">
-                                            <Clock size={16} className="mr-1 text-[#575553]" />
-                                            {userData?.lastLogin.toLocaleDateString()} at {userData?.lastLogin.toLocaleTimeString()}
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-                        )}
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
                     </div>
 
                     {/* Danger Zone */}
-                    <div className="px-6 py-4 bg-red-50 border-t border-red-100">
-                        <h3 className="text-lg font-medium text-red-800 mb-3">Danger Zone</h3>
-                        <div className="flex space-x-4">
-                            <button
+                    <motion.div
+                        className="px-8 py-6 bg-[#F8F2EA] border-t border-[#E2D9CE]"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ delay: 0.7 }}
+                    >
+                        <h3 className="text-lg font-medium text-[#36302A] mb-4">Account Actions</h3>
+                        <div className="flex flex-col sm:flex-row gap-4">
+                            <motion.button
                                 onClick={logout}
-                                className="px-4 py-2 bg-white text-red-600 border border-red-300 rounded-md hover:bg-red-50"
+                                className="px-5 py-3 bg-white text-[#36302A] border border-[#E2D9CE] rounded-lg hover:bg-[#EFE7DD] flex items-center justify-center gap-2 transition-colors duration-300"
+                                whileHover={{ scale: 1.02 }}
+                                whileTap={{ scale: 0.98 }}
                             >
+                                <LogOut size={18} />
                                 Sign Out
-                            </button>
+                            </motion.button>
 
                             {admin?.role === 'superAdmin' && (
-                                <button
-                                    className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
-                                    onClick={() => {
-                                        if (window.confirm("Are you sure you want to delete this account? This action cannot be undone.")) {
-                                            // Handle account deletion - not implemented in this example
-                                            toast.error("Account deletion not implemented in this demo");
-                                        }
-                                    }}
-                                >
-                                    Delete Account
-                                </button>
+                                <motion.div className="relative">
+                                    <motion.button
+                                        className="px-5 py-3 bg-red-50 text-red-700 border border-red-200 rounded-lg hover:bg-red-100 flex items-center justify-center gap-2 transition-colors duration-300 w-full sm:w-auto"
+                                        whileHover={{ scale: 1.02 }}
+                                        whileTap={{ scale: 0.98 }}
+                                        onClick={() => setShowDeleteConfirm(!showDeleteConfirm)}
+                                    >
+                                        <Trash2 size={18} />
+                                        Delete Account
+                                    </motion.button>
+
+                                    <AnimatePresence>
+                                        {showDeleteConfirm && (
+                                            <motion.div
+                                                className="absolute right-0 bottom-full mb-2 p-4 bg-white rounded-lg shadow-xl border border-red-200 z-10 w-64"
+                                                initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                                                animate={{ opacity: 1, y: 0, scale: 1 }}
+                                                exit={{ opacity: the0, y: 10, scale: 0.95 }}
+                                                transition={{ duration: 0.2 }}
+                                            >
+                                                <p className="text-sm text-gray-700 mb-3">Are you sure you want to delete this account? This cannot be undone.</p>
+                                                <div className="flex gap-2">
+                                                    <button
+                                                        className="flex-1 py-2 bg-red-600 text-white rounded text-sm hover:bg-red-700"
+                                                        onClick={() => {
+                                                            toast.error("Account deletion not implemented in this demo");
+                                                            setShowDeleteConfirm(false);
+                                                        }}
+                                                    >
+                                                        Delete
+                                                    </button>
+                                                    <button
+                                                        className="flex-1 py-2 bg-gray-200 text-gray-800 rounded text-sm hover:bg-gray-300"
+                                                        onClick={() => setShowDeleteConfirm(false)}
+                                                    >
+                                                        Cancel
+                                                    </button>
+                                                </div>
+                                            </motion.div>
+                                        )}
+                                    </AnimatePresence>
+                                </motion.div>
                             )}
                         </div>
-                    </div>
-                </div>
-            </div>
+                    </motion.div>
+                </motion.div>
+            </motion.div>
         </div>
     );
 }

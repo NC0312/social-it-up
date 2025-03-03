@@ -5,7 +5,7 @@ export const DevToolsBlocker = () => {
   const [isDevToolsOpen, setIsDevToolsOpen] = useState(false);
 
   useEffect(() => {
-    if (process.env.NEXT_PUBLIC_ENV !== "production") return;
+    // if (process.env.NEXT_PUBLIC_ENV !== "production") return;
 
     const checkDevTools = () => {
       const widthThreshold = window.outerWidth - window.innerWidth > 160;

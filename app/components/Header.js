@@ -120,7 +120,6 @@ function Header() {
 
       setApprovedAdmins(approvedList);
     } catch (error) {
-      console.error(error);
     } finally {
       setIsLoading(false);
     }
@@ -152,7 +151,7 @@ function Header() {
           : pathname === BUG_PANEL_ROUTE
             ? "bg-red-600"
             : process.env.NEXT_PUBLIC_ENV === "development"
-              ? "bg-blue-600"
+              ? "bg-[#808D7C]"
               : ""
           }`}
       >
@@ -242,7 +241,7 @@ function Header() {
               >
                 <div className="relative">
                   <div
-                    className="flex items-center justify-center w-8 h-8 rounded-full bg-white text-blue-600 font-bold cursor-pointer"
+                    className="flex items-center justify-center w-8 h-8 rounded-full bg-white text-[#808D7C] font-bold cursor-pointer"
                     onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
                     onMouseEnter={() => setHoveredItem("Profile")}
                     onMouseLeave={() => setHoveredItem(null)}
@@ -258,7 +257,7 @@ function Header() {
                       </div>
                       <Link
                         href="/profile"
-                        className="px-4 py-2 text-sm text-gray-700 hover:bg-[#2563EB] hover:text-white transition flex items-center"
+                        className="px-4 py-2 text-sm text-gray-700 hover:bg-[#808D7C] hover:text-white transition flex items-center"
                       >
                         <Settings size={16} className="mr-2" />
                         Profile Settings
@@ -320,7 +319,7 @@ function Header() {
               <div className="relative" ref={dropdownRef}>
                 <button
                   onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                  className="p-2 rounded-md hover:bg-[#2563EB] hover:bg-opacity-20 transition"
+                  className="p-2 rounded-md hover:bg-[#808D7C] hover:bg-opacity-20 transition"
                 >
                   <Menu className="w-6 h-6 text-white" />
                 </button>
@@ -331,7 +330,7 @@ function Header() {
                       <Link
                         key={link.href}
                         href={link.href}
-                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-[#2563EB] hover:text-white transition"
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-[#808D7C] hover:text-white transition"
                         onClick={() => setIsDropdownOpen(false)}
                       >
                         {link.label}
@@ -473,7 +472,7 @@ function Header() {
                 <li className="pt-6">
                   <Link
                     href="/admin-panel69"
-                    className="px-4 py-2 bg-[#2563EB] text-white rounded-md hover:bg-[#2563EB] transition"
+                    className="px-4 py-2 bg-[#2563EB] text-white rounded-md hover:bg-[#808D7C] transition"
                     onClick={handleMenuToggle}
                   >
                     Admin Panel
@@ -484,7 +483,7 @@ function Header() {
                 <li className="pt-4">
                   <Link
                     href="/bug-panel69"
-                    className="px-4 py-2 bg-[#2563EB] text-white rounded-md hover:bg-[#2563EB]  transition"
+                    className="px-4 py-2 bg-[#2563EB] text-white rounded-md hover:bg-[#808D7C]  transition"
                     onClick={handleMenuToggle}
                   >
                     Bugs & Issues
@@ -495,7 +494,7 @@ function Header() {
                 <li className="pt-4">
                   <Link
                     href="/rating-dashboard69"
-                    className="px-4 py-2 bg-[#2563EB] text-white rounded-md hover:bg-[#2563EB]  transition"
+                    className="px-4 py-2 bg-[#2563EB] text-white rounded-md hover:bg-[#808D7C]  transition"
                     onClick={handleMenuToggle}
                   >
                     Rating Dashboard
