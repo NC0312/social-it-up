@@ -1,10 +1,9 @@
 'use client';
-import { useEffect, useState } from "react";
-import { useAdminAuth } from "@/app/components/providers/AdminAuthProvider"; // Adjust the import path as needed
+import { useEffect } from "react";
+import { useAdminAuth } from "@/app/components/providers/AdminAuthProvider";
 import devtools from 'devtools-detect';
 
 export const DevToolsBlocker = () => {
-  const [isDevToolsOpen, setIsDevToolsOpen] = useState(false);
   const adminAuth = useAdminAuth();
 
   useEffect(() => {
