@@ -1,70 +1,113 @@
 'use client';
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
+import { useAdminAuth } from "@/app/components/providers/AdminAuthProvider";
+import devtools from 'devtools-detect';
 
 export const DevToolsBlocker = () => {
-  const [isDevToolsOpen, setIsDevToolsOpen] = useState(false);
+  const adminAuth = useAdminAuth();
 
   useEffect(() => {
-    if (process.env.NEXT_PUBLIC_ENV !== "production") return;
+    // Check if we're in production mode
+    const isProduction = process.env.NEXT_PUBLIC_DEV_FLAG === "Y";
 
-    const checkDevTools = () => {
+    // If we're in development mode (ENV=y), don't apply the blocker
+    if (!isProduction) return;
+
+    // Function from the image - timing-based detection
+    function isDevToolsOpenTiming() {
+      const start = new Date().getTime();
+      debugger;
+      const end = new Date().getTime();
+      return end - start > 100;
+    }
+
+    // Function that checks and takes action using multiple detection methods
+    function checkDevTools() {
+      // First check using the devtools-detect library
+      if (devtools.isOpen) {
+        handleDevToolsOpen();
+        return;
+      }
+
+      // Fallback to timing method
+      if (isDevToolsOpenTiming()) {
+        handleDevToolsOpen();
+        return;
+      }
+
+      // DevTools not detected, ensure elements are visible
+      document.querySelectorAll('.modifyViaDevTools').forEach(el => {
+        el.style.display = '';
+      });
+    }
+
+    // Handle when devtools is open
+    function handleDevToolsOpen() {
+      // Log the user out when dev tools are detected
+      if (adminAuth && typeof adminAuth.logout === 'function') {
+        adminAuth.logout();
+      }
+
+      // Hide elements with class 'modifyViaDevTools' as in the image
+      document.querySelectorAll('.modifyViaDevTools').forEach(el => {
+        el.style.display = 'none';
+      });
+    }
+
+    // Additional dimension-based detection
+    const dimensionCheck = () => {
       const widthThreshold = window.outerWidth - window.innerWidth > 160;
       const heightThreshold = window.outerHeight - window.innerHeight > 160;
-      
+
       if (widthThreshold || heightThreshold) {
-        setIsDevToolsOpen(true);
-      } else {
-        setIsDevToolsOpen(false);
+        handleDevToolsOpen();
       }
     };
 
-    const detectDebugger = () => {
-      const startTime = performance.now();
-      const endTime = performance.now();
-      if (endTime - startTime > 100) {
-        setIsDevToolsOpen(true);
-      }
-    };
-
+    // Prevent keyboard shortcuts
     const preventShortcuts = (e) => {
-      if (e.key === "F12" || e.keyCode === 123) e.preventDefault();
+      // Prevent keyboard shortcuts that open dev tools
+      if (e.key === "F12" || e.keyCode === 123) {
+        e.preventDefault();
+        handleDevToolsOpen();
+      }
+
       if (
         (e.ctrlKey && e.shiftKey && ["I", "J", "C"].includes(e.key.toUpperCase())) ||
         (e.ctrlKey && e.key.toUpperCase() === "U")
       ) {
         e.preventDefault();
+        handleDevToolsOpen();
       }
     };
 
-    window.addEventListener("resize", checkDevTools);
+    // Set up event listener for devtools-detect
+    const handleDevtoolsChange = (e) => {
+      if (e.detail.isOpen) {
+        handleDevToolsOpen();
+      }
+    };
+
+    window.addEventListener('devtoolschange', handleDevtoolsChange);
+
+    // Initial check when the window loads (as in the image)
+    checkDevTools();
+
+    // Set up event listeners
+    window.addEventListener("resize", dimensionCheck);
     window.addEventListener("keydown", preventShortcuts);
-    setInterval(detectDebugger, 1000); 
+
+    // Periodically check if DevTools is opened (as in the image)
+    const interval = setInterval(checkDevTools, 1000);
 
     return () => {
-      window.removeEventListener("resize", checkDevTools);
+      window.removeEventListener('devtoolschange', handleDevtoolsChange);
+      window.removeEventListener("resize", dimensionCheck);
       window.removeEventListener("keydown", preventShortcuts);
+      clearInterval(interval);
     };
-  }, []);
+  }, [adminAuth]);
 
-  return isDevToolsOpen ? (
-    <div
-      style={{
-        position: "fixed",
-        top: 0,
-        left: 0,
-        width: "100vw",
-        height: "100vh",
-        background: "#000",
-        color: "#fff",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        zIndex: 9999,
-      }}
-    >
-      <h1>🚨 Developer tools are not allowed! 🚨</h1>
-      <p>Please close developer tools to continue using this website.</p>
-    </div>
-  ) : null;
-};
+  // No UI is returned - we just want to perform the logout action
+  return null;
+}

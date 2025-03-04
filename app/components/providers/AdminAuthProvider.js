@@ -10,7 +10,8 @@ import {
     where,
     getDocs,
     addDoc,
-    serverTimestamp
+    serverTimestamp,
+    updateDoc
 } from 'firebase/firestore';
 import { db } from '../../lib/firebase'; // Make sure this points to your Firebase config
 
@@ -134,6 +135,11 @@ export function AdminAuthProvider({ children }) {
                 return { success: false, error: "Invalid password" };
             }
 
+            // Update lastLogin timestamp for all users upon successful authentication
+            await updateDoc(doc(db, "admins", adminDoc.id), {
+                lastLogin: serverTimestamp()  // Using serverTimestamp is better
+            });
+
             // Check role and status
             if (adminData.role === 'superAdmin') {
                 // SuperAdmin can always login
@@ -175,8 +181,8 @@ export function AdminAuthProvider({ children }) {
                 // Store in localStorage
                 localStorage.setItem('adminAuth', JSON.stringify(adminSession));
                 setAdmin(adminSession);
-
                 return { success: true, isSuperAdmin: false };
+
             } else {
                 return {
                     success: false,

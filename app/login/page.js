@@ -1,16 +1,15 @@
 'use client';
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FaInfoCircle } from "react-icons/fa";
+import { FaInfoCircle, FaLock, FaUser, FaEnvelope } from "react-icons/fa";
 import { ImSpinner8 } from 'react-icons/im';
-import { useAdminAuth } from '../components/providers/AdminAuthProvider'; // Import your auth context
+import { useAdminAuth } from '../components/providers/AdminAuthProvider';
 import { useRouter } from 'next/navigation';
-import Image from 'next/image';
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 const Auth = () => {
     const router = useRouter();
-    const { login, register } = useAdminAuth(); // Use the auth context
+    const { login, register } = useAdminAuth();
     const [activeTab, setActiveTab] = useState('login');
 
     // Login state
@@ -36,18 +35,47 @@ const Auth = () => {
     // Shared state
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [formSubmitMessage, setFormSubmitMessage] = useState('');
-    
 
-    // Login visibility
+    // Password visibility toggles
     const [showLoginPassword, setShowLoginPassword] = useState(false);
-
-    // Register visibility
     const [showRegisterPassword, setShowRegisterPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
+    // Animation variants
     const fadeInUp = {
         hidden: { opacity: 0, y: 20 },
-        visible: { opacity: 1, y: 0, transition: { duration: 0.8, delay: 0.2 } },
+        visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
+    };
+
+    const tabVariants = {
+        inactive: {
+            opacity: 0.7,
+            scale: 0.95
+        },
+        active: {
+            opacity: 1,
+            scale: 1,
+            transition: {
+                type: "spring",
+                stiffness: 300,
+                damping: 20
+            }
+        }
+    };
+
+    const staggerContainer = {
+        hidden: { opacity: 0 },
+        show: {
+            opacity: 1,
+            transition: {
+                staggerChildren: 0.1
+            }
+        }
+    };
+
+    const itemVariant = {
+        hidden: { opacity: 0, y: 20 },
+        show: { opacity: 1, y: 0 }
     };
 
     // Login validation functions
@@ -125,7 +153,6 @@ const Auth = () => {
             setRegisterPasswordError('Password must be at least 6 characters');
             return false;
         }
-        // You can add more password strength requirements here
         setRegisterPasswordError('');
         return true;
     };
@@ -151,7 +178,6 @@ const Auth = () => {
         setAcceptTermsError('');
         return true;
     };
-
 
     // Login form submission
     const handleLoginSubmit = async (e) => {
@@ -259,68 +285,116 @@ const Auth = () => {
     };
 
     return (
-        <div className="relative w-full h-auto" style={{ userSelect: "none" }}>
-            <div className="flex flex-col md:flex-row items-stretch h-auto">
-                {/* Image Section */}
-                <div className="w-full md:w-1/2 md:absolute md:right-0 md:top-0 md:bottom-0 z-10">
-                    <Image
-                        src="/inquire-image.jpeg"
-                        alt="Authentication"
-                        fill
-                        className="w-full h-full object-cover"
-                    />
+        <div className="flex justify-center items-center min-h-screen bg-gradient-to-br from-[#FAF4ED] to-[#EFE7DD] p-4" style={{ userSelect: "none" }}>
+            <motion.div
+                className="w-full max-w-md overflow-hidden rounded-2xl shadow-2xl bg-[#FAF4ED]"
+                initial={{ opacity: 0, y: 50 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{
+                    duration: 0.7,
+                    ease: [0.22, 1, 0.36, 1]
+                }}
+            >
+                {/* Logo or brand element */}
+                <div className="flex justify-center p-6 bg-gradient-to-r from-[#36302A] to-[#514840]">
+                    <motion.div
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        transition={{
+                            type: "spring",
+                            stiffness: 400,
+                            damping: 10,
+                            delay: 0.3
+                        }}
+                    >
+                        <h1 className="text-2xl font-bold text-white">
+                            <motion.span
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                transition={{ delay: 0.5, duration: 0.3 }}
+                            >
+                                Social It Up Admin View
+                            </motion.span>
+                        </h1>
+                    </motion.div>
                 </div>
 
-                {/* Form Section */}
-                <motion.div
-                    className="flex flex-col w-full md:w-1/2 relative"
-                    variants={fadeInUp}
-                    initial="hidden"
-                    whileInView="visible"
-                    viewport={{ once: true }}
-                >
-                    {/* Tabs */}
-                    <div className="flex bg-[#FAF4ED]">
-                        <button
-                            className={`flex-1 py-4 text-center font-medium text-lg transition-colors duration-300 ${activeTab === 'login'
-                                ? 'border-b-2 border-[#36302A] text-[#36302A]'
-                                : 'text-[#86807A] border-b border-[#E2D9CE]'
-                                }`}
-                            onClick={() => setActiveTab('login')}
-                        >
-                            Login
-                        </button>
-                        <button
-                            className={`flex-1 py-4 text-center font-medium text-lg transition-colors duration-300 ${activeTab === 'register'
-                                ? 'border-b-2 border-[#36302A] text-[#36302A]'
-                                : 'text-[#86807A] border-b border-[#E2D9CE]'
-                                }`}
-                            onClick={() => setActiveTab('register')}
-                        >
-                            Register
-                        </button>
-                    </div>
-
-                    {/* Login Form */}
-                    <AnimatePresence mode="wait">
+                {/* Tabs */}
+                <div className="flex bg-[#FAF4ED] border-b border-[#E2D9CE]">
+                    <motion.button
+                        className={`flex-1 py-4 text-center font-medium text-lg relative ${activeTab === 'login' ? 'text-[#36302A]' : 'text-[#86807A]'
+                            }`}
+                        onClick={() => setActiveTab('login')}
+                        variants={tabVariants}
+                        animate={activeTab === 'login' ? 'active' : 'inactive'}
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                    >
+                        Login
                         {activeTab === 'login' && (
-                            <motion.form
-                                key="login-form"
-                                initial={{ opacity: 0, y: 10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, y: -10 }}
-                                transition={{ duration: 0.3 }}
-                                className="px-6 md:px-10 w-full py-6 md:py-8 z-20 bg-[#FAF4ED] flex flex-col gap-4"
-                                onSubmit={handleLoginSubmit}
-                            >
-                                <p className="text-[#36302A] text-sm md:text-lg">
-                                    Welcome back! Please enter your credentials to access your account.
-                                </p>
+                            <motion.div
+                                className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#36302A]"
+                                layoutId="tabIndicator"
+                                transition={{
+                                    type: "spring",
+                                    stiffness: 500,
+                                    damping: 30
+                                }}
+                            />
+                        )}
+                    </motion.button>
+                    <motion.button
+                        className={`flex-1 py-4 text-center font-medium text-lg relative ${activeTab === 'register' ? 'text-[#36302A]' : 'text-[#86807A]'
+                            }`}
+                        onClick={() => setActiveTab('register')}
+                        variants={tabVariants}
+                        animate={activeTab === 'register' ? 'active' : 'inactive'}
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                    >
+                        Register
+                        {activeTab === 'register' && (
+                            <motion.div
+                                className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#36302A]"
+                                layoutId="tabIndicator"
+                                transition={{
+                                    type: "spring",
+                                    stiffness: 500,
+                                    damping: 30
+                                }}
+                            />
+                        )}
+                    </motion.button>
+                </div>
 
-                                <div className="flex flex-col py-1 mt-4">
-                                    <label className="text-sm text-[#36302A]">
-                                        Email or Username <span className="text-[#86807A] ml-1">(required)</span>
-                                    </label>
+                {/* Forms */}
+                <AnimatePresence mode="wait">
+                    {activeTab === 'login' && (
+                        <motion.form
+                            key="login-form"
+                            initial={{ opacity: 0, x: -30 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: 30 }}
+                            transition={{ duration: 0.4 }}
+                            className="px-6 py-8 w-full bg-[#FAF4ED]"
+                            onSubmit={handleLoginSubmit}
+                            variants={staggerContainer}
+                        >
+                            <motion.p
+                                className="text-[#36302A] text-sm mb-6"
+                                variants={itemVariant}
+                            >
+                                Welcome back! Please enter your credentials to access your account.
+                            </motion.p>
+
+                            <motion.div
+                                className="space-y-5"
+                                variants={itemVariant}
+                            >
+                                <div className="relative">
+                                    <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-[#86807A]">
+                                        <FaUser />
+                                    </div>
                                     <input
                                         type="text"
                                         value={emailOrUsername}
@@ -328,135 +402,185 @@ const Auth = () => {
                                             setEmailOrUsername(e.target.value);
                                             if (emailOrUsernameError) setEmailOrUsernameError('');
                                         }}
-                                        className="bg-[#EFE7DD] text-[#36302A] border border-transparent focus:outline-none focus:ring-1 focus:ring-[#36302A] hover:border-[#36302A] px-3 py-2 rounded-lg w-full"
-                                        placeholder="Enter your email or username"
+                                        className="bg-[#EFE7DD] text-[#36302A] border border-transparent focus:outline-none focus:ring-1 focus:ring-[#36302A] hover:border-[#36302A] rounded-lg block w-full pl-10 p-3"
+                                        placeholder="Email or Username"
                                     />
                                     {emailOrUsernameError && (
-                                        <p className="text-sm text-red-600 mt-1 flex items-center gap-1"><FaInfoCircle />{emailOrUsernameError}</p>
-                                    )}
-                                </div>
-
-                                <div className="flex flex-col py-1">
-                                    <label className="text-sm text-[#36302A]">
-                                        Password <span className="text-[#86807A] ml-1">(required)</span>
-                                    </label>
-                                    <div className="relative">
-                                    <input
-                                            type={showLoginPassword ? "text" : "password"}
-                                            value={password}
-                                            onChange={(e) => {
-                                                setPassword(e.target.value);
-                                                if (passwordError) setPasswordError('');
-                                            }}
-                                            className="bg-[#EFE7DD] text-[#36302A] border border-transparent focus:outline-none focus:ring-1 focus:ring-[#36302A] hover:border-[#36302A] px-3 py-2 rounded-lg w-full"
-                                            placeholder="Enter your password"
-                                        />
-                                        <button
-                                            type="button"
-                                            onClick={() => setShowLoginPassword(!showLoginPassword)}
-                                            className="absolute right-3 top-1/2 -translate-y-1/2 text-[#36302A]"
+                                        <motion.p
+                                            initial={{ opacity: 0, y: -10 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            className="text-sm text-red-600 mt-1 flex items-center gap-1"
                                         >
-                                            {showLoginPassword ? <FaEyeSlash /> : <FaEye />}
-                                        </button>
-                                    </div>
-                                    {passwordError && (
-                                        <p className="text-sm text-red-600 mt-1 flex items-center gap-1"><FaInfoCircle />{passwordError}</p>
+                                            <FaInfoCircle />{emailOrUsernameError}
+                                        </motion.p>
                                     )}
                                 </div>
 
-                                <div className="flex justify-between items-center mt-2">
-                                    <div className="flex items-center gap-2">
+                                <div className="relative">
+                                    <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-[#86807A]">
+                                        <FaLock />
+                                    </div>
+                                    <input
+                                        type={showLoginPassword ? "text" : "password"}
+                                        value={password}
+                                        onChange={(e) => {
+                                            setPassword(e.target.value);
+                                            if (passwordError) setPasswordError('');
+                                        }}
+                                        className="bg-[#EFE7DD] text-[#36302A] border border-transparent focus:outline-none focus:ring-1 focus:ring-[#36302A] hover:border-[#36302A] rounded-lg block w-full pl-10 pr-10 p-3"
+                                        placeholder="Password"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowLoginPassword(!showLoginPassword)}
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-[#36302A] hover:text-[#86807A]"
+                                    >
+                                        {showLoginPassword ? <FaEyeSlash /> : <FaEye />}
+                                    </button>
+                                    {passwordError && (
+                                        <motion.p
+                                            initial={{ opacity: 0, y: -10 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            className="text-sm text-red-600 mt-1 flex items-center gap-1"
+                                        >
+                                            <FaInfoCircle />{passwordError}
+                                        </motion.p>
+                                    )}
+                                </div>
+                            </motion.div>
+
+                            <motion.div
+                                className="flex justify-between items-center mt-6"
+                                variants={itemVariant}
+                            >
+                                <div className="flex items-center gap-2">
+                                    <div className="relative">
                                         <input
                                             type="checkbox"
                                             id="remember-me"
-                                            className="appearance-none h-4 w-4 border bg-[#EFE7DD] hover:border-[#36302A] rounded-lg cursor-pointer checked:bg-[#36302A] checked:text-white focus:ring-1 focus:ring-[#36302A]"
+                                            className="appearance-none h-4 w-4 border bg-[#EFE7DD] hover:border-[#36302A] rounded text-[#36302A] focus:ring-[#36302A] transition duration-150 ease-in-out cursor-pointer checked:bg-[#36302A]"
                                             checked={rememberMe}
                                             onChange={() => setRememberMe(!rememberMe)}
                                         />
-                                        <label htmlFor="remember-me" className="text-sm text-[#36302A] cursor-pointer">
-                                            Remember me
-                                        </label>
+                                        {rememberMe && (
+                                            <motion.div
+                                                className="absolute inset-0 flex items-center justify-center text-white text-xs"
+                                                initial={{ scale: 0 }}
+                                                animate={{ scale: 1 }}
+                                                transition={{ type: "spring", stiffness: 400 }}
+                                            >
+                                                ✓
+                                            </motion.div>
+                                        )}
                                     </div>
-
-                                    <a href="/forgot-password" className="text-sm text-[#36302A] hover:underline">
-                                        Forgot password?
-                                    </a>
+                                    <label htmlFor="remember-me" className="text-sm text-[#36302A] cursor-pointer">
+                                        Remember me
+                                    </label>
                                 </div>
 
-                                <AnimatePresence>
-                                    {formSubmitMessage && (
-                                        <motion.div
-                                            initial={{ opacity: 0, y: -10 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            exit={{ opacity: 0, y: -10 }}
-                                            transition={{ duration: 0.5 }}
-                                            className={`text-sm mt-6 px-4 py-2 rounded-lg border ${formSubmitMessage.includes("successful")
-                                                ? 'text-green-700 bg-green-100 border-green-400'
-                                                : 'text-red-700 bg-red-100 border-red-400'
-                                                }`}
-                                        >
-                                            {formSubmitMessage}
-                                        </motion.div>
-                                    )}
-                                </AnimatePresence>
-
-                                <motion.button
-                                    type="submit"
-                                    className="mt-6 px-5 py-3 md:py-4 md:w-40 text-sm rounded-md md:rounded-md bg-[#36302A] text-white relative overflow-hidden flex items-center justify-center gap-2"
-                                    disabled={isSubmitting}
-                                    whileHover={{
-                                        scale: 1.05,
-                                        transition: { duration: 0.3, ease: "easeOut" },
-                                    }}
-                                    whileTap={{
-                                        scale: 0.95,
-                                        transition: { duration: 0.2 },
-                                    }}
+                                <motion.a
+                                    href="/forgot-password"
+                                    className="text-sm text-[#36302A] hover:text-[#514840] hover:underline"
+                                    whileHover={{ scale: 1.05 }}
+                                    whileTap={{ scale: 0.95 }}
                                 >
-                                    {isSubmitting && (
-                                        <ImSpinner8 className="w-4 h-4 animate-spin" />
-                                    )}
-                                    <span className="relative z-10">
-                                        {isSubmitting ? 'Logging in...' : 'Login'}
-                                    </span>
+                                    Forgot password?
+                                </motion.a>
+                            </motion.div>
+
+                            <AnimatePresence>
+                                {formSubmitMessage && (
                                     <motion.div
-                                        className="absolute top-0 left-0 w-full h-full bg-white opacity-0"
-                                        whileHover={{ opacity: 0.1 }}
+                                        initial={{ opacity: 0, height: 0 }}
+                                        animate={{ opacity: 1, height: 'auto' }}
+                                        exit={{ opacity: 0, height: 0 }}
                                         transition={{ duration: 0.3 }}
-                                    />
-                                </motion.button>
-
-                                <p className="text-sm text-[#36302A] text-center mt-4 mb-6">
-                                    Don&apos;t have an account? <button
-                                        type="button"
-                                        onClick={() => setActiveTab('register')}
-                                        className="text-[#36302A] font-semibold hover:underline"
+                                        className={`text-sm mt-6 px-4 py-3 rounded-lg ${formSubmitMessage.includes("successful")
+                                            ? 'text-green-700 bg-green-50 border border-green-200'
+                                            : 'text-red-700 bg-red-50 border border-red-200'
+                                            }`}
                                     >
-                                        Register here
-                                    </button>
-                                </p>
-                            </motion.form>
-                        )}
+                                        {formSubmitMessage}
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
 
-                        {/* Register Form */}
-                        {activeTab === 'register' && (
-                            <motion.form
-                                key="register-form"
-                                initial={{ opacity: 0, y: 10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, y: -10 }}
-                                transition={{ duration: 0.3 }}
-                                className="px-6 md:px-10 w-full py-6 md:py-8 z-20 bg-[#FAF4ED] flex flex-col gap-4"
-                                onSubmit={handleRegisterSubmit}
+                            <motion.button
+                                type="submit"
+                                className="mt-6 w-full p-3 text-base font-medium rounded-lg bg-[#36302A] text-white relative overflow-hidden flex items-center justify-center gap-2"
+                                disabled={isSubmitting}
+                                whileHover={{
+                                    scale: 1.02,
+                                    backgroundColor: "#514840",
+                                    transition: { duration: 0.2 }
+                                }}
+                                whileTap={{
+                                    scale: 0.98,
+                                    transition: { duration: 0.2 }
+                                }}
+                                variants={itemVariant}
                             >
-                                <p className="text-[#36302A] text-sm md:text-lg">
-                                    Create an account to access exclusive features and content.
-                                </p>
+                                {isSubmitting ? (
+                                    <>
+                                        <ImSpinner8 className="w-5 h-5 animate-spin" />
+                                        <span>Logging in...</span>
+                                    </>
+                                ) : (
+                                    <>
+                                        <span>Sign In</span>
+                                        <motion.div
+                                            className="absolute inset-0 bg-white opacity-0"
+                                            whileHover={{ opacity: 0.1 }}
+                                            transition={{ duration: 0.3 }}
+                                        />
+                                    </>
+                                )}
+                            </motion.button>
 
-                                <div className="flex flex-col py-1 mt-4">
-                                    <label className="text-sm text-[#36302A]">
-                                        Email <span className="text-[#86807A] ml-1">(required)</span>
-                                    </label>
+                            <motion.p
+                                className="text-sm text-[#36302A] text-center mt-6"
+                                variants={itemVariant}
+                            >
+                                Don&apos;t have an account? {" "}
+                                <motion.button
+                                    type="button"
+                                    onClick={() => setActiveTab('register')}
+                                    className="text-[#36302A] font-semibold hover:underline"
+                                    whileHover={{ scale: 1.05 }}
+                                    whileTap={{ scale: 0.95 }}
+                                >
+                                    Register here
+                                </motion.button>
+                            </motion.p>
+                        </motion.form>
+                    )}
+
+                    {activeTab === 'register' && (
+                        <motion.form
+                            key="register-form"
+                            initial={{ opacity: 0, x: 30 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: -30 }}
+                            transition={{ duration: 0.4 }}
+                            className="px-6 py-8 w-full bg-[#FAF4ED]"
+                            onSubmit={handleRegisterSubmit}
+                            variants={staggerContainer}
+                        >
+                            <motion.p
+                                className="text-[#36302A] text-sm mb-6"
+                                variants={itemVariant}
+                            >
+                                Create an account to access exclusive features and content.
+                            </motion.p>
+
+                            <motion.div
+                                className="space-y-4"
+                                variants={itemVariant}
+                            >
+                                <div className="relative">
+                                    <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-[#86807A]">
+                                        <FaEnvelope />
+                                    </div>
                                     <input
                                         type="email"
                                         value={registerEmail}
@@ -464,18 +588,24 @@ const Auth = () => {
                                             setRegisterEmail(e.target.value);
                                             if (registerEmailError) setRegisterEmailError('');
                                         }}
-                                        className="bg-[#EFE7DD] text-[#36302A] border border-transparent focus:outline-none focus:ring-1 focus:ring-[#36302A] hover:border-[#36302A] px-3 py-2 rounded-lg w-full"
-                                        placeholder="Enter your email"
+                                        className="bg-[#EFE7DD] text-[#36302A] border border-transparent focus:outline-none focus:ring-1 focus:ring-[#36302A] hover:border-[#36302A] rounded-lg block w-full pl-10 p-3"
+                                        placeholder="Email"
                                     />
                                     {registerEmailError && (
-                                        <p className="text-sm text-red-600 mt-1 flex items-center gap-1"><FaInfoCircle />{registerEmailError}</p>
+                                        <motion.p
+                                            initial={{ opacity: 0, y: -10 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            className="text-sm text-red-600 mt-1 flex items-center gap-1"
+                                        >
+                                            <FaInfoCircle />{registerEmailError}
+                                        </motion.p>
                                     )}
                                 </div>
 
-                                <div className="flex flex-col py-1">
-                                    <label className="text-sm text-[#36302A]">
-                                        Username <span className="text-[#86807A] ml-1">(required)</span>
-                                    </label>
+                                <div className="relative">
+                                    <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-[#86807A]">
+                                        <FaUser />
+                                    </div>
                                     <input
                                         type="text"
                                         value={registerUsername}
@@ -483,169 +613,216 @@ const Auth = () => {
                                             setRegisterUsername(e.target.value);
                                             if (registerUsernameError) setRegisterUsernameError('');
                                         }}
-                                        className="bg-[#EFE7DD] text-[#36302A] border border-transparent focus:outline-none focus:ring-1 focus:ring-[#36302A] hover:border-[#36302A] px-3 py-2 rounded-lg w-full"
-                                        placeholder="Choose a username"
+                                        className="bg-[#EFE7DD] text-[#36302A] border border-transparent focus:outline-none focus:ring-1 focus:ring-[#36302A] hover:border-[#36302A] rounded-lg block w-full pl-10 p-3"
+                                        placeholder="Username"
                                     />
                                     {registerUsernameError && (
-                                        <p className="text-sm text-red-600 mt-1 flex items-center gap-1"><FaInfoCircle />{registerUsernameError}</p>
+                                        <motion.p
+                                            initial={{ opacity: 0, y: -10 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            className="text-sm text-red-600 mt-1 flex items-center gap-1"
+                                        >
+                                            <FaInfoCircle />{registerUsernameError}
+                                        </motion.p>
                                     )}
                                 </div>
 
-                                <div className="flex flex-col py-1">
-                                    <label className="text-sm text-[#36302A]">
-                                        Password <span className="text-[#86807A] ml-1">(required)</span>
-                                    </label>
-                                    <div className="relative">
-                                    <input
-                                            type={showRegisterPassword ? "text" : "password"}
-                                            value={registerPassword}
-                                            onChange={(e) => {
-                                                setRegisterPassword(e.target.value);
-                                                if (registerPasswordError) setRegisterPasswordError('');
-                                                if (confirmPasswordError && confirmPassword) setConfirmPasswordError('');
-                                            }}
-                                            className="bg-[#EFE7DD] text-[#36302A] border border-transparent focus:outline-none focus:ring-1 focus:ring-[#36302A] hover:border-[#36302A] px-3 py-2 rounded-lg w-full"
-                                            placeholder="Create a password"
-                                        />
-                                        <button
-                                            type="button"
-                                            onClick={() => setShowRegisterPassword(!showRegisterPassword)}
-                                            className="absolute right-3 top-1/2 -translate-y-1/2 text-[#36302A]"
-                                        >
-                                            {showRegisterPassword ? <FaEyeSlash /> : <FaEye />}
-                                        </button>
+                                <div className="relative">
+                                    <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-[#86807A]">
+                                        <FaLock />
                                     </div>
+                                    <input
+                                        type={showRegisterPassword ? "text" : "password"}
+                                        value={registerPassword}
+                                        onChange={(e) => {
+                                            setRegisterPassword(e.target.value);
+                                            if (registerPasswordError) setRegisterPasswordError('');
+                                            if (confirmPasswordError && confirmPassword) setConfirmPasswordError('');
+                                        }}
+                                        className="bg-[#EFE7DD] text-[#36302A] border border-transparent focus:outline-none focus:ring-1 focus:ring-[#36302A] hover:border-[#36302A] rounded-lg block w-full pl-10 pr-10 p-3"
+                                        placeholder="Password"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowRegisterPassword(!showRegisterPassword)}
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-[#36302A] hover:text-[#86807A]"
+                                    >
+                                        {showRegisterPassword ? <FaEyeSlash /> : <FaEye />}
+                                    </button>
                                     {registerPasswordError && (
-                                        <p className="text-sm text-red-600 mt-1 flex items-center gap-1"><FaInfoCircle />{registerPasswordError}</p>
-                                    )}
-                                </div>
-
-                                <div className="flex flex-col py-1">
-                                    <label className="text-sm text-[#36302A]">
-                                        Confirm Password <span className="text-[#86807A] ml-1">(required)</span>
-                                    </label>
-                                    <div className="relative">
-                                    <input
-                                            type={showConfirmPassword ? "text" : "password"}
-                                            value={confirmPassword}
-                                            onChange={(e) => {
-                                                setConfirmPassword(e.target.value);
-                                                if (confirmPasswordError) setConfirmPasswordError('');
-                                            }}
-                                            className="bg-[#EFE7DD] text-[#36302A] border border-transparent focus:outline-none focus:ring-1 focus:ring-[#36302A] hover:border-[#36302A] px-3 py-2 rounded-lg w-full"
-                                            placeholder="Confirm your password"
-                                        />
-                                        <button
-                                            type="button"
-                                            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                                            className="absolute right-3 top-1/2 -translate-y-1/2 text-[#36302A]"
+                                        <motion.p
+                                            initial={{ opacity: 0, y: -10 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            className="text-sm text-red-600 mt-1 flex items-center gap-1"
                                         >
-                                            {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
-                                        </button>
-                                    </div>
-                                    {confirmPasswordError && (
-                                        <p className="text-sm text-red-600 mt-1 flex items-center gap-1"><FaInfoCircle />{confirmPasswordError}</p>
+                                            <FaInfoCircle />{registerPasswordError}
+                                        </motion.p>
                                     )}
                                 </div>
 
-                                <div className="flex flex-col py-1">
-                                    <label className="text-sm text-[#36302A]">
-                                        Gender <span className="text-[#86807A] ml-1">(optional)</span>
-                                    </label>
+                                <div className="relative">
+                                    <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-[#86807A]">
+                                        <FaLock />
+                                    </div>
+                                    <input
+                                        type={showConfirmPassword ? "text" : "password"}
+                                        value={confirmPassword}
+                                        onChange={(e) => {
+                                            setConfirmPassword(e.target.value);
+                                            if (confirmPasswordError) setConfirmPasswordError('');
+                                        }}
+                                        className="bg-[#EFE7DD] text-[#36302A] border border-transparent focus:outline-none focus:ring-1 focus:ring-[#36302A] hover:border-[#36302A] rounded-lg block w-full pl-10 pr-10 p-3"
+                                        placeholder="Confirm Password"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-[#36302A] hover:text-[#86807A]"
+                                    >
+                                        {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
+                                    </button>
+                                    {confirmPasswordError && (
+                                        <motion.p
+                                            initial={{ opacity: 0, y: -10 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            className="text-sm text-red-600 mt-1 flex items-center gap-1"
+                                        >
+                                            <FaInfoCircle />{confirmPasswordError}
+                                        </motion.p>
+                                    )}
+                                </div>
+
+                                <div className="relative">
                                     <select
                                         value={gender}
                                         onChange={(e) => setGender(e.target.value)}
-                                        className="bg-[#EFE7DD] text-[#36302A] border border-transparent focus:outline-none focus:ring-1 focus:ring-[#36302A] hover:border-[#36302A] px-3 py-2 rounded-lg w-full"
+                                        className="bg-[#EFE7DD] text-[#36302A] border border-transparent focus:outline-none focus:ring-1 focus:ring-[#36302A] hover:border-[#36302A] rounded-lg block w-full p-3"
                                     >
-                                        <option value="unspecified">Prefer not to say</option>
+                                        <option value="unspecified">Gender (Optional)</option>
                                         <option value="male">Male</option>
                                         <option value="female">Female</option>
                                         <option value="other">Other</option>
                                     </select>
                                 </div>
+                            </motion.div>
 
-                                <div className="flex items-start gap-2 mt-2">
+                            <motion.div
+                                className="flex items-start gap-2 mt-5"
+                                variants={itemVariant}
+                            >
+                                <div className="relative mt-0.5">
                                     <input
                                         type="checkbox"
                                         id="terms"
-                                        className="appearance-none h-4 w-4 border bg-[#EFE7DD] hover:border-[#36302A] rounded-lg cursor-pointer checked:bg-[#36302A] checked:text-white focus:ring-1 focus:ring-[#36302A] mt-1"
+                                        className="appearance-none h-4 w-4 border bg-[#EFE7DD] hover:border-[#36302A] rounded text-[#36302A] focus:ring-[#36302A] transition duration-150 ease-in-out cursor-pointer checked:bg-[#36302A]"
                                         checked={acceptTerms}
                                         onChange={() => {
                                             setAcceptTerms(!acceptTerms);
                                             if (acceptTermsError) setAcceptTermsError('');
                                         }}
                                     />
-                                    <label htmlFor="terms" className="text-sm text-[#36302A] cursor-pointer">
-                                        I agree to the <a href="/terms" className="underline">Terms of Service</a> and <a href="/privacy" className="underline">Privacy Policy</a>
-                                    </label>
-                                </div>
-                                {acceptTermsError && (
-                                    <p className="text-sm text-red-600 mt-1 flex items-center gap-1"><FaInfoCircle />{acceptTermsError}</p>
-                                )}
-
-                                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mt-2">
-                                    <p className="text-sm text-yellow-800">
-                                        Note: Your account will be created with admin privileges and will be pending approval.
-                                    </p>
-                                </div>
-
-                                <AnimatePresence>
-                                    {formSubmitMessage && (
+                                    {acceptTerms && (
                                         <motion.div
-                                            initial={{ opacity: 0, y: -10 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            exit={{ opacity: 0, y: -10 }}
-                                            transition={{ duration: 0.5 }}
-                                            className={`text-sm mt-6 px-4 py-2 rounded-lg border ${formSubmitMessage.includes("successful")
-                                                ? 'text-green-700 bg-green-100 border-green-400'
-                                                : 'text-red-700 bg-red-100 border-red-400'
-                                                }`}
+                                            className="absolute inset-0 flex items-center justify-center text-white text-xs"
+                                            initial={{ scale: 0 }}
+                                            animate={{ scale: 1 }}
+                                            transition={{ type: "spring", stiffness: 400 }}
                                         >
-                                            {formSubmitMessage}
+                                            ✓
                                         </motion.div>
                                     )}
-                                </AnimatePresence>
-
-                                <motion.button
-                                    type="submit"
-                                    className="mt-6 px-5 py-3 md:py-4 md:w-40 text-sm rounded-md md:rounded-md bg-[#36302A] text-white relative overflow-hidden flex items-center justify-center gap-2"
-                                    disabled={isSubmitting}
-                                    whileHover={{
-                                        scale: 1.05,
-                                        transition: { duration: 0.3, ease: "easeOut" },
-                                    }}
-                                    whileTap={{
-                                        scale: 0.95,
-                                        transition: { duration: 0.2 },
-                                    }}
+                                </div>
+                                <label htmlFor="terms" className="text-sm text-[#36302A] cursor-pointer">
+                                    I agree to the <a href="/terms" className="text-[#36302A] font-semibold hover:underline">Terms of Service</a> and <a href="/privacy" className="text-[#36302A] font-semibold hover:underline">Privacy Policy</a>
+                                </label>
+                            </motion.div>
+                            {acceptTermsError && (
+                                <motion.p
+                                    initial={{ opacity: 0, y: -10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    className="text-sm text-red-600 mt-1 flex items-center gap-1 ml-6"
                                 >
-                                    {isSubmitting && (
-                                        <ImSpinner8 className="w-4 h-4 animate-spin" />
-                                    )}
-                                    <span className="relative z-10">
-                                        {isSubmitting ? 'Registering...' : 'Register'}
-                                    </span>
-                                    <motion.div
-                                        className="absolute top-0 left-0 w-full h-full bg-white opacity-0"
-                                        whileHover={{ opacity: 0.1 }}
-                                        transition={{ duration: 0.3 }}
-                                    />
-                                </motion.button>
+                                    <FaInfoCircle />{acceptTermsError}
+                                </motion.p>
+                            )}
 
-                                <p className="text-sm text-[#36302A] text-center mt-4 mb-6">
-                                    Already have an account? <button
-                                        type="button"
-                                        onClick={() => setActiveTab('login')}
-                                        className="text-[#36302A] font-semibold hover:underline"
-                                    >
-                                        Login here
-                                    </button>
+                            <motion.div
+                                className="bg-amber-50 border border-amber-200 rounded-lg p-3 mt-5"
+                                variants={itemVariant}
+                            >
+                                <p className="text-sm text-amber-800">
+                                    Note: Your account will be created with admin privileges and will be pending approval.
                                 </p>
-                            </motion.form>
-                        )}
-                    </AnimatePresence>
-                </motion.div>
-            </div>
+                            </motion.div>
+
+                            <AnimatePresence>
+                                {formSubmitMessage && (
+                                    <motion.div
+                                        initial={{ opacity: 0, height: 0 }}
+                                        animate={{ opacity: 1, height: 'auto' }}
+                                        exit={{ opacity: 0, height: 0 }}
+                                        transition={{ duration: 0.3 }}
+                                        className={`text-sm mt-6 px-4 py-3 rounded-lg ${formSubmitMessage.includes("successful")
+                                            ? 'text-green-700 bg-green-50 border border-green-200'
+                                            : 'text-red-700 bg-red-50 border border-red-200'
+                                            }`}
+                                    >
+                                        {formSubmitMessage}
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+
+                            <motion.button
+                                type="submit"
+                                className="mt-6 w-full p-3 text-base font-medium rounded-lg bg-[#36302A] text-white relative overflow-hidden flex items-center justify-center gap-2"
+                                disabled={isSubmitting}
+                                whileHover={{
+                                    scale: 1.02,
+                                    backgroundColor: "#514840",
+                                    transition: { duration: 0.2 }
+                                }}
+                                whileTap={{
+                                    scale: 0.98,
+                                    transition: { duration: 0.2 }
+                                }}
+                                variants={itemVariant}
+                            >
+                                {isSubmitting ? (
+                                    <>
+                                        <ImSpinner8 className="w-5 h-5 animate-spin" />
+                                        <span>Registering...</span>
+                                    </>
+                                ) : (
+                                    <>
+                                        <span>Create Account</span>
+                                        <motion.div
+                                            className="absolute inset-0 bg-white opacity-0"
+                                            whileHover={{ opacity: 0.1 }}
+                                            transition={{ duration: 0.3 }}
+                                        />
+                                    </>
+                                )}
+                            </motion.button>
+
+                            <motion.p
+                                className="text-sm text-[#36302A] text-center mt-6"
+                                variants={itemVariant}
+                            >
+                                Already have an account? {" "}
+                                <motion.button
+                                    type="button"
+                                    onClick={() => setActiveTab('login')}
+                                    className="text-[#36302A] font-semibold hover:underline"
+                                    whileHover={{ scale: 1.05 }}
+                                    whileTap={{ scale: 0.95 }}
+                                >
+                                    Login here
+                                </motion.button>
+                            </motion.p>
+                        </motion.form>
+                    )}
+                </AnimatePresence>
+            </motion.div>
         </div>
     );
 };

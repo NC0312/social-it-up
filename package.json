@@ -15,6 +15,7 @@
     "@studio-freight/lenis": "^1.0.42",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "devtools-detect": "^4.0.2",
     "firebase": "^11.0.2",
     "framer-motion": "^11.15.0",
     "gsap": "^3.12.5",

@@ -31,26 +31,19 @@ export const metadata = {
 export default function RootLayout({ children }) {
   const isProduction = process.env.NEXT_PUBLIC_ENV === 'production';
 
-  // Move the entire content into the AdminAuthProvider in development mode
-  const content = (
-    <>
-      <DynamicTitle />
-      <Header />
-      <main className="flex-grow">
-        {children}
-      </main>
-      <Footer />
-      {isProduction && <Chatbot />}
-      {isProduction && <DevToolsBlocker />}
-    </>
-  );
-
   return (
     <html lang="en" className="lenis lenis-smooth">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <div className="flex flex-col min-h-screen">
           <AdminAuthProvider>
-            {content}
+            <DevToolsBlocker />
+            <DynamicTitle />
+            <Header />
+            <main className="flex-grow">
+              {children}
+            </main>
+            <Footer />
+            {isProduction && <Chatbot />}
           </AdminAuthProvider>
         </div>
         <Toaster />

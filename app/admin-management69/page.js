@@ -9,13 +9,26 @@ import {
     getDocs,
     doc,
     updateDoc,
-    deleteDoc,
-    orderBy
+    deleteDoc
 } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ImSpinner8 } from 'react-icons/im';
-import { FaCheck, FaTimes, FaUserShield, FaUserClock, FaUser, FaTrash, FaSearch } from 'react-icons/fa';
+import { toast } from "sonner";
+import {
+    UserPlus,
+    UserCheck,
+    UserMinus,
+    Shield,
+    Search,
+    RefreshCw,
+    ChevronRight,
+    X,
+    Check,
+    Trash2,
+    Clock,
+    Calendar
+} from 'lucide-react';
+import AdminProfileModal from '../components/AdminProfileModal'; // Import the AdminProfileModal component
 
 const AdminManagement = () => {
     const { admin: currentAdmin, isAuthenticated, loading } = useAdminAuth();
@@ -27,8 +40,36 @@ const AdminManagement = () => {
     const [activeTab, setActiveTab] = useState('pending');
     const [searchTerm, setSearchTerm] = useState('');
     const [actionInProgress, setActionInProgress] = useState(null);
-    const [notification, setNotification] = useState({ show: false, message: '', type: '' });
-    const [isSyncing, setIsSyncing] = useState(false);
+    const [confirmAction, setConfirmAction] = useState(null);
+
+    // State for the admin profile modal
+    const [selectedAdmin, setSelectedAdmin] = useState(null);
+
+    // Animation variants
+    const containerVariants = {
+        hidden: { opacity: 0, y: 20 },
+        visible: {
+            opacity: 1,
+            y: 0,
+            transition: {
+                duration: 0.5,
+                ease: [0.22, 1, 0.36, 1]
+            }
+        }
+    };
+
+    const tableRowVariants = {
+        hidden: { opacity: 0, x: -10 },
+        visible: (i) => ({
+            opacity: 1,
+            x: 0,
+            transition: {
+                delay: i * 0.05,
+                duration: 0.3
+            }
+        }),
+        exit: { opacity: 0, x: 10 }
+    };
 
     // Fetch admins on component mount
     useEffect(() => {
@@ -40,7 +81,7 @@ const AdminManagement = () => {
         if (isAuthenticated) {
             fetchAdmins();
         }
-    }, [isAuthenticated, loading, router,]);
+    }, [isAuthenticated, loading, router]);
 
     // Check if current user is a superAdmin
     const isSuperAdmin = currentAdmin?.role === 'superAdmin';
@@ -59,7 +100,8 @@ const AdminManagement = () => {
             const pendingList = pendingSnapshot.docs.map(doc => ({
                 id: doc.id,
                 ...doc.data(),
-                createdAt: doc.data().createdAt?.toDate?.() || new Date()
+                createdAt: doc.data().createdAt?.toDate?.() || new Date(),
+                lastLogin: doc.data().lastLogin?.toDate?.() || null
             }));
 
             // Fetch approved admins
@@ -72,7 +114,8 @@ const AdminManagement = () => {
                 id: doc.id,
                 ...doc.data(),
                 createdAt: doc.data().createdAt?.toDate?.() || new Date(),
-                updatedAt: doc.data().updatedAt?.toDate?.() || doc.data().createdAt?.toDate?.() || new Date()
+                updatedAt: doc.data().updatedAt?.toDate?.() || doc.data().createdAt?.toDate?.() || new Date(),
+                lastLogin: doc.data().lastLogin?.toDate?.() || null
             }));
 
             // Sort in memory by creation date (newest first)
@@ -83,7 +126,7 @@ const AdminManagement = () => {
             setApprovedAdmins(approvedList);
         } catch (error) {
             console.error("Error fetching admins:", error);
-            showNotification("Failed to fetch admins", "error");
+            toast.error("Failed to fetch admins");
         } finally {
             setIsLoading(false);
         }
@@ -91,21 +134,31 @@ const AdminManagement = () => {
 
     const syncData = async () => {
         try {
-            setIsSyncing(true);
+            setIsLoading(true);
             await fetchAdmins();
-            showNotification("Data synchronized successfully", "success");
+            toast.success("Data synchronized successfully");
         } catch (error) {
             console.error("Error synchronizing data:", error);
-            showNotification("Failed to synchronize data", "error");
+            toast.error("Failed to synchronize data");
         } finally {
-            setIsSyncing(false);
+            setIsLoading(false);
         }
+    };
+
+    // Handle viewing admin profile
+    const handleViewProfile = (admin) => {
+        setSelectedAdmin(admin);
+    };
+
+    // Handle closing the admin profile modal
+    const handleCloseProfile = () => {
+        setSelectedAdmin(null);
     };
 
     // Handle admin approval
     const handleApprove = async (adminId) => {
         if (!isSuperAdmin) {
-            showNotification("You don't have permission to approve admins", "error");
+            toast.error("You don't have permission to approve admins");
             return;
         }
 
@@ -124,24 +177,65 @@ const AdminManagement = () => {
             setPendingAdmins(pendingAdmins.filter(admin => admin.id !== adminId));
             setApprovedAdmins([{ ...updatedAdmin, status: "approved" }, ...approvedAdmins]);
 
-            showNotification("Admin approved successfully", "success");
+            toast.success("Admin approved successfully");
         } catch (error) {
             console.error("Error approving admin:", error);
-            showNotification("Failed to approve admin", "error");
+            toast.error("Failed to approve admin");
         } finally {
             setActionInProgress(null);
+        }
+    };
+
+    // Handle promoting admin to superadmin
+    const handlePromote = async (adminId) => {
+        if (!isSuperAdmin) {
+            toast.error("You don't have permission to promote admins");
+            return;
+        }
+
+        try {
+            setActionInProgress(adminId);
+
+            // Update admin role in Firestore
+            const adminRef = doc(db, "admins", adminId);
+            await updateDoc(adminRef, {
+                role: "superAdmin",
+                updatedAt: new Date()
+            });
+
+            // Update local state
+            setApprovedAdmins(
+                approvedAdmins.map(admin =>
+                    admin.id === adminId
+                        ? { ...admin, role: "superAdmin" }
+                        : admin
+                )
+            );
+
+            toast.success("Admin promoted to superAdmin successfully");
+        } catch (error) {
+            console.error("Error promoting admin:", error);
+            toast.error("Failed to promote admin");
+        } finally {
+            setActionInProgress(null);
+            setConfirmAction(null);
         }
     };
 
     // Handle admin rejection/deletion
     const handleDelete = async (adminId, adminType) => {
         if (!isSuperAdmin) {
-            showNotification("You don't have permission to delete admins", "error");
+            toast.error("You don't have permission to delete admins");
             return;
         }
 
-        if (!confirm("Are you sure you want to delete this admin? This action cannot be undone.")) {
-            return;
+        // Check if the admin is a superadmin - can't delete superadmins
+        if (adminType === 'approved') {
+            const admin = approvedAdmins.find(a => a.id === adminId);
+            if (admin?.role === 'superAdmin') {
+                toast.error("SuperAdmins cannot be removed");
+                return;
+            }
         }
 
         try {
@@ -158,36 +252,31 @@ const AdminManagement = () => {
                 setApprovedAdmins(approvedAdmins.filter(admin => admin.id !== adminId));
             }
 
-            showNotification("Admin deleted successfully", "success");
+            toast.success("Admin deleted successfully");
         } catch (error) {
             console.error("Error deleting admin:", error);
-            showNotification("Failed to delete admin", "error");
+            toast.error("Failed to delete admin");
         } finally {
             setActionInProgress(null);
+            setConfirmAction(null);
         }
-    };
-
-    // Display notification
-    const showNotification = (message, type) => {
-        setNotification({ show: true, message, type });
-        setTimeout(() => {
-            setNotification({ show: false, message: '', type: '' });
-        }, 3000);
     };
 
     // Filter admins based on search term
     const filteredPendingAdmins = pendingAdmins.filter(admin =>
-        admin.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        admin.email.toLowerCase().includes(searchTerm.toLowerCase())
+        admin.username?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        admin.email?.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     const filteredApprovedAdmins = approvedAdmins.filter(admin =>
-        admin.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        admin.email.toLowerCase().includes(searchTerm.toLowerCase())
+        admin.username?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        admin.email?.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     // Format date
     const formatDate = (date) => {
+        if (!date) return 'Never';
+
         return new Date(date).toLocaleDateString('en-US', {
             year: 'numeric',
             month: 'short',
@@ -200,7 +289,12 @@ const AdminManagement = () => {
     if (loading || !isAuthenticated) {
         return (
             <div className="flex items-center justify-center min-h-screen bg-[#FAF4ED]">
-                <ImSpinner8 className="w-8 h-8 animate-spin text-[#36302A]" />
+                <div className="relative">
+                    <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-[#36302A]"></div>
+                    <div className="absolute inset-0 flex items-center justify-center text-[#36302A] font-medium">
+                        Loading
+                    </div>
+                </div>
             </div>
         );
     }
@@ -208,110 +302,176 @@ const AdminManagement = () => {
     if (!isSuperAdmin) {
         return (
             <div className="min-h-screen bg-[#FAF4ED] p-6 flex flex-col items-center justify-center">
-                <FaUserShield className="text-6xl text-[#36302A] mb-4" />
-                <h1 className="text-2xl font-bold text-[#36302A] mb-2">Access Denied</h1>
-                <p className="text-[#575553] mb-6">You need superAdmin privileges to access this page.</p>
-                <button
-                    onClick={() => router.push('/admin-panel69')}
-                    className="px-4 py-2 bg-[#36302A] text-white rounded-md hover:bg-opacity-90 transition"
-                >
-                    Back to Dashboard
-                </button>
+                <div className="bg-white p-8 rounded-xl shadow-lg max-w-md w-full text-center">
+                    <motion.div
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                        className="mx-auto bg-[#36302A] w-20 h-20 rounded-full flex items-center justify-center text-white mb-6"
+                    >
+                        <Shield size={36} />
+                    </motion.div>
+                    <motion.h1
+                        className="text-2xl font-bold text-[#36302A] mb-3"
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.2 }}
+                    >
+                        Access Denied
+                    </motion.h1>
+                    <motion.p
+                        className="text-[#86807A] mb-8"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ delay: 0.3 }}
+                    >
+                        You need superAdmin privileges to access this page.
+                    </motion.p>
+                    <motion.button
+                        onClick={() => router.push('/admin-panel69')}
+                        className="px-5 py-3 bg-[#36302A] text-white rounded-lg shadow-md hover:bg-[#514840] transition-colors duration-300 w-full"
+                        whileHover={{ scale: 1.03 }}
+                        whileTap={{ scale: 0.98 }}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.4 }}
+                    >
+                        Back to Dashboard
+                    </motion.button>
+                </div>
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen bg-[#FAF4ED]">
-            <div className="container mx-auto p-4 md:p-6">
-                <div className="bg-white rounded-lg shadow-md overflow-hidden">
-                    <div className="p-6 border-b border-gray-200">
-                        <h1 className="text-2xl font-bold text-[#36302A] mb-2">Admin Management</h1>
-                        <p className="text-[#575553]">Manage admin accounts and approval requests</p>
-                    </div>
+        <div className="min-h-screen bg-[#FAF4ED] py-12 px-2 sm:px-4 lg:px-6">
+            <motion.div
+                className="max-w-full mx-auto"
+                variants={containerVariants}
+                initial="hidden"
+                animate="visible"
+            >
+                {/* Header */}
+                <div className="text-center mb-10">
+                    <motion.h1
+                        className="text-3xl font-bold text-[#36302A]"
+                        initial={{ opacity: 0, y: -20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.5 }}
+                    >
+                        Admin Management
+                    </motion.h1>
+                    <motion.p
+                        className="mt-2 text-[#86807A]"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ duration: 0.5, delay: 0.1 }}
+                    >
+                        Manage admin accounts and approval requests
+                    </motion.p>
+                </div>
 
+                <motion.div
+                    className="bg-white shadow-xl rounded-xl overflow-hidden"
+                    initial={{ opacity: 0, y: 30 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.6, delay: 0.2 }}
+                >
                     {/* Search and Sync Bar */}
-                    <div className="p-4 bg-gray-50 border-b border-gray-200">
-                        <div className="flex items-center gap-4">
+                    <div className="p-5 bg-[#F8F2EA] border-b border-[#E2D9CE]">
+                        <div className="flex flex-col md:flex-row items-stretch md:items-center gap-4">
                             <div className="relative flex-grow">
-                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <FaSearch className="text-gray-400" />
+                                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-[#86807A]">
+                                    <Search size={18} />
                                 </div>
                                 <input
                                     type="text"
                                     placeholder="Search by username or email..."
-                                    className="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#36302A]"
+                                    className="w-full pl-12 pr-4 py-3 rounded-lg bg-white border border-[#E2D9CE] focus:outline-none focus:ring-2 focus:ring-[#36302A] focus:border-[#36302A] shadow-sm"
                                     value={searchTerm}
                                     onChange={(e) => setSearchTerm(e.target.value)}
                                 />
                             </div>
-                            <button
+
+                            <motion.button
                                 onClick={syncData}
-                                disabled={isSyncing}
-                                className="bg-[#36302A] text-white px-4 py-2 rounded-lg hover:bg-opacity-90 transition flex items-center"
+                                disabled={isLoading}
+                                className="px-5 py-3 bg-[#36302A] text-white rounded-lg shadow-md flex items-center justify-center space-x-2 hover:bg-[#514840] transition-colors duration-300 min-w-[140px]"
+                                whileHover={{ scale: 1.03 }}
+                                whileTap={{ scale: 0.98 }}
                             >
-                                {isSyncing ? (
-                                    <ImSpinner8 className="w-4 h-4 animate-spin mr-2" />
+                                {isLoading ? (
+                                    <div className="animate-spin">
+                                        <RefreshCw size={18} />
+                                    </div>
                                 ) : (
-                                    <svg
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        className="h-4 w-4 mr-2"
-                                        fill="none"
-                                        viewBox="0 0 24 24"
-                                        stroke="currentColor"
-                                    >
-                                        <path
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                            strokeWidth={2}
-                                            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-                                        />
-                                    </svg>
+                                    <RefreshCw size={18} />
                                 )}
-                                Sync Data
-                            </button>
+                                <span>Sync Data</span>
+                            </motion.button>
                         </div>
                     </div>
 
                     {/* Tabs */}
-                    <div className="flex border-b border-gray-200">
-                        <button
-                            className={`flex-1 py-3 px-4 font-medium text-sm focus:outline-none ${activeTab === 'pending'
-                                ? 'text-[#36302A] border-b-2 border-[#36302A]'
-                                : 'text-gray-500 hover:text-gray-700'
+                    <div className="flex border-b border-[#E2D9CE]">
+                        <motion.button
+                            className={`flex-1 py-4 relative overflow-hidden ${activeTab === 'pending'
+                                ? 'text-[#36302A] font-medium'
+                                : 'text-[#86807A] hover:text-[#36302A]'
                                 }`}
                             onClick={() => setActiveTab('pending')}
+                            whileHover={{ backgroundColor: "rgba(226, 217, 206, 0.3)" }}
                         >
                             <div className="flex items-center justify-center gap-2">
-                                <FaUserClock />
+                                <UserPlus size={18} />
                                 <span>Pending Requests</span>
-                                <span className="bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded-full text-xs ml-1">
+                                <span className="bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full text-xs">
                                     {pendingAdmins.length}
                                 </span>
                             </div>
-                        </button>
-                        <button
-                            className={`flex-1 py-3 px-4 font-medium text-sm focus:outline-none ${activeTab === 'approved'
-                                ? 'text-[#36302A] border-b-2 border-[#36302A]'
-                                : 'text-gray-500 hover:text-gray-700'
+                            {activeTab === 'pending' && (
+                                <motion.div
+                                    className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#36302A]"
+                                    layoutId="tabIndicator"
+                                    transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                                />
+                            )}
+                        </motion.button>
+                        <motion.button
+                            className={`flex-1 py-4 relative overflow-hidden ${activeTab === 'approved'
+                                ? 'text-[#36302A] font-medium'
+                                : 'text-[#86807A] hover:text-[#36302A]'
                                 }`}
                             onClick={() => setActiveTab('approved')}
+                            whileHover={{ backgroundColor: "rgba(226, 217, 206, 0.3)" }}
                         >
                             <div className="flex items-center justify-center gap-2">
-                                <FaUser />
+                                <UserCheck size={18} />
                                 <span>Approved Admins</span>
-                                <span className="bg-green-100 text-green-800 px-2 py-0.5 rounded-full text-xs ml-1">
+                                <span className="bg-green-100 text-green-800 px-2 py-0.5 rounded-full text-xs">
                                     {approvedAdmins.length}
                                 </span>
                             </div>
-                        </button>
+                            {activeTab === 'approved' && (
+                                <motion.div
+                                    className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#36302A]"
+                                    layoutId="tabIndicator"
+                                    transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                                />
+                            )}
+                        </motion.button>
                     </div>
 
                     {/* Content */}
-                    <div className="p-4">
+                    <div className="p-4 sm:p-6">
                         {isLoading ? (
-                            <div className="flex justify-center py-8">
-                                <ImSpinner8 className="w-8 h-8 animate-spin text-[#36302A]" />
+                            <div className="flex justify-center py-24">
+                                <div className="relative">
+                                    <div className="animate-spin rounded-full h-12 w-12 border-2 border-t-2 border-[#36302A] opacity-75"></div>
+                                    <div className="absolute inset-0 flex items-center justify-center text-[#36302A] text-sm font-medium">
+                                        Loading
+                                    </div>
+                                </div>
                             </div>
                         ) : (
                             <AnimatePresence mode="wait">
@@ -324,79 +484,162 @@ const AdminManagement = () => {
                                         transition={{ duration: 0.2 }}
                                     >
                                         {filteredPendingAdmins.length === 0 ? (
-                                            <div className="text-center py-8 text-gray-500">
-                                                {searchTerm ? 'No matching pending requests found.' : 'No pending admin requests.'}
-                                            </div>
+                                            <motion.div
+                                                className="bg-[#F8F2EA] rounded-xl p-12 text-center"
+                                                initial={{ opacity: 0, scale: 0.95 }}
+                                                animate={{ opacity: 1, scale: 1 }}
+                                                transition={{ duration: 0.3 }}
+                                            >
+                                                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-[#EFE7DD] text-[#86807A] mb-4">
+                                                    <UserPlus size={24} />
+                                                </div>
+                                                <h3 className="text-xl font-medium text-[#36302A]">No Pending Requests</h3>
+                                                <p className="text-[#86807A] mt-2">
+                                                    {searchTerm
+                                                        ? 'No matching pending requests found.'
+                                                        : 'All admin requests have been processed.'}
+                                                </p>
+                                            </motion.div>
                                         ) : (
-                                            <div className="overflow-x-auto">
-                                                <table className="min-w-full divide-y divide-gray-200">
-                                                    <thead className="bg-gray-50">
-                                                        <tr>
-                                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
-                                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-                                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Gender</th>
-                                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Requested</th>
-                                                            <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody className="bg-white divide-y divide-gray-200">
-                                                        {filteredPendingAdmins.map((admin) => (
-                                                            <tr key={admin.id} className="hover:bg-gray-50">
-                                                                <td className="px-6 py-4 whitespace-nowrap">
-                                                                    <div className="flex items-center">
-                                                                        <div className="h-10 w-10 flex-shrink-0 bg-[#36302A] rounded-full flex items-center justify-center text-white font-medium">
-                                                                            {admin.username.charAt(0).toUpperCase()}
-                                                                        </div>
-                                                                        <div className="ml-4">
-                                                                            <div className="text-sm font-medium text-gray-900">@{admin.username}</div>
-                                                                        </div>
-                                                                    </div>
-                                                                </td>
-                                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                                    {admin.email}
-                                                                </td>
-                                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 capitalize">
-                                                                    {admin.gender || 'Unspecified'}
-                                                                </td>
-                                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                                    {formatDate(admin.createdAt)}
-                                                                </td>
-                                                                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                                                    <div className="flex justify-end gap-2">
-                                                                        <button
-                                                                            onClick={() => handleApprove(admin.id)}
-                                                                            disabled={actionInProgress === admin.id}
-                                                                            className="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600 transition flex items-center"
-                                                                        >
-                                                                            {actionInProgress === admin.id ? (
-                                                                                <ImSpinner8 className="w-4 h-4 animate-spin" />
-                                                                            ) : (
-                                                                                <>
-                                                                                    <FaCheck className="mr-1" />
-                                                                                    <span>Approve</span>
-                                                                                </>
-                                                                            )}
-                                                                        </button>
-                                                                        <button
-                                                                            onClick={() => handleDelete(admin.id, 'pending')}
-                                                                            disabled={actionInProgress === admin.id}
-                                                                            className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 transition flex items-center"
-                                                                        >
-                                                                            {actionInProgress === admin.id ? (
-                                                                                <ImSpinner8 className="w-4 h-4 animate-spin" />
-                                                                            ) : (
-                                                                                <>
-                                                                                    <FaTimes className="mr-1" />
-                                                                                    <span>Reject</span>
-                                                                                </>
-                                                                            )}
-                                                                        </button>
-                                                                    </div>
-                                                                </td>
+                                            <div className="overflow-x-auto -mx-6 px-6">
+                                                <div className="inline-block min-w-full align-middle">
+                                                    <table className="w-full divide-y divide-[#E2D9CE]">
+                                                        <thead>
+                                                            <tr className="bg-[#F8F2EA]">
+                                                                <th className="px-3 py-3 text-left text-[10px] sm:text-xs font-medium text-[#86807A] uppercase tracking-wider sm:px-6">User</th>
+                                                                <th className="px-3 py-3 text-left text-[10px] sm:text-xs font-medium text-[#86807A] uppercase tracking-wider sm:px-6">Email</th>
+                                                                <th className="px-3 py-3 text-left text-[10px] sm:text-xs font-medium text-[#86807A] uppercase tracking-wider hidden sm:table-cell sm:px-6">Gender</th>
+                                                                <th className="px-3 py-3 text-left text-[10px] sm:text-xs font-medium text-[#86807A] uppercase tracking-wider hidden md:table-cell sm:px-6">Requested</th>
+                                                                <th className="px-3 py-3 text-left text-[10px] sm:text-xs font-medium text-[#86807A] uppercase tracking-wider sm:px-6">Last Login</th>
+                                                                <th className="px-3 py-3 text-right text-[10px] sm:text-xs font-medium text-[#86807A] uppercase tracking-wider sm:px-6">Actions</th>
                                                             </tr>
-                                                        ))}
-                                                    </tbody>
-                                                </table>
+                                                        </thead>
+                                                        <tbody className="bg-white divide-y divide-[#E2D9CE]">
+                                                            {filteredPendingAdmins.map((admin, index) => (
+                                                                <motion.tr
+                                                                    key={admin.id}
+                                                                    className="hover:bg-[#F8F2EA] transition-colors duration-150"
+                                                                    custom={index}
+                                                                    variants={tableRowVariants}
+                                                                    initial="hidden"
+                                                                    animate="visible"
+                                                                    exit="exit"
+                                                                >
+                                                                    <td className="px-3 py-4 whitespace-nowrap sm:px-6">
+                                                                        <div className="flex items-center">
+                                                                            <div
+                                                                                className="h-8 w-8 sm:h-10 sm:w-10 flex-shrink-0 bg-[#36302A] rounded-full flex items-center justify-center text-white font-medium cursor-pointer"
+                                                                                onClick={() => handleViewProfile(admin)}
+                                                                            >
+                                                                                {admin.username?.charAt(0).toUpperCase() || 'A'}
+                                                                            </div>
+                                                                            <div className="ml-3 sm:ml-4">
+                                                                                <div
+                                                                                    className="text-xs sm:text-sm font-medium text-[#36302A] cursor-pointer hover:underline group relative"
+                                                                                    onClick={() => handleViewProfile(admin)}
+                                                                                >
+                                                                                    @{admin.username}
+                                                                                    <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-[#36302A] rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap pointer-events-none z-10">
+                                                                                        View Profile
+                                                                                    </div>
+                                                                                </div>
+                                                                            </div>
+
+                                                                        </div>
+                                                                    </td>
+                                                                    <td className="px-3 py-4 whitespace-nowrap text-xs sm:text-sm text-[#575553] sm:px-6">
+                                                                        {admin.email}
+                                                                    </td>
+                                                                    <td className="px-3 py-4 whitespace-nowrap text-xs sm:text-sm text-[#575553] capitalize hidden sm:table-cell sm:px-6">
+                                                                        {admin.gender || 'Unspecified'}
+                                                                    </td>
+                                                                    <td className="px-3 py-4 whitespace-nowrap text-xs sm:text-sm text-[#575553] hidden md:table-cell sm:px-6">
+                                                                        <div className="flex items-center">
+                                                                            <Calendar size={14} className="mr-2 text-[#86807A]" />
+                                                                            {formatDate(admin.createdAt)}
+                                                                        </div>
+                                                                    </td>
+                                                                    <td className="px-3 py-4 whitespace-nowrap text-xs sm:text-sm text-[#575553] sm:px-6">
+                                                                        <div className="flex items-center">
+                                                                            <Clock size={14} className="mr-2 text-[#86807A]" />
+                                                                            {formatDate(admin.lastLogin)}
+                                                                        </div>
+                                                                    </td>
+                                                                    <td className="px-3 py-4 whitespace-nowrap text-right text-xs sm:text-sm font-medium sm:px-6">
+                                                                        <div className="flex justify-end gap-1 sm:gap-2">
+                                                                            {confirmAction === `approve-${admin.id}` ? (
+                                                                                <div className="flex gap-2 bg-[#F8F2EA] p-1 rounded-lg">
+                                                                                    <button
+                                                                                        onClick={() => handleApprove(admin.id)}
+                                                                                        className="bg-green-600 text-white px-3 py-1 rounded-md hover:bg-green-700 transition-colors duration-150"
+                                                                                    >
+                                                                                        Confirm
+                                                                                    </button>
+                                                                                    <button
+                                                                                        onClick={() => setConfirmAction(null)}
+                                                                                        className="bg-[#E2D9CE] text-[#575553] px-3 py-1 rounded-md hover:bg-[#d0c7bc] transition-colors duration-150"
+                                                                                    >
+                                                                                        Cancel
+                                                                                    </button>
+                                                                                </div>
+                                                                            ) : confirmAction === `delete-pending-${admin.id}` ? (
+                                                                                <div className="flex gap-2 bg-[#F8F2EA] p-1 rounded-lg">
+                                                                                    <button
+                                                                                        onClick={() => handleDelete(admin.id, 'pending')}
+                                                                                        className="bg-red-600 text-white px-3 py-1 rounded-md hover:bg-red-700 transition-colors duration-150"
+                                                                                    >
+                                                                                        Confirm
+                                                                                    </button>
+                                                                                    <button
+                                                                                        onClick={() => setConfirmAction(null)}
+                                                                                        className="bg-[#E2D9CE] text-[#575553] px-3 py-1 rounded-md hover:bg-[#d0c7bc] transition-colors duration-150"
+                                                                                    >
+                                                                                        Cancel
+                                                                                    </button>
+                                                                                </div>
+                                                                            ) : (
+                                                                                <>
+                                                                                    <motion.button
+                                                                                        onClick={() => setConfirmAction(`approve-${admin.id}`)}
+                                                                                        disabled={actionInProgress === admin.id}
+                                                                                        className="bg-[#36302A] text-white px-3 py-1 rounded-md hover:bg-[#514840] transition-colors duration-150 flex items-center"
+                                                                                        whileHover={{ scale: 1.05 }}
+                                                                                        whileTap={{ scale: 0.95 }}
+                                                                                    >
+                                                                                        {actionInProgress === admin.id ? (
+                                                                                            <div className="animate-spin mr-1">
+                                                                                                <RefreshCw size={14} />
+                                                                                            </div>
+                                                                                        ) : (
+                                                                                            <Check size={14} className="mr-1" />
+                                                                                        )}
+                                                                                        <span>Approve</span>
+                                                                                    </motion.button>
+                                                                                    <motion.button
+                                                                                        onClick={() => setConfirmAction(`delete-pending-${admin.id}`)}
+                                                                                        disabled={actionInProgress === admin.id}
+                                                                                        className="bg-red-100 text-red-700 px-2 py-1 sm:px-3 rounded-md hover:bg-red-200 transition-colors duration-150 flex items-center text-xs sm:text-sm"
+                                                                                        whileHover={{ scale: 1.05 }}
+                                                                                        whileTap={{ scale: 0.95 }}
+                                                                                    >
+                                                                                        {actionInProgress === admin.id ? (
+                                                                                            <div className="animate-spin mr-1">
+                                                                                                <RefreshCw size={14} />
+                                                                                            </div>
+                                                                                        ) : (
+                                                                                            <X size={14} className="mr-1" />
+                                                                                        )}
+                                                                                        <span>Reject</span>
+                                                                                    </motion.button>
+                                                                                </>
+                                                                            )}
+                                                                        </div>
+                                                                    </td>
+                                                                </motion.tr>
+                                                            ))}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
                                             </div>
                                         )}
                                     </motion.div>
@@ -409,79 +652,195 @@ const AdminManagement = () => {
                                         transition={{ duration: 0.2 }}
                                     >
                                         {filteredApprovedAdmins.length === 0 ? (
-                                            <div className="text-center py-8 text-gray-500">
-                                                {searchTerm ? 'No matching approved admins found.' : 'No approved admins.'}
-                                            </div>
+                                            <motion.div
+                                                className="bg-[#F8F2EA] rounded-xl p-12 text-center"
+                                                initial={{ opacity: 0, scale: 0.95 }}
+                                                animate={{ opacity: 1, scale: 1 }}
+                                                transition={{ duration: 0.3 }}
+                                            >
+                                                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-[#EFE7DD] text-[#86807A] mb-4">
+                                                    <UserCheck size={24} />
+                                                </div>
+                                                <h3 className="text-xl font-medium text-[#36302A]">No Approved Admins</h3>
+                                                <p className="text-[#86807A] mt-2">
+                                                    {searchTerm
+                                                        ? 'No matching approved admins found.'
+                                                        : 'There are no approved admins yet.'}
+                                                </p>
+                                            </motion.div>
                                         ) : (
-                                            <div className="overflow-x-auto">
-                                                <table className="min-w-full divide-y divide-gray-200">
-                                                    <thead className="bg-gray-50">
-                                                        <tr>
-                                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
-                                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-                                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Gender</th>
-                                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
-                                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Approved Date</th>
-                                                            <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody className="bg-white divide-y divide-gray-200">
-                                                        {filteredApprovedAdmins.map((admin) => (
-                                                            <tr key={admin.id} className="hover:bg-gray-50">
-                                                                <td className="px-6 py-4 whitespace-nowrap">
-                                                                    <div className="flex items-center">
-                                                                        <div className="h-10 w-10 flex-shrink-0 bg-[#36302A] rounded-full flex items-center justify-center text-white font-medium">
-                                                                            {admin.username.charAt(0).toUpperCase()}
+                                            <div className="overflow-x-auto -mx-6 px-6">
+                                                <div className="inline-block min-w-full align-middle">
+                                                    <table className="w-full divide-y divide-[#E2D9CE]">
+                                                        <thead>
+                                                            <tr className="bg-[#F8F2EA]">
+                                                                <th className="px-3 py-3 text-left text-[10px] sm:text-xs font-medium text-[#86807A] uppercase tracking-wider sm:px-6">User</th>
+                                                                <th className="px-3 py-3 text-left text-[10px] sm:text-xs font-medium text-[#86807A] uppercase tracking-wider sm:px-6">Email</th>
+                                                                <th className="px-3 py-3 text-left text-[10px] sm:text-xs font-medium text-[#86807A] uppercase tracking-wider hidden sm:table-cell sm:px-6">Gender</th>
+                                                                <th className="px-3 py-3 text-left text-[10px] sm:text-xs font-medium text-[#86807A] uppercase tracking-wider sm:px-6">Role</th>
+                                                                <th className="px-3 py-3 text-left text-[10px] sm:text-xs font-medium text-[#86807A] uppercase tracking-wider sm:px-6">Last Login</th>
+                                                                <th className="px-3 py-3 text-left text-[10px] sm:text-xs font-medium text-[#86807A] uppercase tracking-wider hidden md:table-cell sm:px-6">Approved</th>
+                                                                <th className="px-3 py-3 text-right text-[10px] sm:text-xs font-medium text-[#86807A] uppercase tracking-wider sm:px-6">Actions</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody className="bg-white divide-y divide-[#E2D9CE]">
+                                                            {filteredApprovedAdmins.map((admin, index) => (
+                                                                <motion.tr
+                                                                    key={admin.id}
+                                                                    className="hover:bg-[#F8F2EA] transition-colors duration-150"
+                                                                    custom={index}
+                                                                    variants={tableRowVariants}
+                                                                    initial="hidden"
+                                                                    animate="visible"
+                                                                    exit="exit"
+                                                                >
+                                                                    <td className="px-3 py-4 whitespace-nowrap sm:px-6">
+                                                                        <div className="flex items-center">
+                                                                            <div
+                                                                                className="h-8 w-8 sm:h-10 sm:w-10 flex-shrink-0 bg-[#36302A] rounded-full flex items-center justify-center text-white font-medium cursor-pointer"
+                                                                                onClick={() => handleViewProfile(admin)}
+                                                                            >
+                                                                                {admin.username?.charAt(0).toUpperCase() || 'A'}
+                                                                            </div>
+                                                                            <div className="ml-3 sm:ml-4">
+                                                                                <div
+                                                                                    className="text-xs sm:text-sm font-medium text-[#36302A] flex items-center gap-2 cursor-pointer hover:underline group relative"
+                                                                                    onClick={() => handleViewProfile(admin)}
+                                                                                >
+                                                                                    @{admin.username}
+                                                                                    {admin.id === currentAdmin.id && (
+                                                                                        <span className="bg-blue-100 text-blue-800 px-1 py-0.5 sm:px-2 rounded-full text-[10px] sm:text-xs">
+                                                                                            You
+                                                                                        </span>
+                                                                                    )}
+                                                                                    <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-[#36302A] rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap pointer-events-none z-10">
+                                                                                        View Profile
+                                                                                    </div>
+                                                                                </div>
+                                                                            </div>
                                                                         </div>
-                                                                        <div className="ml-4">
-                                                                            <div className="text-sm font-medium text-gray-900">@{admin.username}</div>
-                                                                            {admin.id === currentAdmin.id && (
-                                                                                <span className="text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full">
-                                                                                    You
-                                                                                </span>
+                                                                    </td>
+                                                                    <td className="px-3 py-4 whitespace-nowrap text-xs sm:text-sm text-[#575553] sm:px-6">
+                                                                        {admin.email}
+                                                                    </td>
+                                                                    <td className="px-3 py-4 whitespace-nowrap text-xs sm:text-sm text-[#575553] capitalize hidden sm:table-cell sm:px-6">
+                                                                        {admin.gender || 'Unspecified'}
+                                                                    </td>
+                                                                    <td className="px-3 py-4 whitespace-nowrap sm:px-6">
+                                                                        <span className={`inline-flex items-center px-1.5 sm:px-2.5 py-1 rounded-full text-[10px] sm:text-xs font-medium ${admin.role === 'superAdmin'
+                                                                            ? 'bg-purple-100 text-purple-800'
+                                                                            : 'bg-blue-100 text-blue-800'
+                                                                            }`}>
+                                                                            {admin.role === 'superAdmin' && (
+                                                                                <Shield size={12} className="mr-1" />
                                                                             )}
+                                                                            {admin.role || 'admin'}
+                                                                        </span>
+                                                                    </td>
+                                                                    <td className="px-3 py-4 whitespace-nowrap text-xs sm:text-sm text-[#575553] sm:px-6">
+                                                                        <div className="flex items-center">
+                                                                            <Clock size={14} className="mr-1 sm:mr-2 text-[#86807A]" />
+                                                                            {formatDate(admin.lastLogin)}
                                                                         </div>
-                                                                    </div>
-                                                                </td>
-                                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                                    {admin.email}
-                                                                </td>
-                                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 capitalize">
-                                                                    {admin.gender || 'Unspecified'}
-                                                                </td>
-                                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 capitalize">
-                                                                    <span className={`px-2 py-1 rounded-full text-xs ${admin.role === 'superAdmin'
-                                                                        ? 'bg-purple-100 text-purple-800'
-                                                                        : 'bg-blue-100 text-blue-800'
-                                                                        }`}>
-                                                                        {admin.role || 'admin'}
-                                                                    </span>
-                                                                </td>
-                                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                                    {formatDate(admin.updatedAt || admin.createdAt)}
-                                                                </td>
-                                                                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                                                    {admin.id !== currentAdmin?.id && (
-                                                                        <button
-                                                                            onClick={() => handleDelete(admin.id, 'approved')}
-                                                                            disabled={actionInProgress === admin.id}
-                                                                            className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 transition flex items-center"
-                                                                        >
-                                                                            {actionInProgress === admin.id ? (
-                                                                                <ImSpinner8 className="w-4 h-4 animate-spin" />
-                                                                            ) : (
+                                                                    </td>
+                                                                    <td className="px-3 py-4 whitespace-nowrap text-xs sm:text-sm text-[#575553] hidden md:table-cell sm:px-6">
+                                                                        <div className="flex items-center">
+                                                                            <Calendar size={14} className="mr-1 sm:mr-2 text-[#86807A]" />
+                                                                            {formatDate(admin.updatedAt)}
+                                                                        </div>
+                                                                    </td>
+                                                                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                                                        <div className="flex justify-end gap-2">
+                                                                            {/* Don't show any actions for current user or for superadmins (except promote button) */}
+                                                                            {admin.id !== currentAdmin.id && (
                                                                                 <>
-                                                                                    <FaTrash className="mr-1" />
-                                                                                    <span>Remove</span>
+                                                                                    {admin.role !== 'superAdmin' && (
+                                                                                        <>
+                                                                                            {confirmAction === `promote-${admin.id}` ? (
+                                                                                                <div className="flex gap-2 bg-[#F8F2EA] p-1 rounded-lg">
+                                                                                                    <button
+                                                                                                        onClick={() => handlePromote(admin.id)}
+                                                                                                        className="bg-purple-600 text-white px-2 py-1 sm:px-3 rounded-md hover:bg-purple-700 transition-colors duration-150 text-xs sm:text-sm"
+                                                                                                    >
+                                                                                                        Confirm
+                                                                                                    </button>
+                                                                                                    <button
+                                                                                                        onClick={() => setConfirmAction(null)}
+                                                                                                        className="bg-[#E2D9CE] text-[#575553] px-2 py-1 sm:px-3 rounded-md hover:bg-[#d0c7bc] transition-colors duration-150 text-xs sm:text-sm"
+                                                                                                    >
+                                                                                                        Cancel
+                                                                                                    </button>
+                                                                                                </div>
+                                                                                            ) : confirmAction === `delete-approved-${admin.id}` ? (
+                                                                                                <div className="flex gap-2 bg-[#F8F2EA] p-1 rounded-lg">
+                                                                                                    <button
+                                                                                                        onClick={() => handleDelete(admin.id, 'approved')}
+                                                                                                        className="bg-red-600 text-white px-2 py-1 sm:px-3 rounded-md hover:bg-red-700 transition-colors duration-150 text-xs sm:text-sm"
+                                                                                                    >
+                                                                                                        Confirm
+                                                                                                    </button>
+                                                                                                    <button
+                                                                                                        onClick={() => setConfirmAction(null)}
+                                                                                                        className="bg-[#E2D9CE] text-[#575553] px-3 py-1 rounded-md hover:bg-[#d0c7bc] transition-colors duration-150"
+                                                                                                    >
+                                                                                                        Cancel
+                                                                                                    </button>
+                                                                                                </div>
+                                                                                            ) : (
+                                                                                                <>
+                                                                                                    <motion.button
+                                                                                                        onClick={() => setConfirmAction(`promote-${admin.id}`)}
+                                                                                                        disabled={actionInProgress === admin.id}
+                                                                                                        className="bg-purple-100 text-purple-800 px-2 py-1 sm:px-3 rounded-md hover:bg-purple-200 transition-colors duration-150 flex items-center text-xs sm:text-sm"
+                                                                                                        whileHover={{ scale: 1.05 }}
+                                                                                                        whileTap={{ scale: 0.95 }}
+                                                                                                    >
+                                                                                                        {actionInProgress === admin.id ? (
+                                                                                                            <div className="animate-spin mr-1">
+                                                                                                                <RefreshCw size={14} />
+                                                                                                            </div>
+                                                                                                        ) : (
+                                                                                                            <Shield size={14} className="mr-1" />
+                                                                                                        )}
+                                                                                                        <span>Promote</span>
+                                                                                                    </motion.button>
+                                                                                                    <motion.button
+                                                                                                        onClick={() => setConfirmAction(`delete-approved-${admin.id}`)}
+                                                                                                        disabled={actionInProgress === admin.id}
+                                                                                                        className="bg-red-100 text-red-700 px-3 py-1 rounded-md hover:bg-red-200 transition-colors duration-150 flex items-center"
+                                                                                                        whileHover={{ scale: 1.05 }}
+                                                                                                        whileTap={{ scale: 0.95 }}
+                                                                                                    >
+                                                                                                        {actionInProgress === admin.id ? (
+                                                                                                            <div className="animate-spin mr-1">
+                                                                                                                <RefreshCw size={14} />
+                                                                                                            </div>
+                                                                                                        ) : (
+                                                                                                            <Trash2 size={14} className="mr-1" />
+                                                                                                        )}
+                                                                                                        <span>Remove</span>
+                                                                                                    </motion.button>
+                                                                                                </>
+                                                                                            )}
+                                                                                        </>
+                                                                                    )}
+
+                                                                                    {/* Show non-removable badge for superadmins */}
+                                                                                    {admin.role === 'superAdmin' && (
+                                                                                        <span className="bg-purple-50 text-purple-600 px-2 py-1 sm:px-3 rounded-md border border-purple-200 inline-flex items-center text-xs sm:text-sm">
+                                                                                            <Shield size={14} className="mr-1" />
+                                                                                            SuperAdmin
+                                                                                        </span>
+                                                                                    )}
                                                                                 </>
                                                                             )}
-                                                                        </button>
-                                                                    )}
-                                                                </td>
-                                                            </tr>
-                                                        ))}
-                                                    </tbody>
-                                                </table>
+                                                                        </div>
+                                                                    </td>
+                                                                </motion.tr>
+                                                            ))}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
                                             </div>
                                         )}
                                     </motion.div>
@@ -489,23 +848,18 @@ const AdminManagement = () => {
                             </AnimatePresence>
                         )}
                     </div>
-                </div>
-            </div>
+                </motion.div>
+            </motion.div>
 
-            {/* Notification */}
+            {/* Admin Profile Modal */}
             <AnimatePresence>
-                {notification.show && (
-                    <motion.div
-                        initial={{ opacity: 0, y: 50 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: 50 }}
-                        className={`fixed bottom-4 right-4 px-6 py-3 rounded-lg shadow-lg ${notification.type === 'success'
-                            ? 'bg-green-500 text-white'
-                            : 'bg-red-500 text-white'
-                            }`}
-                    >
-                        {notification.message}
-                    </motion.div>
+                {selectedAdmin && (
+                    <AdminProfileModal
+                        admin={selectedAdmin}
+                        onClose={handleCloseProfile}
+                        currentAdmin={currentAdmin}
+                        onUpdate={fetchAdmins}
+                    />
                 )}
             </AnimatePresence>
         </div>
