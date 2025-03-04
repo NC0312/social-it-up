@@ -1,70 +1,64 @@
 'use client';
 import { useEffect, useState } from "react";
+import { useAdminAuth } from "@/app/components/providers/AdminAuthProvider"; // Adjust the import path as needed
 
 export const DevToolsBlocker = () => {
   const [isDevToolsOpen, setIsDevToolsOpen] = useState(false);
+  const adminAuth = useAdminAuth();
 
   useEffect(() => {
-    // if (process.env.NEXT_PUBLIC_ENV !== "production") return;
+    // Check if we're in production mode
+    const isProduction = process.env.NEXT_PUBLIC_DEV_FLAG === "Y";
+
+    // If we're in development mode (ENV=y), don't apply the blocker
+    if (!isProduction) return;
 
     const checkDevTools = () => {
       const widthThreshold = window.outerWidth - window.innerWidth > 160;
       const heightThreshold = window.outerHeight - window.innerHeight > 160;
-      
-      if (widthThreshold || heightThreshold) {
-        setIsDevToolsOpen(true);
-      } else {
-        setIsDevToolsOpen(false);
-      }
-    };
 
-    const detectDebugger = () => {
-      const startTime = performance.now();
-      const endTime = performance.now();
-      if (endTime - startTime > 100) {
-        setIsDevToolsOpen(true);
+      if (widthThreshold || heightThreshold) {
+        // Just log the user out when dev tools are detected
+        if (adminAuth && typeof adminAuth.logout === 'function') {
+          adminAuth.logout();
+        }
       }
     };
 
     const preventShortcuts = (e) => {
-      if (e.key === "F12" || e.keyCode === 123) e.preventDefault();
+      // Prevent keyboard shortcuts that open dev tools
+      if (e.key === "F12" || e.keyCode === 123) {
+        e.preventDefault();
+        // Log user out on F12
+        if (adminAuth && typeof adminAuth.logout === 'function') {
+          adminAuth.logout();
+        }
+      }
+
       if (
         (e.ctrlKey && e.shiftKey && ["I", "J", "C"].includes(e.key.toUpperCase())) ||
         (e.ctrlKey && e.key.toUpperCase() === "U")
       ) {
         e.preventDefault();
+        // Log user out on these shortcuts
+        if (adminAuth && typeof adminAuth.logout === 'function') {
+          adminAuth.logout();
+        }
       }
     };
 
     window.addEventListener("resize", checkDevTools);
     window.addEventListener("keydown", preventShortcuts);
-    setInterval(detectDebugger, 1000); 
+
+    // Run an initial check
+    checkDevTools();
 
     return () => {
       window.removeEventListener("resize", checkDevTools);
       window.removeEventListener("keydown", preventShortcuts);
     };
-  }, []);
+  }, [adminAuth]);
 
-  return isDevToolsOpen ? (
-    <div
-      style={{
-        position: "fixed",
-        top: 0,
-        left: 0,
-        width: "100vw",
-        height: "100vh",
-        background: "#000",
-        color: "#fff",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        zIndex: 9999,
-      }}
-    >
-      <h1>🚨 Developer tools are not allowed! 🚨</h1>
-      <p>Please close developer tools to continue using this website.</p>
-    </div>
-  ) : null;
-};
+  // No UI is returned - we just want to perform the logout action
+  return null;
+}

@@ -36,6 +36,7 @@ export default function RootLayout({ children }) {
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <div className="flex flex-col min-h-screen">
           <AdminAuthProvider>
+            <DevToolsBlocker />
             <DynamicTitle />
             <Header />
             <main className="flex-grow">
@@ -44,7 +45,6 @@ export default function RootLayout({ children }) {
             <Footer />
             {isProduction && <Chatbot />}
           </AdminAuthProvider>
-          <DevToolsBlocker />
         </div>
         <Toaster />
       </body>

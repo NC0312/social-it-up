@@ -9,8 +9,7 @@ import {
     getDocs,
     doc,
     updateDoc,
-    deleteDoc,
-    orderBy
+    deleteDoc
 } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -29,6 +28,7 @@ import {
     Clock,
     Calendar
 } from 'lucide-react';
+import AdminProfileModal from '../components/AdminProfileModal'; // Import the AdminProfileModal component
 
 const AdminManagement = () => {
     const { admin: currentAdmin, isAuthenticated, loading } = useAdminAuth();
@@ -41,6 +41,9 @@ const AdminManagement = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [actionInProgress, setActionInProgress] = useState(null);
     const [confirmAction, setConfirmAction] = useState(null);
+
+    // State for the admin profile modal
+    const [selectedAdmin, setSelectedAdmin] = useState(null);
 
     // Animation variants
     const containerVariants = {
@@ -140,6 +143,16 @@ const AdminManagement = () => {
         } finally {
             setIsLoading(false);
         }
+    };
+
+    // Handle viewing admin profile
+    const handleViewProfile = (admin) => {
+        setSelectedAdmin(admin);
+    };
+
+    // Handle closing the admin profile modal
+    const handleCloseProfile = () => {
+        setSelectedAdmin(null);
     };
 
     // Handle admin approval
@@ -403,8 +416,8 @@ const AdminManagement = () => {
                     <div className="flex border-b border-[#E2D9CE]">
                         <motion.button
                             className={`flex-1 py-4 relative overflow-hidden ${activeTab === 'pending'
-                                    ? 'text-[#36302A] font-medium'
-                                    : 'text-[#86807A] hover:text-[#36302A]'
+                                ? 'text-[#36302A] font-medium'
+                                : 'text-[#86807A] hover:text-[#36302A]'
                                 }`}
                             onClick={() => setActiveTab('pending')}
                             whileHover={{ backgroundColor: "rgba(226, 217, 206, 0.3)" }}
@@ -426,8 +439,8 @@ const AdminManagement = () => {
                         </motion.button>
                         <motion.button
                             className={`flex-1 py-4 relative overflow-hidden ${activeTab === 'approved'
-                                    ? 'text-[#36302A] font-medium'
-                                    : 'text-[#86807A] hover:text-[#36302A]'
+                                ? 'text-[#36302A] font-medium'
+                                : 'text-[#86807A] hover:text-[#36302A]'
                                 }`}
                             onClick={() => setActiveTab('approved')}
                             whileHover={{ backgroundColor: "rgba(226, 217, 206, 0.3)" }}
@@ -514,12 +527,24 @@ const AdminManagement = () => {
                                                                 >
                                                                     <td className="px-3 py-4 whitespace-nowrap sm:px-6">
                                                                         <div className="flex items-center">
-                                                                            <div className="h-8 w-8 sm:h-10 sm:w-10 flex-shrink-0 bg-[#36302A] rounded-full flex items-center justify-center text-white font-medium">
+                                                                            <div
+                                                                                className="h-8 w-8 sm:h-10 sm:w-10 flex-shrink-0 bg-[#36302A] rounded-full flex items-center justify-center text-white font-medium cursor-pointer"
+                                                                                onClick={() => handleViewProfile(admin)}
+                                                                            >
                                                                                 {admin.username?.charAt(0).toUpperCase() || 'A'}
                                                                             </div>
                                                                             <div className="ml-3 sm:ml-4">
-                                                                                <div className="text-xs sm:text-sm font-medium text-[#36302A]">@{admin.username}</div>
+                                                                                <div
+                                                                                    className="text-xs sm:text-sm font-medium text-[#36302A] cursor-pointer hover:underline group relative"
+                                                                                    onClick={() => handleViewProfile(admin)}
+                                                                                >
+                                                                                    @{admin.username}
+                                                                                    <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-[#36302A] rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap pointer-events-none z-10">
+                                                                                        View Profile
+                                                                                    </div>
+                                                                                </div>
                                                                             </div>
+
                                                                         </div>
                                                                     </td>
                                                                     <td className="px-3 py-4 whitespace-nowrap text-xs sm:text-sm text-[#575553] sm:px-6">
@@ -671,17 +696,26 @@ const AdminManagement = () => {
                                                                 >
                                                                     <td className="px-3 py-4 whitespace-nowrap sm:px-6">
                                                                         <div className="flex items-center">
-                                                                            <div className="h-8 w-8 sm:h-10 sm:w-10 flex-shrink-0 bg-[#36302A] rounded-full flex items-center justify-center text-white font-medium">
+                                                                            <div
+                                                                                className="h-8 w-8 sm:h-10 sm:w-10 flex-shrink-0 bg-[#36302A] rounded-full flex items-center justify-center text-white font-medium cursor-pointer"
+                                                                                onClick={() => handleViewProfile(admin)}
+                                                                            >
                                                                                 {admin.username?.charAt(0).toUpperCase() || 'A'}
                                                                             </div>
                                                                             <div className="ml-3 sm:ml-4">
-                                                                                <div className="text-xs sm:text-sm font-medium text-[#36302A] flex items-center gap-2">
+                                                                                <div
+                                                                                    className="text-xs sm:text-sm font-medium text-[#36302A] flex items-center gap-2 cursor-pointer hover:underline group relative"
+                                                                                    onClick={() => handleViewProfile(admin)}
+                                                                                >
                                                                                     @{admin.username}
                                                                                     {admin.id === currentAdmin.id && (
                                                                                         <span className="bg-blue-100 text-blue-800 px-1 py-0.5 sm:px-2 rounded-full text-[10px] sm:text-xs">
                                                                                             You
                                                                                         </span>
                                                                                     )}
+                                                                                    <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-[#36302A] rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap pointer-events-none z-10">
+                                                                                        View Profile
+                                                                                    </div>
                                                                                 </div>
                                                                             </div>
                                                                         </div>
@@ -694,8 +728,8 @@ const AdminManagement = () => {
                                                                     </td>
                                                                     <td className="px-3 py-4 whitespace-nowrap sm:px-6">
                                                                         <span className={`inline-flex items-center px-1.5 sm:px-2.5 py-1 rounded-full text-[10px] sm:text-xs font-medium ${admin.role === 'superAdmin'
-                                                                                ? 'bg-purple-100 text-purple-800'
-                                                                                : 'bg-blue-100 text-blue-800'
+                                                                            ? 'bg-purple-100 text-purple-800'
+                                                                            : 'bg-blue-100 text-blue-800'
                                                                             }`}>
                                                                             {admin.role === 'superAdmin' && (
                                                                                 <Shield size={12} className="mr-1" />
@@ -816,6 +850,18 @@ const AdminManagement = () => {
                     </div>
                 </motion.div>
             </motion.div>
+
+            {/* Admin Profile Modal */}
+            <AnimatePresence>
+                {selectedAdmin && (
+                    <AdminProfileModal
+                        admin={selectedAdmin}
+                        onClose={handleCloseProfile}
+                        currentAdmin={currentAdmin}
+                        onUpdate={fetchAdmins}
+                    />
+                )}
+            </AnimatePresence>
         </div>
     );
 };
