@@ -9,7 +9,7 @@ import { toast } from 'sonner';
 import { ArrowLeft, Mail } from 'lucide-react';
 
 export default function ForgotPassword() {
-    const [email, setEmail] = useState('');
+    const [email,setEmail] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const router = useRouter();
 
