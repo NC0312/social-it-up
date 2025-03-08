@@ -76,12 +76,15 @@ export const AssignmentCell = ({ review, admins, onAssign, isAssigning, isSuperA
 };
 
 export const AssignmentFilter = ({ value, onChange, admins, isSuperAdmin }) => {
-    // Filter out superadmins from the assignment filter options
-    const regularAdmins = admins.filter(a => a.role !== 'superAdmin');
-
-    if (!isSuperAdmin) {
-        return null; // Don't show filter for non-superadmins
-    }
+    // Filter the admin list based on user permissions
+    const filteredAdmins = admins.filter(admin => {
+        // If current user is superAdmin, show all admins
+        if (isSuperAdmin) {
+            return true;
+        }
+        // If current user is regular admin, don't show superAdmins
+        return admin.role !== 'superAdmin';
+    });
 
     return (
         <div className="space-y-2">
@@ -96,9 +99,9 @@ export const AssignmentFilter = ({ value, onChange, admins, isSuperAdmin }) => {
             >
                 <option value="">All Assignments</option>
                 <option value="unassigned">Unassigned</option>
-                {regularAdmins.map(admin => (
+                {filteredAdmins.map(admin => (
                     <option key={admin.id} value={admin.id}>
-                        {admin.fullName}
+                        {admin.username || admin.fullName}
                     </option>
                 ))}
             </select>

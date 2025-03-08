@@ -102,10 +102,12 @@ const ReviewPanel = () => {
 
                 toast.success("Review unassigned successfully!");
             } else {
-                // Make sure we're not trying to assign to a superAdmin
+                // Find the selected admin
                 const selectedAdmin = admins.find(a => a.id === adminId);
-                if (selectedAdmin && selectedAdmin.role === 'superAdmin') {
-                    toast.error("Cannot assign reviews to superAdmins. Please select a regular admin.");
+
+                // Check if the current user is not a superAdmin and trying to assign to a superAdmin
+                if (admin?.role !== 'superAdmin' && selectedAdmin?.role === 'superAdmin') {
+                    toast.error("Regular admins cannot assign reviews to superAdmins.");
                     return;
                 }
 
@@ -367,9 +369,6 @@ const ReviewPanel = () => {
                 filtered = filtered.filter(review => review.assignedTo === selectedAssignment);
             }
         }
-
-        // Add this to your filter clearing logic
-        setSelectedAssignment("");
 
         if (selectedClientStatus) {
             filtered = filtered.filter(review => review.clientStatus === selectedClientStatus);
@@ -853,6 +852,7 @@ const ReviewPanel = () => {
                                 setSelectedClientStatus("");
                                 setSelectedName("");
                                 setSelectedCompany("");
+                                setSelectedAssignment(""); // Make sure to clear this
                                 setFilteredReviews(reviews);
                                 toast.success("Filters cleared!");
                             }}
