@@ -96,32 +96,33 @@ export default function ProfilePage() {
     };
 
     // Modify the handleVerifyEmail function to update Firebase when email is verified
-    const handleVerifyEmail = async () => {
+    const handleVerifyEmail = async (admin) => {
         if (loadingNotifications[admin.id]) return;
 
         try {
             setLoadingNotifications(prev => ({ ...prev, [admin.id]: true }));
 
-            // Show immediate "queued" toast
-            toast.info('Notification email queued for sending!');
+            // Show immediate "sending" toast
+            toast.info('Verifying email address...');
 
-            // Start the email sending process with the correct data from userData
+            // Use Nodemailer SMTP verification through your API endpoint
             fetch('/api/verify-email', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    email: userData.email,
-                    firstName: userData.username || 'User',
+                    email: admin.email,
+                    firstName: admin.username || 'User',
                 }),
             })
                 .then(response => {
                     if (!response.ok) {
-                        throw new Error('Failed to send notification email');
+                        throw new Error('Email verification failed');
                     }
                     return response.json();
                 }).then(async (data) => {
+                    // If we reach here, the SMTP connection was successful and email is valid
                     toast.success('Email verified successfully!');
 
                     // Update Firebase to store the verification status
@@ -132,19 +133,25 @@ export default function ProfilePage() {
                     });
 
                     // Update local state
-                    setIsEmailVerified(true);
+                    setApprovedAdmins(prevAdmins =>
+                        prevAdmins.map(a =>
+                            a.id === admin.id
+                                ? { ...a, isEmailVerified: true }
+                                : a
+                        )
+                    );
                 })
                 .catch(error => {
-                    console.error('Error sending notification email:', error);
-                    toast.error('Failed to send notification email. Please try again.');
+                    // console.error('Email verification failed:', error);
+                    toast.error('Email verification failed. The email address may be invalid.');
                 })
                 .finally(() => {
                     setLoadingNotifications(prev => ({ ...prev, [admin.id]: false }));
                 });
 
         } catch (error) {
-            console.error('Error queuing notification email:', error);
-            toast.error('Failed to queue notification email. Please try again.');
+            console.error('Error during email verification process:', error);
+            toast.error('Email verification process failed. Please try again.');
             setLoadingNotifications(prev => ({ ...prev, [admin.id]: false }));
         }
     };
