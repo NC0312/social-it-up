@@ -255,6 +255,7 @@ const AdminManagement = () => {
         }
     };
 
+    //fetchReviewCounts function
     const fetchReviewCounts = async () => {
         try {
             const reviewsRef = collection(db, "reviews");
@@ -266,19 +267,20 @@ const AdminManagement = () => {
             reviewsSnapshot.docs.forEach(doc => {
                 const assignedTo = doc.data().assignedTo;
                 if (assignedTo) {
-                    counts[assignedTo] = (counts[assignedTo] || 0) + 1;
+                    reviewCounts[assignedTo] = (reviewCounts[assignedTo] || 0) + 1;
                 }
             });
-
+            
             setReviewCounts(reviewCounts);
         } catch (error) {
             console.error("Error fetching review counts:", error);
         }
     };
 
+    //fetchBugCounts function
     const fetchBugCounts = async () => {
         try {
-            const bugsRef = collection(db, "bugs");
+            const bugsRef = collection(db, "feedback");
             const bugsSnapshot = await getDocs(bugsRef);
 
             // Count bugs for each admin
@@ -287,7 +289,7 @@ const AdminManagement = () => {
             bugsSnapshot.docs.forEach(doc => {
                 const assignedTo = doc.data().assignedTo;
                 if (assignedTo) {
-                    counts[assignedTo] = (counts[assignedTo] || 0) + 1;
+                    bugCounts[assignedTo] = (bugCounts[assignedTo] || 0) + 1;
                 }
             });
 
@@ -295,7 +297,7 @@ const AdminManagement = () => {
         } catch (error) {
             console.error("Error fetching bug counts:", error);
         }
-    }
+    };
 
     const syncData = async () => {
         try {
@@ -530,17 +532,6 @@ const AdminManagement = () => {
             hour: '2-digit',
             minute: '2-digit'
         });
-    };
-
-    const ReviewCountBadge = ({ count }) => {
-        if (count === undefined || count === null) return null;
-
-        return (
-            <div className="ml-2 px-2 py-0.5 bg-green-100 text-green-800 text-xs rounded-full flex items-center">
-                <span className="font-medium">{count}</span>
-                <span className="ml-1 text-[10px]">reviews</span>
-            </div>
-        );
     };
 
     if (loading || !isAuthenticated) {

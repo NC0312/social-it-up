@@ -52,14 +52,12 @@ const BugPanel = () => {
     const [assigningBug, setAssigningBug] = useState({});
     const [selectedAssignment, setSelectedAssignment] = useState("");
     const { admin } = useAdminAuth();
-    const [bugCounts, setBugCounts] = useState({});
     const entriesPerPage = 20;
 
 
     useEffect(() => {
         fetchBugs();
         fetchAdmins(); // Add this
-        fetchBugCounts(); // Add this
     }, []);
 
 
@@ -76,14 +74,22 @@ const BugPanel = () => {
                 priority: doc.data().priority || "low",
                 status: doc.data().status || "unresolved"
             }));
-            setBugs(data);
-            setFilteredBugs(data);
+
+            // Filter bugs based on admin role
+            let filteredData = data;
+
+            // If not a superAdmin, only show bugs assigned to this admin
+            if (admin && admin.role !== 'superAdmin') {
+                filteredData = data.filter(bug => bug.assignedTo === admin.id);
+            }
+
+            setBugs(filteredData);
+            setFilteredBugs(filteredData);
         } catch (error) {
             console.error("Error fetching bugs:", error);
             toast.error("Failed to fetch bugs");
         }
     };
-
     const fetchAdmins = async () => {
         try {
             const q = query(collection(db, "admins"));
@@ -98,26 +104,6 @@ const BugPanel = () => {
         } catch (error) {
             console.error("Error fetching admins:", error);
             toast.error("Failed to fetch admins list");
-        }
-    };
-
-    const fetchBugCounts = async () => {
-        try {
-            const bugsRef = collection(db, "feedback");
-            const bugsSnapshot = await getDocs(bugsRef);
-
-            // Count bugs for each admin
-            const counts = {};
-            bugsSnapshot.docs.forEach(doc => {
-                const assignedTo = doc.data().assignedTo;
-                if (assignedTo) {
-                    counts[assignedTo] = (counts[assignedTo] || 0) + 1;
-                }
-            });
-
-            setBugCounts(counts);
-        } catch (error) {
-            console.error("Error fetching bug counts:", error);
         }
     };
 
@@ -187,9 +173,6 @@ const BugPanel = () => {
                         } : bug
                 )
             );
-
-            // Update bug counts
-            await fetchBugCounts();
         } catch (error) {
             console.error("Error assigning bug:", error);
             toast.error("Failed to assign bug. Please try again.");
@@ -211,9 +194,14 @@ const BugPanel = () => {
                 status: doc.data().status || "unresolved"
             }));
 
-            setBugs(newData);
-            setFilteredBugs(newData);
-            await fetchBugCounts(); // Add this
+            // Apply the same filtering as fetchBugs
+            let filteredData = newData;
+            if (admin && admin.role !== 'superAdmin') {
+                filteredData = newData.filter(bug => bug.assignedTo === admin.id);
+            }
+
+            setBugs(filteredData);
+            setFilteredBugs(filteredData);
             toast.success("Data refreshed successfully!");
         } catch (error) {
             console.error("Error refreshing data:", error);
@@ -222,7 +210,6 @@ const BugPanel = () => {
             setIssyncing(false);
         }
     };
-
     const handleDeleteAllBugs = async () => {
         if (isDeletingAll) return;
 
@@ -910,16 +897,6 @@ const BugPanel = () => {
                                                     <PriorityDisplay priority={bug.priority} />
                                                 </td>
                                                 <td className="border border-red-200 px-4 py-2 text-sm md:text-base">
-                                                    <BugAssignmentCell
-                                                        bug={bug}
-                                                        admins={admins}
-                                                        onAssign={handleAssignBug}
-                                                        isAssigning={assigningBug[bug.docId]}
-                                                        isSuperAdmin={admin?.role === 'superAdmin'}
-                                                        currentAdminId={admin?.id}
-                                                    />
-                                                </td>
-                                                <td className="border border-red-200 px-4 py-2 text-sm md:text-base">
                                                     <select
                                                         value={bug.priority}
                                                         onChange={(e) => handlePriorityUpdate(bug.docId, e.target.value)}
@@ -930,6 +907,16 @@ const BugPanel = () => {
                                                         <option value="high">High</option>
                                                         <option value="highest">Highest</option>
                                                     </select>
+                                                </td>
+                                                <td className="border border-red-200 px-4 py-2 text-sm md:text-base">
+                                                    <BugAssignmentCell
+                                                        bug={bug}
+                                                        admins={admins}
+                                                        onAssign={handleAssignBug}
+                                                        isAssigning={assigningBug[bug.docId]}
+                                                        isSuperAdmin={admin?.role === 'superAdmin'}
+                                                        currentAdminId={admin?.id}
+                                                    />
                                                 </td>
                                                 <td className="border border-red-200 px-4 py-2 font-serif text-sm md:text-base whitespace-nowrap">
                                                     {bug.timestamp
