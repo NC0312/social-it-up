@@ -88,7 +88,6 @@ const ReviewPanel = () => {
     const handleAssignReview = async (docId, adminId, adminName) => {
         try {
             setAssigningReview(prev => ({ ...prev, [docId]: true }));
-
             const reviewRef = doc(db, "reviews", docId);
 
             // If adminId is empty, this is an unassignment
@@ -99,18 +98,19 @@ const ReviewPanel = () => {
                     assignedBy: null,
                     assignedAt: null
                 });
-
                 toast.success("Review unassigned successfully!");
             } else {
                 // Find the selected admin
                 const selectedAdmin = admins.find(a => a.id === adminId);
 
-                // Check if the current user is not a superAdmin and trying to assign to a superAdmin
+                // Check permissions based on roles
+                // Only regular admins are restricted - superAdmins can assign to anyone including themselves
                 if (admin?.role !== 'superAdmin' && selectedAdmin?.role === 'superAdmin') {
                     toast.error("Regular admins cannot assign reviews to superAdmins.");
                     return;
                 }
 
+                // Proceed with assignment
                 await updateDoc(reviewRef, {
                     assignedTo: adminId,
                     assignedToName: adminName,
@@ -118,7 +118,12 @@ const ReviewPanel = () => {
                     assignedAt: new Date()
                 });
 
-                toast.success(`Review assigned to ${adminName} successfully!`);
+                // Show appropriate success message
+                if (adminId === admin?.id) {
+                    toast.success(`Review assigned to yourself successfully!`);
+                } else {
+                    toast.success(`Review assigned to ${adminName} successfully!`);
+                }
             }
 
             // Update local state

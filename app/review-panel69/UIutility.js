@@ -1,9 +1,12 @@
 import { BsPersonCheck } from "react-icons/bs";
 
 // Enhanced AssignmentCell to show assignment details
-export const AssignmentCell = ({ review, admins, onAssign, isAssigning, isSuperAdmin }) => {
-    // Filter out superadmins from the assignment options
-    const regularAdmins = admins.filter(a => a.role !== 'superAdmin');
+export const AssignmentCell = ({ review, admins, onAssign, isAssigning, isSuperAdmin, currentAdminId }) => {
+    // For superadmins, show all admins including superadmins
+    // For regular admins, filter out superadmins from the assignment options
+    const filteredAdmins = isSuperAdmin
+        ? admins
+        : admins.filter(a => a.role !== 'superAdmin');
 
     // Format assignment date if it exists
     const formattedAssignmentDate = review.assignedAt ?
@@ -19,6 +22,7 @@ export const AssignmentCell = ({ review, admins, onAssign, isAssigning, isSuperA
     const tooltipContent = review.assignedTo ?
         `Assigned by: ${assignerName}\nDate: ${formattedAssignmentDate}` : '';
 
+    // For regular admins, just show the assignment without the ability to change it
     if (!isSuperAdmin) {
         return (
             <div className="px-2 py-1 text-sm flex items-center group relative">
@@ -35,6 +39,7 @@ export const AssignmentCell = ({ review, admins, onAssign, isAssigning, isSuperA
         );
     }
 
+    // For superadmins, provide the dropdown with all admins, including themselves and other superadmins
     return (
         <div className="relative group">
             {isAssigning ? (
@@ -46,7 +51,7 @@ export const AssignmentCell = ({ review, admins, onAssign, isAssigning, isSuperA
                     <select
                         value={review.assignedTo || ""}
                         onChange={(e) => {
-                            const selectedAdmin = regularAdmins.find(a => a.id === e.target.value);
+                            const selectedAdmin = admins.find(a => a.id === e.target.value);
                             onAssign(
                                 review.docId,
                                 e.target.value,
@@ -56,9 +61,11 @@ export const AssignmentCell = ({ review, admins, onAssign, isAssigning, isSuperA
                         className="w-full border border-green-300 rounded-lg px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 bg-white"
                     >
                         <option value="">Unassigned</option>
-                        {regularAdmins.map(admin => (
+                        {filteredAdmins.map(admin => (
                             <option key={admin.id} value={admin.id}>
                                 {admin.fullName}
+                                {admin.id === currentAdminId ? ' (You)' : ''}
+                                {admin.role === 'superAdmin' ? ' (SuperAdmin)' : ''}
                             </option>
                         ))}
                     </select>
