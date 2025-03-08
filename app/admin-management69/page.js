@@ -49,6 +49,7 @@ const AdminManagement = () => {
     const [confirmAction, setConfirmAction] = useState(null);
     const [isEmailVerified, setIsEmailVerified] = useState(false);
     const [loadingNotifications, setLoadingNotifications] = useState({});
+    const [reviewCounts, setReviewCounts] = useState({});
 
     // State for the admin profile modal
     const [selectedAdmin, setSelectedAdmin] = useState(null);
@@ -135,6 +136,54 @@ const AdminManagement = () => {
         return () => unsubscribe();
     }, [isAuthenticated]);
 
+    useEffect(() => {
+        if (!isAuthenticated) return;
+
+        // Set up real-time listener for reviews assignments
+        const reviewsRef = collection(db, "reviews");
+        const unsubscribe = onSnapshot(reviewsRef, (snapshot) => {
+            // Process changes to update review counts
+            const counts = { ...reviewCounts };
+
+            snapshot.docChanges().forEach((change) => {
+                const reviewData = change.doc.data();
+                const assignedTo = reviewData.assignedTo;
+                const oldAssignedTo = change.type === "modified" ?
+                    snapshot.docs.find(d => d.id === change.doc.id)?.data()?.assignedTo : null;
+
+                // Handle different change types
+                if (change.type === "added" && assignedTo) {
+                    counts[assignedTo] = (counts[assignedTo] || 0) + 1;
+                }
+                else if (change.type === "modified") {
+                    // If assignment changed, update both old and new assignee counts
+                    if (oldAssignedTo && oldAssignedTo !== assignedTo) {
+                        counts[oldAssignedTo] = Math.max(0, (counts[oldAssignedTo] || 0) - 1);
+                        if (assignedTo) {
+                            counts[assignedTo] = (counts[assignedTo] || 0) + 1;
+                        }
+                    }
+                    // If newly assigned
+                    else if (!oldAssignedTo && assignedTo) {
+                        counts[assignedTo] = (counts[assignedTo] || 0) + 1;
+                    }
+                    // If assignment removed
+                    else if (oldAssignedTo && !assignedTo) {
+                        counts[oldAssignedTo] = Math.max(0, (counts[oldAssignedTo] || 0) - 1);
+                    }
+                }
+                else if (change.type === "removed" && assignedTo) {
+                    counts[assignedTo] = Math.max(0, (counts[assignedTo] || 0) - 1);
+                }
+            });
+
+            setReviewCounts(counts);
+        });
+
+        // Clean up listener on unmount
+        return () => unsubscribe();
+    }, [isAuthenticated]);
+
     // Fetch admins on component mount
     useEffect(() => {
         if (!loading && !isAuthenticated) {
@@ -144,6 +193,7 @@ const AdminManagement = () => {
 
         if (isAuthenticated) {
             fetchAdmins();
+            fetchReviewCounts();
         }
     }, [isAuthenticated, loading, router]);
 
@@ -202,10 +252,31 @@ const AdminManagement = () => {
         }
     };
 
+    const fetchReviewCounts = async () => {
+        try {
+            const reviewsRef = collection(db, "reviews");
+            const reviewsSnapshot = await getDocs(reviewsRef);
+
+            // Count reviews for each admin
+            const counts = {};
+            reviewsSnapshot.docs.forEach(doc => {
+                const assignedTo = doc.data().assignedTo;
+                if (assignedTo) {
+                    counts[assignedTo] = (counts[assignedTo] || 0) + 1;
+                }
+            });
+
+            setReviewCounts(counts);
+        } catch (error) {
+            console.error("Error fetching review counts:", error);
+        }
+    };
+
     const syncData = async () => {
         try {
             setIsLoading(true);
             await fetchAdmins();
+            await fetchReviewCounts(); // Add this line
             toast.success("Data synchronized successfully");
         } catch (error) {
             console.error("Error synchronizing data:", error);
@@ -354,11 +425,11 @@ const AdminManagement = () => {
         try {
             setLoadingNotifications(prev => ({ ...prev, [admin.id]: true }));
 
-            // Show immediate "sending" toast
+            // Show processing indicator
             toast.info('Verifying email address...');
 
-            // Use Nodemailer SMTP verification through your API endpoint
-            fetch('/api/verify-email', {
+            // Make the API call to verify the email
+            const response = await fetch('/api/verify-email', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -367,43 +438,58 @@ const AdminManagement = () => {
                     email: admin.email,
                     firstName: admin.username || 'User',
                 }),
-            })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Email verification failed');
-                    }
-                    return response.json();
-                }).then(async (data) => {
-                    // If we reach here, the SMTP connection was successful and email is valid
-                    toast.success('Email verified successfully!');
+            });
 
-                    // Update Firebase to store the verification status
-                    const userDoc = doc(db, "admins", admin.id);
-                    await updateDoc(userDoc, {
-                        isEmailVerified: true,
-                        emailVerifiedAt: new Date()
-                    });
+            // Parse the response
+            const data = await response.json();
 
-                    // Update local state
-                    setApprovedAdmins(prevAdmins =>
-                        prevAdmins.map(a =>
-                            a.id === admin.id
-                                ? { ...a, isEmailVerified: true }
-                                : a
-                        )
-                    );
-                })
-                .catch(error => {
-                    // console.error('Email verification failed:', error);
-                    toast.error('Email verification failed. The email address may be invalid.');
-                })
-                .finally(() => {
-                    setLoadingNotifications(prev => ({ ...prev, [admin.id]: false }));
+            // Check if the response indicates success
+            if (!response.ok) {
+                // Handle specific error types
+                switch (data.type) {
+                    case 'invalid_format':
+                    case 'disposable_email':
+                    case 'invalid_domain':
+                    case 'nonexistent_domain':
+                    case 'no_mx_records':
+                    case 'mx_lookup_failed':
+                    case 'invalid_recipient':
+                        toast.error(`Email verification failed: ${data.error}`);
+                        break;
+                    default:
+                        toast.error('Email verification failed. Please try again.');
+                }
+                return;
+            }
+
+            // Success case
+            if (data.success) {
+                toast.success('Email verified successfully!');
+
+                // Update Firebase to store the verification status
+                const userDoc = doc(db, "admins", admin.id);
+                await updateDoc(userDoc, {
+                    isEmailVerified: true,
+                    emailVerifiedAt: new Date()
                 });
 
+                // Update local state to reflect the change immediately
+                setApprovedAdmins(prevAdmins =>
+                    prevAdmins.map(a =>
+                        a.id === admin.id
+                            ? { ...a, isEmailVerified: true }
+                            : a
+                    )
+                );
+            } else {
+                // This case handles when the API returns 200 but not success:true
+                toast.warning('Email verification completed but with warnings.');
+            }
+
         } catch (error) {
-            console.error('Error during email verification process:', error);
+            console.error('Error during email verification:', error);
             toast.error('Email verification process failed. Please try again.');
+        } finally {
             setLoadingNotifications(prev => ({ ...prev, [admin.id]: false }));
         }
     };
@@ -419,6 +505,17 @@ const AdminManagement = () => {
             hour: '2-digit',
             minute: '2-digit'
         });
+    };
+
+    const ReviewCountBadge = ({ count }) => {
+        if (count === undefined || count === null) return null;
+
+        return (
+            <div className="ml-2 px-2 py-0.5 bg-green-100 text-green-800 text-xs rounded-full flex items-center">
+                <span className="font-medium">{count}</span>
+                <span className="ml-1 text-[10px]">reviews</span>
+            </div>
+        );
     };
 
     if (loading || !isAuthenticated) {
@@ -814,6 +911,12 @@ const AdminManagement = () => {
                                                                 <th className="px-3 py-3 text-left text-[10px] sm:text-xs font-medium text-[#86807A] uppercase tracking-wider sm:px-6">Email</th>
                                                                 <th className="px-3 py-3 text-left text-[10px] sm:text-xs font-medium text-[#86807A] uppercase tracking-wider hidden sm:table-cell sm:px-6">Gender</th>
                                                                 <th className="px-3 py-3 text-left text-[10px] sm:text-xs font-medium text-[#86807A] uppercase tracking-wider sm:px-6">Role</th>
+                                                                <th className="px-3 py-3 text-left text-[10px] sm:text-xs font-medium text-[#86807A] uppercase tracking-wider sm:px-6">
+                                                                    <div className="flex items-center">
+                                                                        <span>Reviews</span>
+                                                                        <span className="ml-1 text-xs text-green-600 font-normal">(assigned)</span>
+                                                                    </div>
+                                                                </th>
                                                                 <th className="px-3 py-3 text-left text-[10px] sm:text-xs font-medium text-[#86807A] uppercase tracking-wider sm:px-6">Last Login</th>
                                                                 <th className="px-3 py-3 text-left text-[10px] sm:text-xs font-medium text-[#86807A] uppercase tracking-wider hidden md:table-cell sm:px-6">Approved</th>
                                                                 <th className="px-3 py-3 text-right text-[10px] sm:text-xs font-medium text-[#86807A] uppercase tracking-wider sm:px-6">Actions</th>
@@ -896,6 +999,13 @@ const AdminManagement = () => {
                                                                             )}
                                                                             {admin.role || 'admin'}
                                                                         </span>
+                                                                    </td>
+                                                                    <td className="px-3 py-4 whitespace-nowrap text-xs sm:text-sm text-center sm:px-6">
+                                                                        <div className="flex justify-center">
+                                                                            <div className={`flex items-center justify-center ${reviewCounts[admin.id] ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-500'} rounded-full px-3 py-1 font-medium`}>
+                                                                                {reviewCounts[admin.id] || 0}
+                                                                            </div>
+                                                                        </div>
                                                                     </td>
                                                                     <td className="px-3 py-4 whitespace-nowrap text-xs sm:text-sm text-[#575553] sm:px-6">
                                                                         <div className="flex items-center">

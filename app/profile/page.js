@@ -95,18 +95,17 @@ export default function ProfilePage() {
         }
     };
 
-    // Modify the handleVerifyEmail function to update Firebase when email is verified
     const handleVerifyEmail = async (admin) => {
         if (loadingNotifications[admin.id]) return;
 
         try {
             setLoadingNotifications(prev => ({ ...prev, [admin.id]: true }));
 
-            // Show immediate "sending" toast
+            // Show processing indicator
             toast.info('Verifying email address...');
 
-            // Use Nodemailer SMTP verification through your API endpoint
-            fetch('/api/verify-email', {
+            // Make the API call to verify the email
+            const response = await fetch('/api/verify-email', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -115,43 +114,58 @@ export default function ProfilePage() {
                     email: admin.email,
                     firstName: admin.username || 'User',
                 }),
-            })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Email verification failed');
-                    }
-                    return response.json();
-                }).then(async (data) => {
-                    // If we reach here, the SMTP connection was successful and email is valid
-                    toast.success('Email verified successfully!');
+            });
 
-                    // Update Firebase to store the verification status
-                    const userDoc = doc(db, "admins", admin.id);
-                    await updateDoc(userDoc, {
-                        isEmailVerified: true,
-                        emailVerifiedAt: new Date()
-                    });
+            // Parse the response
+            const data = await response.json();
 
-                    // Update local state
-                    setApprovedAdmins(prevAdmins =>
-                        prevAdmins.map(a =>
-                            a.id === admin.id
-                                ? { ...a, isEmailVerified: true }
-                                : a
-                        )
-                    );
-                })
-                .catch(error => {
-                    // console.error('Email verification failed:', error);
-                    toast.error('Email verification failed. The email address may be invalid.');
-                })
-                .finally(() => {
-                    setLoadingNotifications(prev => ({ ...prev, [admin.id]: false }));
+            // Check if the response indicates success
+            if (!response.ok) {
+                // Handle specific error types
+                switch (data.type) {
+                    case 'invalid_format':
+                    case 'disposable_email':
+                    case 'invalid_domain':
+                    case 'nonexistent_domain':
+                    case 'no_mx_records':
+                    case 'mx_lookup_failed':
+                    case 'invalid_recipient':
+                        toast.error(`Email verification failed: ${data.error}`);
+                        break;
+                    default:
+                        toast.error('Email verification failed. Please try again.');
+                }
+                return;
+            }
+
+            // Success case
+            if (data.success) {
+                toast.success('Email verified successfully!');
+
+                // Update Firebase to store the verification status
+                const userDoc = doc(db, "admins", admin.id);
+                await updateDoc(userDoc, {
+                    isEmailVerified: true,
+                    emailVerifiedAt: new Date()
                 });
 
+                // Update local state to reflect the change immediately
+                setApprovedAdmins(prevAdmins =>
+                    prevAdmins.map(a =>
+                        a.id === admin.id
+                            ? { ...a, isEmailVerified: true }
+                            : a
+                    )
+                );
+            } else {
+                // This case handles when the API returns 200 but not success:true
+                toast.warning('Email verification completed but with warnings.');
+            }
+
         } catch (error) {
-            console.error('Error during email verification process:', error);
+            console.error('Error during email verification:', error);
             toast.error('Email verification process failed. Please try again.');
+        } finally {
             setLoadingNotifications(prev => ({ ...prev, [admin.id]: false }));
         }
     };
