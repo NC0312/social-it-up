@@ -172,7 +172,7 @@ export function AdminAuthProvider({ children }) {
         return btoa(password); // Base64 encoding (NOT secure for production)
     };
 
-    const register = async (email, username, password, gender = 'unspecified') => {
+    const register = async (email, username, password, gender = 'unspecified', isEmailVerified) => {
         try {
             // Check if username already exists
             const usernameExists = await checkUsernameExists(username);
@@ -198,7 +198,8 @@ export function AdminAuthProvider({ children }) {
                 gender: gender,
                 status: 'pending', // Default status is pending
                 createdAt: serverTimestamp(),
-                updatedAt: serverTimestamp()
+                updatedAt: serverTimestamp(),
+                isEmailVerified: isEmailVerified
             });
 
             return {

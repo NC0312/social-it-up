@@ -29,6 +29,7 @@ const Auth = () => {
     const [confirmPassword, setConfirmPassword] = useState('');
     const [confirmPasswordError, setConfirmPasswordError] = useState('');
     const [gender, setGender] = useState('unspecified');
+    const [isEmailVerified, setIsEmailVerified] = useState(false);
     const [acceptTerms, setAcceptTerms] = useState(false);
     const [acceptTermsError, setAcceptTermsError] = useState('');
 
@@ -251,7 +252,7 @@ const Auth = () => {
 
         try {
             // Call the register function from your auth context
-            const result = await register(registerEmail, registerUsername, registerPassword, gender);
+            const result = await register(registerEmail, registerUsername, registerPassword, gender, isEmailVerified);
 
             if (result.success) {
                 // Show success message
@@ -264,6 +265,7 @@ const Auth = () => {
                 setConfirmPassword("");
                 setAcceptTerms(false);
                 setGender("unspecified");
+                setIsEmailVerified(false);
 
                 // Switch to login tab after successful registration
                 setTimeout(() => {

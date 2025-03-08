@@ -45,7 +45,7 @@ export default function ProfilePage() {
     const [isEmailVerified, setIsEmailVerified] = useState(false);
     const [showErrorPopup, setShowErrorPopup] = useState(false);
     const [errorMessage, setErrorMessage] = useState('');
-    
+
     useEffect(() => {
         // Redirect if not authenticated
         if (!loading && !isAuthenticated) {
@@ -97,7 +97,7 @@ export default function ProfilePage() {
 
     // Modify the handleVerifyEmail function to update Firebase when email is verified
     const handleVerifyEmail = async () => {
-        if (loadingNotifications[admin.id]) return; // Prevent multiple clicks
+        if (loadingNotifications[admin.id]) return;
 
         try {
             setLoadingNotifications(prev => ({ ...prev, [admin.id]: true }));

@@ -11,7 +11,8 @@ import {
     updateDoc,
     deleteDoc,
     onSnapshot,
-    serverTimestamp
+    serverTimestamp,
+    getDoc
 } from 'firebase/firestore';
 import { db, rtdb } from '../lib/firebase';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -28,7 +29,8 @@ import {
     Check,
     Trash2,
     Clock,
-    Calendar
+    Calendar,
+    AlertCircle
 } from 'lucide-react';
 import AdminProfileModal from '../components/AdminProfileModal';
 import AdminRemovalPopup from '../components/AdminRemovalPopup';
@@ -45,6 +47,8 @@ const AdminManagement = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [actionInProgress, setActionInProgress] = useState(null);
     const [confirmAction, setConfirmAction] = useState(null);
+    const [isEmailVerified, setIsEmailVerified] = useState(false);
+    const [loadingNotifications, setLoadingNotifications] = useState({});
 
     // State for the admin profile modal
     const [selectedAdmin, setSelectedAdmin] = useState(null);
@@ -143,34 +147,9 @@ const AdminManagement = () => {
         }
     }, [isAuthenticated, loading, router]);
 
+
     // Check if current user is a superAdmin
     const isSuperAdmin = currentAdmin?.role === 'superAdmin';
-
-    // Add this function near your formatDate function
-    const formatTimeAgo = (date) => {
-        if (!date) return 'Never';
-
-        const now = new Date();
-        const diff = now - date;
-
-        // Less than a minute
-        if (diff < 60000) return 'Just now';
-
-        // Less than an hour
-        if (diff < 3600000) {
-            const minutes = Math.floor(diff / 60000);
-            return `${minutes} minute${minutes > 1 ? 's' : ''} ago`;
-        }
-
-        // Less than a day
-        if (diff < 86400000) {
-            const hours = Math.floor(diff / 3600000);
-            return `${hours} hour${hours > 1 ? 's' : ''} ago`;
-        }
-
-        // Otherwise, just show the date
-        return formatDate(date);
-    };
 
     // Fetch all admins from Firestore
     const fetchAdmins = async () => {
@@ -205,7 +184,8 @@ const AdminManagement = () => {
                 updatedAt: doc.data().updatedAt?.toDate?.() || doc.data().createdAt?.toDate?.() || new Date(),
                 lastLogin: doc.data().lastLogin?.toDate?.() || null,
                 isOnline: doc.data().isOnline || false, // Include online status
-                lastActive: doc.data().lastActive?.toDate?.() || null
+                lastActive: doc.data().lastActive?.toDate?.() || null,
+                isEmailVerified: doc.data().isEmailVerified || false,
             }));
 
             // Sort in memory by creation date (newest first)
@@ -383,6 +363,66 @@ const AdminManagement = () => {
         admin.username?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         admin.email?.toLowerCase().includes(searchTerm.toLowerCase())
     );
+
+    const handleVerifyEmail = async (admin) => {
+        if (loadingNotifications[admin.id]) return;
+
+        try {
+            setLoadingNotifications(prev => ({ ...prev, [admin.id]: true }));
+
+            // Show immediate "sending" toast
+            toast.info('Verifying email address...');
+
+            // Use Nodemailer SMTP verification through your API endpoint
+            fetch('/api/verify-email', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    email: admin.email,
+                    firstName: admin.username || 'User',
+                }),
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Email verification failed');
+                    }
+                    return response.json();
+                }).then(async (data) => {
+                    // If we reach here, the SMTP connection was successful and email is valid
+                    toast.success('Email verified successfully!');
+
+                    // Update Firebase to store the verification status
+                    const userDoc = doc(db, "admins", admin.id);
+                    await updateDoc(userDoc, {
+                        isEmailVerified: true,
+                        emailVerifiedAt: new Date()
+                    });
+
+                    // Update local state
+                    setApprovedAdmins(prevAdmins =>
+                        prevAdmins.map(a =>
+                            a.id === admin.id
+                                ? { ...a, isEmailVerified: true }
+                                : a
+                        )
+                    );
+                })
+                .catch(error => {
+                    // console.error('Email verification failed:', error);
+                    toast.error('Email verification failed. The email address may be invalid.');
+                })
+                .finally(() => {
+                    setLoadingNotifications(prev => ({ ...prev, [admin.id]: false }));
+                });
+
+        } catch (error) {
+            console.error('Error during email verification process:', error);
+            toast.error('Email verification process failed. Please try again.');
+            setLoadingNotifications(prev => ({ ...prev, [admin.id]: false }));
+        }
+    };
 
     // Format date
     const formatDate = (date) => {
@@ -833,8 +873,31 @@ const AdminManagement = () => {
                                                                             </div>
                                                                         </div>
                                                                     </td>
-                                                                    <td className="px-3 py-4 whitespace-nowrap text-xs sm:text-sm text-[#575553] sm:px-6">
-                                                                        {admin.email}
+                                                                    <td className="px-4 py-3 text-sm text-gray-700">
+                                                                        <div className="flex items-center gap-2">
+                                                                            <span className="font-medium truncate max-w-[200px]">
+                                                                                {admin.email}
+                                                                            </span>
+                                                                            {admin.isEmailVerified ? (
+                                                                                <div className="flex items-center text-emerald-600 text-xs bg-emerald-50 px-2 py-0.5 rounded-full">
+                                                                                    <Check size={12} className="mr-1" />
+                                                                                    Verified
+                                                                                </div>
+                                                                            ) : (
+                                                                                <motion.button
+                                                                                    onClick={() => handleVerifyEmail(admin)}
+                                                                                    className="px-4 py-2 rounded-lg flex items-center transition-colors duration-300 bg-[#36302A] text-white"
+                                                                                    whileHover={{ scale: 1.03 }}
+                                                                                    whileTap={{ scale: 0.97 }}
+                                                                                    disabled={loadingNotifications[admin.id]}
+                                                                                >
+                                                                                    {loadingNotifications[admin.id] ? (
+                                                                                        <div className="animate-spin rounded-full h-4 w-4 border-2 border-t-2 border-white mr-2"></div>
+                                                                                    ) : null}
+                                                                                    Verify Email
+                                                                                </motion.button>
+                                                                            )}
+                                                                        </div>
                                                                     </td>
                                                                     <td className="px-3 py-4 whitespace-nowrap text-xs sm:text-sm text-[#575553] capitalize hidden sm:table-cell sm:px-6">
                                                                         {admin.gender || 'Unspecified'}
