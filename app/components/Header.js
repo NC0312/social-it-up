@@ -129,6 +129,31 @@ function Header() {
     setIsMenuOpen(!isMenuOpen);
   };
 
+  const handleDesktopLogout = async (e) => {
+    e.preventDefault();
+    try {
+      // Always await the async logout function
+      await logout();
+      // The redirect is handled inside the logout function
+      setIsProfileDropdownOpen(false);
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
+  };
+
+  const handleMobileLogout = async (e) => {
+    e.preventDefault();
+    try {
+      // Always await the async logout function
+      await logout();
+      // Close the mobile menu after successful logout
+      handleMenuToggle();
+      // The redirect is handled inside the logout function
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
+  };
+
   const isDevelopment = process.env.NEXT_PUBLIC_ENV === "development";
 
   // Get admin's first letter from name
@@ -263,7 +288,7 @@ function Header() {
                         Profile Settings
                       </Link>
                       <button
-                        onClick={logout}
+                        onClick={handleDesktopLogout}
                         className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition flex items-center"
                       >
                         <LogOut size={16} className="mr-2" />
@@ -439,10 +464,7 @@ function Header() {
                   </li>
                   <li className="pt-4">
                     <button
-                      onClick={() => {
-                        logout();
-                        handleMenuToggle();
-                      }}
+                      onClick={handleMobileLogout}
                       className="w-full px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition flex items-center justify-center"
                     >
                       <LogOut size={16} className="mr-2" />

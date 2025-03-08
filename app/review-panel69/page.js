@@ -15,6 +15,8 @@ import { AlertCircle, Badge, CheckCircle } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Pagination } from "../components/Pagination";
 import ProtectedRoute from "../components/ProtectedRoutes";
+import { AssignmentCell, AssignmentFilter } from "./UIutility";
+import { useAdminAuth } from "../components/providers/AdminAuthProvider";
 
 const ReviewPanel = () => {
     const fadeInLeft = {
@@ -45,6 +47,10 @@ const ReviewPanel = () => {
     const [isDeletingAll, setIsDeletingAll] = useState(false);
     const [loadingNotifications, setLoadingNotifications] = useState({});
     const [issyncing, setIssyncing] = useState(false);
+    const [admins, setAdmins] = useState([]);
+    const [assigningReview, setAssigningReview] = useState({});
+    const [selectedAssignment, setSelectedAssignment] = useState("");
+    const { admin } = useAdminAuth();
     const entriesPerPage = 20;
 
     const fetchReviews = async () => {
@@ -58,13 +64,91 @@ const ReviewPanel = () => {
                 docId: doc.id,
                 ...doc.data(),
                 priority: doc.data().priority || "low",
-                clientStatus: doc.data().clientStatus || "Pending"
+                clientStatus: doc.data().clientStatus || "Pending",
+                assignedTo: doc.data().assignedTo || null,
+                assignedToName: doc.data().assignedToName || "Unassigned"
             }));
-            setReviews(data);
-            setFilteredReviews(data);
+
+            // Filter reviews based on admin role
+            let filteredData = data;
+
+            // If not a superAdmin, only show reviews assigned to this admin
+            if (admin && admin.role !== 'superAdmin') {
+                filteredData = data.filter(review => review.assignedTo === admin.id);
+            }
+
+            setReviews(filteredData);
+            setFilteredReviews(filteredData);
         } catch (error) {
             console.error("Error fetching reviews:", error);
             toast.error("Failed to fetch reviews");
+        }
+    };
+
+    const handleAssignReview = async (docId, adminId, adminName) => {
+        try {
+            setAssigningReview(prev => ({ ...prev, [docId]: true }));
+
+            const reviewRef = doc(db, "reviews", docId);
+
+            // If adminId is empty, this is an unassignment
+            if (!adminId) {
+                await updateDoc(reviewRef, {
+                    assignedTo: null,
+                    assignedToName: "Unassigned",
+                    assignedBy: null,
+                    assignedAt: null
+                });
+
+                toast.success("Review unassigned successfully!");
+            } else {
+                // Make sure we're not trying to assign to a superAdmin
+                const selectedAdmin = admins.find(a => a.id === adminId);
+                if (selectedAdmin && selectedAdmin.role === 'superAdmin') {
+                    toast.error("Cannot assign reviews to superAdmins. Please select a regular admin.");
+                    return;
+                }
+
+                await updateDoc(reviewRef, {
+                    assignedTo: adminId,
+                    assignedToName: adminName,
+                    assignedBy: admin?.id || 'system',
+                    assignedAt: new Date()
+                });
+
+                toast.success(`Review assigned to ${adminName} successfully!`);
+            }
+
+            // Update local state
+            const updatedReviews = reviews.map(review =>
+                review.docId === docId ?
+                    {
+                        ...review,
+                        assignedTo: adminId || null,
+                        assignedToName: adminId ? adminName : "Unassigned",
+                        assignedBy: admin?.id || 'system',
+                        assignedAt: new Date()
+                    } : review
+            );
+
+            setReviews(updatedReviews);
+            setFilteredReviews(
+                filteredReviews.map(review =>
+                    review.docId === docId ?
+                        {
+                            ...review,
+                            assignedTo: adminId || null,
+                            assignedToName: adminId ? adminName : "Unassigned",
+                            assignedBy: admin?.id || 'system',
+                            assignedAt: new Date()
+                        } : review
+                )
+            );
+        } catch (error) {
+            console.error("Error assigning review:", error);
+            toast.error("Failed to assign review. Please try again.");
+        } finally {
+            setAssigningReview(prev => ({ ...prev, [docId]: false }));
         }
     };
 
@@ -88,6 +172,23 @@ const ReviewPanel = () => {
             toast.error("Failed to refresh data");
         } finally {
             setIssyncing(false);
+        }
+    };
+
+    const fetchAdmins = async () => {
+        try {
+            const q = query(collection(db, "admins"));
+            const snapshot = await getDocs(q);
+            const adminData = snapshot.docs.map((doc) => ({
+                id: doc.id,
+                ...doc.data(),
+                role: doc.data().role || 'admin', // Ensure role is included
+                fullName: `${doc.data().firstName || ''} ${doc.data().lastName || ''} (${doc.data().username || 'Admin'})`
+            }));
+            setAdmins(adminData);
+        } catch (error) {
+            console.error("Error fetching admins:", error);
+            toast.error("Failed to fetch admins list");
         }
     };
 
@@ -177,8 +278,12 @@ const ReviewPanel = () => {
     };
 
     useEffect(() => {
-        fetchReviews();
+        fetchAdmins();
     }, []);
+
+    useEffect(() => {
+        fetchReviews();
+    }, [admin]);
 
     const handleDateChange = (e) => {
         setSelectedDate(e.target.value);
@@ -203,6 +308,11 @@ const ReviewPanel = () => {
     const handleClientStatusChange = (e) => {
         setSelectedClientStatus(e.target.value);
     };
+
+    const handleAssignmentChange = (e) => {
+        setSelectedAssignment(e.target.value);
+    };
+
 
     const handleFetchData = () => {
         let filtered = reviews;
@@ -248,6 +358,18 @@ const ReviewPanel = () => {
         if (selectedPriority) {
             filtered = filtered.filter(review => review.priority === selectedPriority);
         }
+
+        // Add this condition to the handleFetchData filtering logic
+        if (selectedAssignment) {
+            if (selectedAssignment === "unassigned") {
+                filtered = filtered.filter(review => !review.assignedTo);
+            } else {
+                filtered = filtered.filter(review => review.assignedTo === selectedAssignment);
+            }
+        }
+
+        // Add this to your filter clearing logic
+        setSelectedAssignment("");
 
         if (selectedClientStatus) {
             filtered = filtered.filter(review => review.clientStatus === selectedClientStatus);
@@ -696,6 +818,13 @@ const ReviewPanel = () => {
                                     <option value="No">Not Subscribed</option>
                                 </select>
                             </div>
+
+                            <AssignmentFilter
+                                value={selectedAssignment}
+                                onChange={handleAssignmentChange}
+                                admins={admins}
+                                isSuperAdmin={admin?.role === 'superAdmin'}
+                            />
                         </div>
                     </div>
                 </motion.div>
@@ -774,6 +903,7 @@ const ReviewPanel = () => {
                                             "ChangePriority",
                                             "Client Status",
                                             "Update Status",
+                                            "Assigned To",
                                             "Timestamp",
                                             "FirstName",
                                             "LastName",
@@ -833,6 +963,15 @@ const ReviewPanel = () => {
                                                         status={review.clientStatus}
                                                         onUpdate={() => handleClientStatusUpdate(review.docId, review.clientStatus)}
                                                         disabled={review.clientStatus === 'Reached out'}
+                                                    />
+                                                </td>
+                                                <td className="border border-green-200 px-4 py-2">
+                                                    <AssignmentCell
+                                                        review={review}
+                                                        admins={admins}
+                                                        onAssign={handleAssignReview}
+                                                        isAssigning={assigningReview[review.docId]}
+                                                        isSuperAdmin={admin?.role === 'superAdmin'}
                                                     />
                                                 </td>
                                                 <td className="border border-green-200 px-4 py-2 font-serif text-sm md:text-base whitespace-nowrap">

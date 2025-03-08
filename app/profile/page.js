@@ -20,7 +20,9 @@ import {
     Key,
     LogOut,
     Trash2,
-    ChevronRight
+    ChevronRight,
+    Check,
+    AlertCircle
 } from 'lucide-react';
 import Image from "next/image";
 
@@ -39,7 +41,11 @@ export default function ProfilePage() {
     });
     const [errors, setErrors] = useState({});
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-
+    const [loadingNotifications, setLoadingNotifications] = useState({});
+    const [isEmailVerified, setIsEmailVerified] = useState(false);
+    const [showErrorPopup, setShowErrorPopup] = useState(false);
+    const [errorMessage, setErrorMessage] = useState('');
+    
     useEffect(() => {
         // Redirect if not authenticated
         if (!loading && !isAuthenticated) {
@@ -70,6 +76,9 @@ export default function ProfilePage() {
                     lastLogin: userData.lastLogin?.toDate() || new Date()
                 });
 
+                // Set email verification status
+                setIsEmailVerified(userData.isEmailVerified || false);
+
                 // Initialize form data
                 setFormData({
                     username: userData.username || '',
@@ -83,6 +92,60 @@ export default function ProfilePage() {
             toast.error("Failed to load profile data");
         } finally {
             setIsLoading(false);
+        }
+    };
+
+    // Modify the handleVerifyEmail function to update Firebase when email is verified
+    const handleVerifyEmail = async () => {
+        if (loadingNotifications[admin.id]) return; // Prevent multiple clicks
+
+        try {
+            setLoadingNotifications(prev => ({ ...prev, [admin.id]: true }));
+
+            // Show immediate "queued" toast
+            toast.info('Notification email queued for sending!');
+
+            // Start the email sending process with the correct data from userData
+            fetch('/api/verify-email', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    email: userData.email,
+                    firstName: userData.username || 'User',
+                }),
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Failed to send notification email');
+                    }
+                    return response.json();
+                }).then(async (data) => {
+                    toast.success('Email verified successfully!');
+
+                    // Update Firebase to store the verification status
+                    const userDoc = doc(db, "admins", admin.id);
+                    await updateDoc(userDoc, {
+                        isEmailVerified: true,
+                        emailVerifiedAt: new Date()
+                    });
+
+                    // Update local state
+                    setIsEmailVerified(true);
+                })
+                .catch(error => {
+                    console.error('Error sending notification email:', error);
+                    toast.error('Failed to send notification email. Please try again.');
+                })
+                .finally(() => {
+                    setLoadingNotifications(prev => ({ ...prev, [admin.id]: false }));
+                });
+
+        } catch (error) {
+            console.error('Error queuing notification email:', error);
+            toast.error('Failed to queue notification email. Please try again.');
+            setLoadingNotifications(prev => ({ ...prev, [admin.id]: false }));
         }
     };
 
@@ -177,6 +240,66 @@ export default function ProfilePage() {
             setIsLoading(false);
         }
     };
+
+    const closeErrorPopup = () => {
+        setShowErrorPopup(false);
+        setErrorMessage('');
+    };
+
+    // Error Popup Component
+    const ErrorPopup = () => (
+        <AnimatePresence>
+            {showErrorPopup && (
+                <motion.div
+                    className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 px-4"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    onClick={closeErrorPopup}
+                >
+                    <motion.div
+                        className="bg-white rounded-lg shadow-xl max-w-md w-full overflow-hidden"
+                        initial={{ scale: 0.9, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        exit={{ scale: 0.9, opacity: 0 }}
+                        onClick={e => e.stopPropagation()}
+                    >
+                        <div className="bg-red-50 p-4 flex items-start gap-3 border-b border-red-100">
+                            <div className="rounded-full bg-red-100 p-2 flex-shrink-0">
+                                <AlertCircle size={24} className="text-red-600" />
+                            </div>
+                            <div>
+                                <h3 className="font-semibold text-lg text-red-700">Email Verification Failed</h3>
+                                <p className="text-red-600 text-sm mt-1">{errorMessage}</p>
+                            </div>
+                        </div>
+                        <div className="p-4">
+                            <p className="text-gray-700 mb-4">
+                                Please update your email address in your profile to continue with verification.
+                            </p>
+                            <div className="flex justify-end gap-3">
+                                <button
+                                    onClick={closeErrorPopup}
+                                    className="px-4 py-2 rounded-lg bg-gray-200 text-gray-700 hover:bg-gray-300 transition-colors"
+                                >
+                                    Close
+                                </button>
+                                <button
+                                    onClick={() => {
+                                        closeErrorPopup();
+                                        setIsEditing(true);
+                                    }}
+                                    className="px-4 py-2 rounded-lg bg-[#36302A] text-white hover:bg-[#514840] transition-colors"
+                                >
+                                    Edit Profile
+                                </button>
+                            </div>
+                        </div>
+                    </motion.div>
+                </motion.div>
+            )}
+        </AnimatePresence>
+    );
 
     if (loading || isLoading) {
         return (
@@ -313,27 +436,56 @@ export default function ProfilePage() {
                     <div className="p-6 md:p-8">
                         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
                             <h3 className="text-xl font-semibold text-[#36302A]">Account Information</h3>
-                            <motion.button
-                                onClick={() => setIsEditing(!isEditing)}
-                                className={`px-4 py-2 rounded-lg flex items-center transition-colors duration-300 ${isEditing
-                                    ? "bg-[#EFE7DD] text-[#36302A]"
-                                    : "bg-[#36302A] text-white"
-                                    }`}
-                                whileHover={{ scale: 1.03 }}
-                                whileTap={{ scale: 0.97 }}
-                            >
-                                {isEditing ? (
-                                    <>
-                                        <X size={18} className="mr-2" />
-                                        Cancel
-                                    </>
+                            <div className="flex gap-4">
+                                <motion.button
+                                    onClick={() => setIsEditing(!isEditing)}
+                                    className={`px-4 py-2 rounded-lg flex items-center transition-colors duration-300 ${isEditing
+                                        ? "bg-[#EFE7DD] text-[#36302A]"
+                                        : "bg-[#36302A] text-white"
+                                        }`}
+                                    whileHover={{ scale: 1.03 }}
+                                    whileTap={{ scale: 0.97 }}
+                                >
+                                    {isEditing ? (
+                                        <>
+                                            <X size={18} className="mr-2" />
+                                            Cancel
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Edit2 size={18} className="mr-2" />
+                                            Edit Profile
+                                        </>
+                                    )}
+                                </motion.button>
+                                {isEmailVerified ? (
+                                    <motion.div
+                                        className="px-4 py-2 rounded-lg flex items-center bg-green-50 text-green-700 border border-green-200"
+                                        initial={{ opacity: 0, scale: 0.9 }}
+                                        animate={{ opacity: 1, scale: 1 }}
+                                        transition={{ duration: 0.3 }}
+                                    >
+                                        <Check size={18} className="mr-2" />
+                                        Email Verified
+                                    </motion.div>
                                 ) : (
-                                    <>
-                                        <Edit2 size={18} className="mr-2" />
-                                        Edit Profile
-                                    </>
+                                    <motion.button
+                                        onClick={handleVerifyEmail}
+                                        className={`px-4 py-2 rounded-lg flex items-center transition-colors duration-300 ${isEditing
+                                            ? "bg-[#EFE7DD] text-[#36302A]"
+                                            : "bg-[#36302A] text-white"
+                                            }`}
+                                        whileHover={{ scale: 1.03 }}
+                                        whileTap={{ scale: 0.97 }}
+                                        disabled={loadingNotifications[admin?.id]}
+                                    >
+                                        {loadingNotifications[admin?.id] ? (
+                                            <div className="animate-spin rounded-full h-4 w-4 border-2 border-t-2 border-white mr-2"></div>
+                                        ) : null}
+                                        Verify Email
+                                    </motion.button>
                                 )}
-                            </motion.button>
+                            </div>
                         </div>
 
                         <AnimatePresence mode="wait">
@@ -536,6 +688,13 @@ export default function ProfilePage() {
                                                 Email Address
                                             </p>
                                             <p className="font-semibold text-lg text-[#36302A]">{userData?.email}</p>
+
+                                            {isEmailVerified && (
+                                                <div className="mt-2 flex items-center text-green-600 text-sm">
+                                                    <Check size={14} className="mr-1" />
+                                                    Verified
+                                                </div>
+                                            )}
                                         </motion.div>
 
                                         <motion.div

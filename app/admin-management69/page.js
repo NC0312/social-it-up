@@ -9,9 +9,11 @@ import {
     getDocs,
     doc,
     updateDoc,
-    deleteDoc
+    deleteDoc,
+    onSnapshot,
+    serverTimestamp
 } from 'firebase/firestore';
-import { db } from '../lib/firebase';
+import { db, rtdb } from '../lib/firebase';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from "sonner";
 import {
@@ -28,7 +30,9 @@ import {
     Clock,
     Calendar
 } from 'lucide-react';
-import AdminProfileModal from '../components/AdminProfileModal'; // Import the AdminProfileModal component
+import AdminProfileModal from '../components/AdminProfileModal';
+import AdminRemovalPopup from '../components/AdminRemovalPopup';
+import { ref, set } from 'firebase/database';
 
 const AdminManagement = () => {
     const { admin: currentAdmin, isAuthenticated, loading } = useAdminAuth();
@@ -71,6 +75,62 @@ const AdminManagement = () => {
         exit: { opacity: 0, x: 10 }
     };
 
+    // Add real-time listener for online status
+    useEffect(() => {
+        if (!isAuthenticated) return;
+
+        // Set up real-time listener for admin status changes
+        const adminsRef = collection(db, "admins");
+        const unsubscribe = onSnapshot(adminsRef, (snapshot) => {
+            snapshot.docChanges().forEach((change) => {
+                if (change.type === "modified" || change.type === "added") {
+                    const docData = change.doc.data();
+                    const adminData = {
+                        id: change.doc.id,
+                        ...docData,
+                        createdAt: docData.createdAt?.toDate?.() || new Date(),
+                        lastLogin: docData.lastLogin?.toDate?.() || null,
+                        isOnline: docData.isOnline || false,
+                        lastActive: docData.lastActive?.toDate?.() || null,
+                        updatedAt: docData.updatedAt?.toDate?.() || docData.createdAt?.toDate?.() || new Date(),
+                    };
+
+                    // Check admin status and update appropriate list
+                    if (docData.status === "pending") {
+                        setPendingAdmins(prev => {
+                            const exists = prev.some(admin => admin.id === adminData.id);
+                            if (exists) {
+                                return prev.map(admin =>
+                                    admin.id === adminData.id ? { ...admin, isOnline: adminData.isOnline, lastActive: adminData.lastActive } : admin
+                                );
+                            } else {
+                                return [...prev, adminData];
+                            }
+                        });
+                    } else if (docData.status === "approved") {
+                        setApprovedAdmins(prev => {
+                            const exists = prev.some(admin => admin.id === adminData.id);
+                            if (exists) {
+                                return prev.map(admin =>
+                                    admin.id === adminData.id ? { ...admin, isOnline: adminData.isOnline, lastActive: adminData.lastActive } : admin
+                                );
+                            } else {
+                                return [...prev, adminData];
+                            }
+                        });
+                    }
+                } else if (change.type === "removed") {
+                    const docId = change.doc.id;
+                    setPendingAdmins(prev => prev.filter(admin => admin.id !== docId));
+                    setApprovedAdmins(prev => prev.filter(admin => admin.id !== docId));
+                }
+            });
+        });
+
+        // Clean up listener on unmount
+        return () => unsubscribe();
+    }, [isAuthenticated]);
+
     // Fetch admins on component mount
     useEffect(() => {
         if (!loading && !isAuthenticated) {
@@ -85,6 +145,32 @@ const AdminManagement = () => {
 
     // Check if current user is a superAdmin
     const isSuperAdmin = currentAdmin?.role === 'superAdmin';
+
+    // Add this function near your formatDate function
+    const formatTimeAgo = (date) => {
+        if (!date) return 'Never';
+
+        const now = new Date();
+        const diff = now - date;
+
+        // Less than a minute
+        if (diff < 60000) return 'Just now';
+
+        // Less than an hour
+        if (diff < 3600000) {
+            const minutes = Math.floor(diff / 60000);
+            return `${minutes} minute${minutes > 1 ? 's' : ''} ago`;
+        }
+
+        // Less than a day
+        if (diff < 86400000) {
+            const hours = Math.floor(diff / 3600000);
+            return `${hours} hour${hours > 1 ? 's' : ''} ago`;
+        }
+
+        // Otherwise, just show the date
+        return formatDate(date);
+    };
 
     // Fetch all admins from Firestore
     const fetchAdmins = async () => {
@@ -101,7 +187,9 @@ const AdminManagement = () => {
                 id: doc.id,
                 ...doc.data(),
                 createdAt: doc.data().createdAt?.toDate?.() || new Date(),
-                lastLogin: doc.data().lastLogin?.toDate?.() || null
+                lastLogin: doc.data().lastLogin?.toDate?.() || null,
+                isOnline: doc.data().isOnline || false, // Include online status
+                lastActive: doc.data().lastActive?.toDate?.() || null
             }));
 
             // Fetch approved admins
@@ -115,7 +203,9 @@ const AdminManagement = () => {
                 ...doc.data(),
                 createdAt: doc.data().createdAt?.toDate?.() || new Date(),
                 updatedAt: doc.data().updatedAt?.toDate?.() || doc.data().createdAt?.toDate?.() || new Date(),
-                lastLogin: doc.data().lastLogin?.toDate?.() || null
+                lastLogin: doc.data().lastLogin?.toDate?.() || null,
+                isOnline: doc.data().isOnline || false, // Include online status
+                lastActive: doc.data().lastActive?.toDate?.() || null
             }));
 
             // Sort in memory by creation date (newest first)
@@ -241,18 +331,39 @@ const AdminManagement = () => {
         try {
             setActionInProgress(adminId);
 
-            // Delete admin from Firestore
             const adminRef = doc(db, "admins", adminId);
-            await deleteDoc(adminRef);
 
-            // Update local state
             if (adminType === 'pending') {
-                setPendingAdmins(pendingAdmins.filter(admin => admin.id !== adminId));
-            } else {
-                setApprovedAdmins(approvedAdmins.filter(admin => admin.id !== adminId));
-            }
+                // For pending admins, we can completely delete them
+                await deleteDoc(adminRef);
 
-            toast.success("Admin deleted successfully");
+                // Update local state
+                setPendingAdmins(pendingAdmins.filter(admin => admin.id !== adminId));
+
+                toast.success("Admin request rejected successfully");
+            } else {
+                // For approved admins, mark them as removed but keep the document
+                await updateDoc(adminRef, {
+                    removed: true,
+                    status: "removed",
+                    removedAt: serverTimestamp(),
+                    removedBy: currentAdmin.id,
+                    isOnline: false
+                });
+
+                // Update real-time database status
+                const presenceRef = ref(rtdb, `status/${adminId}`);
+                await set(presenceRef, {
+                    online: false,
+                    lastActive: new Date().toISOString(),
+                    removed: true
+                });
+
+                // Update local state
+                setApprovedAdmins(approvedAdmins.filter(admin => admin.id !== adminId));
+
+                toast.success("Admin removed successfully");
+            }
         } catch (error) {
             console.error("Error deleting admin:", error);
             toast.error("Failed to delete admin");
@@ -345,6 +456,7 @@ const AdminManagement = () => {
 
     return (
         <div className="min-h-screen bg-[#FAF4ED] py-12 px-2 sm:px-4 lg:px-6">
+            {/* <AdminRemovalPopup /> */}
             <motion.div
                 className="max-w-full mx-auto"
                 variants={containerVariants}
@@ -535,16 +647,16 @@ const AdminManagement = () => {
                                                                             </div>
                                                                             <div className="ml-3 sm:ml-4">
                                                                                 <div
-                                                                                    className="text-xs sm:text-sm font-medium text-[#36302A] cursor-pointer hover:underline group relative"
+                                                                                    className="text-xs sm:text-sm font-medium text-[#36302A] cursor-pointer hover:underline group relative flex items-center"
                                                                                     onClick={() => handleViewProfile(admin)}
                                                                                 >
+                                                                                    <div className={`h-2 w-2 rounded-full mr-2 ${admin.isOnline ? 'bg-green-500' : 'bg-gray-300'}`}></div>
                                                                                     @{admin.username}
                                                                                     <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-[#36302A] rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap pointer-events-none z-10">
                                                                                         View Profile
                                                                                     </div>
                                                                                 </div>
                                                                             </div>
-
                                                                         </div>
                                                                     </td>
                                                                     <td className="px-3 py-4 whitespace-nowrap text-xs sm:text-sm text-[#575553] sm:px-6">
@@ -707,6 +819,7 @@ const AdminManagement = () => {
                                                                                     className="text-xs sm:text-sm font-medium text-[#36302A] flex items-center gap-2 cursor-pointer hover:underline group relative"
                                                                                     onClick={() => handleViewProfile(admin)}
                                                                                 >
+                                                                                    <div className={`h-2 w-2 rounded-full ${admin.isOnline ? 'bg-green-500' : 'bg-gray-300'}`}></div>
                                                                                     @{admin.username}
                                                                                     {admin.id === currentAdmin.id && (
                                                                                         <span className="bg-blue-100 text-blue-800 px-1 py-0.5 sm:px-2 rounded-full text-[10px] sm:text-xs">
