@@ -6,6 +6,7 @@ import { ImSpinner8 } from 'react-icons/im';
 import { useAdminAuth } from '../components/providers/AdminAuthProvider';
 import { useRouter } from 'next/navigation';
 import { FaEye, FaEyeSlash } from "react-icons/fa";
+import Image from 'next/image';
 
 const Auth = () => {
     const router = useRouter();
@@ -287,9 +288,23 @@ const Auth = () => {
     };
 
     return (
-        <div className="flex justify-center items-center min-h-screen bg-gradient-to-br from-[#FAF4ED] to-[#EFE7DD] p-4" style={{ userSelect: "none" }}>
+        <div className="relative flex justify-center items-center min-h-screen bg-gradient-to-br from-[#FAF4ED] to-[#EFE7DD] p-4" style={{ userSelect: "none" }}>
+            {/* Background Image */}
+            <div className="absolute inset-0 z-0">
+                <Image
+                    src="/city-image.jpg"
+                    alt="City Background"
+                    layout="fill"
+                    objectFit="cover"
+                    priority
+                    quality={100}
+                />
+                {/* Semi-transparent overlay for better readability */}
+                <div className="absolute inset-0 bg-black bg-opacity-40"></div>
+            </div>
+
             <motion.div
-                className="w-full max-w-md overflow-hidden rounded-2xl shadow-2xl bg-[#FAF4ED]"
+                className="w-full max-w-md overflow-hidden rounded-2xl shadow-2xl bg-[#FAF4ED] z-10"
                 initial={{ opacity: 0, y: 50 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{
