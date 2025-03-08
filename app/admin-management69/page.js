@@ -294,55 +294,39 @@ const AdminManagement = () => {
 
     // Handle admin rejection/deletion
     const handleDelete = async (adminId, adminType) => {
+        // Check permissions
         if (!isSuperAdmin) {
             toast.error("You don't have permission to delete admins");
             return;
         }
 
-        // Check if the admin is a superadmin - can't delete superadmins
-        if (adminType === 'approved') {
-            const admin = approvedAdmins.find(a => a.id === adminId);
-            if (admin?.role === 'superAdmin') {
-                toast.error("SuperAdmins cannot be removed");
-                return;
-            }
+        // Prevent superAdmin deletion
+        if (adminType === 'approved' && approvedAdmins.find(a => a.id === adminId)?.role === 'superAdmin') {
+            toast.error("SuperAdmins cannot be removed");
+            return;
         }
 
         try {
             setActionInProgress(adminId);
 
+            // Get admin document reference
             const adminRef = doc(db, "admins", adminId);
 
+            // For approved admins, clear their presence in realtime DB first
+            if (adminType === 'approved') {
+                await set(ref(rtdb, `status/${adminId}`), null);
+            }
+
+            // Delete admin document
+            await deleteDoc(adminRef);
+
+            // Update UI state
             if (adminType === 'pending') {
-                // For pending admins, we can completely delete them
-                await deleteDoc(adminRef);
-
-                // Update local state
-                setPendingAdmins(pendingAdmins.filter(admin => admin.id !== adminId));
-
+                setPendingAdmins(prev => prev.filter(admin => admin.id !== adminId));
                 toast.success("Admin request rejected successfully");
             } else {
-                // For approved admins, mark them as removed but keep the document
-                await updateDoc(adminRef, {
-                    removed: true,
-                    status: "removed",
-                    removedAt: serverTimestamp(),
-                    removedBy: currentAdmin.id,
-                    isOnline: false
-                });
-
-                // Update real-time database status
-                const presenceRef = ref(rtdb, `status/${adminId}`);
-                await set(presenceRef, {
-                    online: false,
-                    lastActive: new Date().toISOString(),
-                    removed: true
-                });
-
-                // Update local state
-                setApprovedAdmins(approvedAdmins.filter(admin => admin.id !== adminId));
-
-                toast.success("Admin removed successfully");
+                setApprovedAdmins(prev => prev.filter(admin => admin.id !== adminId));
+                toast.success("Admin completely removed from the system");
             }
         } catch (error) {
             console.error("Error deleting admin:", error);
