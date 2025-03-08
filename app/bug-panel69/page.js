@@ -15,6 +15,8 @@ import { FaCheck } from "react-icons/fa";
 import { CheckCircle } from 'lucide-react';
 import { Pagination } from '../components/Pagination';
 import ProtectedRoute from '../components/ProtectedRoutes';
+import { BugAssignmentCell, BugAssignmentFilter } from './BugUtility';
+import { useAdminAuth } from '../components/providers/AdminAuthProvider';
 
 const BugPanel = () => {
     const fadeInLeft = {
@@ -46,7 +48,20 @@ const BugPanel = () => {
     const [selectedSubject, setSelectedSubject] = useState("");
     const [selectedItems, setSelectedItems] = useState(new Set());
     const [selectAll, setSelectAll] = useState(false);
+    const [admins, setAdmins] = useState([]);
+    const [assigningBug, setAssigningBug] = useState({});
+    const [selectedAssignment, setSelectedAssignment] = useState("");
+    const { admin } = useAdminAuth();
+    const [bugCounts, setBugCounts] = useState({});
     const entriesPerPage = 20;
+
+
+    useEffect(() => {
+        fetchBugs();
+        fetchAdmins(); // Add this
+        fetchBugCounts(); // Add this
+    }, []);
+
 
     const fetchBugs = async () => {
         try {
@@ -69,6 +84,120 @@ const BugPanel = () => {
         }
     };
 
+    const fetchAdmins = async () => {
+        try {
+            const q = query(collection(db, "admins"));
+            const snapshot = await getDocs(q);
+            const adminData = snapshot.docs.map((doc) => ({
+                id: doc.id,
+                ...doc.data(),
+                role: doc.data().role || 'admin', // Ensure role is included
+                fullName: `${doc.data().firstName || ''} ${doc.data().lastName || ''} (${doc.data().username || 'Admin'})`
+            }));
+            setAdmins(adminData);
+        } catch (error) {
+            console.error("Error fetching admins:", error);
+            toast.error("Failed to fetch admins list");
+        }
+    };
+
+    const fetchBugCounts = async () => {
+        try {
+            const bugsRef = collection(db, "feedback");
+            const bugsSnapshot = await getDocs(bugsRef);
+
+            // Count bugs for each admin
+            const counts = {};
+            bugsSnapshot.docs.forEach(doc => {
+                const assignedTo = doc.data().assignedTo;
+                if (assignedTo) {
+                    counts[assignedTo] = (counts[assignedTo] || 0) + 1;
+                }
+            });
+
+            setBugCounts(counts);
+        } catch (error) {
+            console.error("Error fetching bug counts:", error);
+        }
+    };
+
+    const handleAssignBug = async (docId, adminId, adminName) => {
+        try {
+            setAssigningBug(prev => ({ ...prev, [docId]: true }));
+            const bugRef = doc(db, "feedback", docId);
+
+            // If adminId is empty, this is an unassignment
+            if (!adminId) {
+                await updateDoc(bugRef, {
+                    assignedTo: null,
+                    assignedToName: "Unassigned",
+                    assignedBy: null,
+                    assignedAt: null
+                });
+                toast.success("Bug unassigned successfully!");
+            } else {
+                // Find the selected admin
+                const selectedAdmin = admins.find(a => a.id === adminId);
+
+                // Check permissions based on roles
+                // Only regular admins are restricted - superAdmins can assign to anyone including themselves
+                if (admin?.role !== 'superAdmin' && selectedAdmin?.role === 'superAdmin') {
+                    toast.error("Regular admins cannot assign bugs to superAdmins.");
+                    return;
+                }
+
+                // Proceed with assignment
+                await updateDoc(bugRef, {
+                    assignedTo: adminId,
+                    assignedToName: adminName,
+                    assignedBy: admin?.id || 'system',
+                    assignedAt: new Date()
+                });
+
+                // Show appropriate success message
+                if (adminId === admin?.id) {
+                    toast.success(`Bug assigned to yourself successfully!`);
+                } else {
+                    toast.success(`Bug assigned to ${adminName} successfully!`);
+                }
+            }
+
+            // Update local state
+            const updatedBugs = bugs.map(bug =>
+                bug.docId === docId ?
+                    {
+                        ...bug,
+                        assignedTo: adminId || null,
+                        assignedToName: adminId ? adminName : "Unassigned",
+                        assignedBy: admin?.id || 'system',
+                        assignedAt: new Date()
+                    } : bug
+            );
+
+            setBugs(updatedBugs);
+            setFilteredBugs(
+                filteredBugs.map(bug =>
+                    bug.docId === docId ?
+                        {
+                            ...bug,
+                            assignedTo: adminId || null,
+                            assignedToName: adminId ? adminName : "Unassigned",
+                            assignedBy: admin?.id || 'system',
+                            assignedAt: new Date()
+                        } : bug
+                )
+            );
+
+            // Update bug counts
+            await fetchBugCounts();
+        } catch (error) {
+            console.error("Error assigning bug:", error);
+            toast.error("Failed to assign bug. Please try again.");
+        } finally {
+            setAssigningBug(prev => ({ ...prev, [docId]: false }));
+        }
+    };
+
     const syncData = async () => {
         setIssyncing(true);
         try {
@@ -84,6 +213,7 @@ const BugPanel = () => {
 
             setBugs(newData);
             setFilteredBugs(newData);
+            await fetchBugCounts(); // Add this
             toast.success("Data refreshed successfully!");
         } catch (error) {
             console.error("Error refreshing data:", error);
@@ -201,6 +331,10 @@ const BugPanel = () => {
         setSelectedStatus(e.target.value);
     };
 
+    const handleAssignmentChange = (e) => {
+        setSelectedAssignment(e.target.value);
+    };
+
     const handleFetchData = () => {
         let filtered = bugs;
 
@@ -232,6 +366,14 @@ const BugPanel = () => {
 
         if (selectedSubject) {
             filtered = filtered.filter(bug => bug.subject === selectedSubject);
+        }
+
+        if (selectedAssignment) {
+            if (selectedAssignment === "unassigned") {
+                filtered = filtered.filter(bug => !bug.assignedTo);
+            } else {
+                filtered = filtered.filter(bug => bug.assignedTo === selectedAssignment);
+            }
         }
 
         setFilteredBugs(filtered);
@@ -650,6 +792,13 @@ const BugPanel = () => {
                                 <option value="others">Others</option>
                             </select>
                         </div>
+                        <BugAssignmentFilter
+                            value={selectedAssignment}
+                            onChange={handleAssignmentChange}
+                            admins={admins}
+                            isSuperAdmin={admin?.role === 'superAdmin'}
+                            currentAdminId={admin?.id}
+                        />
                     </div>
                 </motion.div>
 
@@ -675,6 +824,7 @@ const BugPanel = () => {
                                 setSelectedStatus("");
                                 setSelectedSubject("");
                                 setselectedEmail("");
+                                setSelectedAssignment("");
                                 setFilteredBugs(bugs);
                                 toast.success("Filters cleared!");
                             }}
@@ -719,6 +869,7 @@ const BugPanel = () => {
                                             "Update status",
                                             "Priority",
                                             "Change Priority",
+                                            "Assigned To",
                                             "Timestamp",
                                             "Email",
                                             "Notify",
@@ -757,6 +908,16 @@ const BugPanel = () => {
                                                 </td>
                                                 <td className="border border-red-200 px-4 py-2 text-sm md:text-base">
                                                     <PriorityDisplay priority={bug.priority} />
+                                                </td>
+                                                <td className="border border-red-200 px-4 py-2 text-sm md:text-base">
+                                                    <BugAssignmentCell
+                                                        bug={bug}
+                                                        admins={admins}
+                                                        onAssign={handleAssignBug}
+                                                        isAssigning={assigningBug[bug.docId]}
+                                                        isSuperAdmin={admin?.role === 'superAdmin'}
+                                                        currentAdminId={admin?.id}
+                                                    />
                                                 </td>
                                                 <td className="border border-red-200 px-4 py-2 text-sm md:text-base">
                                                     <select

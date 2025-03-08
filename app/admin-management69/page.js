@@ -50,6 +50,7 @@ const AdminManagement = () => {
     const [isEmailVerified, setIsEmailVerified] = useState(false);
     const [loadingNotifications, setLoadingNotifications] = useState({});
     const [reviewCounts, setReviewCounts] = useState({});
+    const [bugCounts, setBugCounts] = useState({});
 
     // State for the admin profile modal
     const [selectedAdmin, setSelectedAdmin] = useState(null);
@@ -194,6 +195,8 @@ const AdminManagement = () => {
         if (isAuthenticated) {
             fetchAdmins();
             fetchReviewCounts();
+            fetchBugCounts();
+
         }
     }, [isAuthenticated, loading, router]);
 
@@ -258,7 +261,8 @@ const AdminManagement = () => {
             const reviewsSnapshot = await getDocs(reviewsRef);
 
             // Count reviews for each admin
-            const counts = {};
+            const reviewCounts = {};
+
             reviewsSnapshot.docs.forEach(doc => {
                 const assignedTo = doc.data().assignedTo;
                 if (assignedTo) {
@@ -266,11 +270,32 @@ const AdminManagement = () => {
                 }
             });
 
-            setReviewCounts(counts);
+            setReviewCounts(reviewCounts);
         } catch (error) {
             console.error("Error fetching review counts:", error);
         }
     };
+
+    const fetchBugCounts = async () => {
+        try {
+            const bugsRef = collection(db, "bugs");
+            const bugsSnapshot = await getDocs(bugsRef);
+
+            // Count bugs for each admin
+            const bugCounts = {};
+
+            bugsSnapshot.docs.forEach(doc => {
+                const assignedTo = doc.data().assignedTo;
+                if (assignedTo) {
+                    counts[assignedTo] = (counts[assignedTo] || 0) + 1;
+                }
+            });
+
+            setBugCounts(bugCounts);
+        } catch (error) {
+            console.error("Error fetching bug counts:", error);
+        }
+    }
 
     const syncData = async () => {
         try {
@@ -917,6 +942,12 @@ const AdminManagement = () => {
                                                                         <span className="ml-1 text-xs text-green-600 font-normal">(assigned)</span>
                                                                     </div>
                                                                 </th>
+                                                                <th className="px-3 py-3 text-left text-[10px] sm:text-xs font-medium text-[#86807A] uppercase tracking-wider sm:px-6">
+                                                                    <div className="flex items-center">
+                                                                        <span>Bugs</span>
+                                                                        <span className="ml-1 text-xs text-red-500 font-normal">(assigned)</span>
+                                                                    </div>
+                                                                </th>
                                                                 <th className="px-3 py-3 text-left text-[10px] sm:text-xs font-medium text-[#86807A] uppercase tracking-wider sm:px-6">Last Login</th>
                                                                 <th className="px-3 py-3 text-left text-[10px] sm:text-xs font-medium text-[#86807A] uppercase tracking-wider hidden md:table-cell sm:px-6">Approved</th>
                                                                 <th className="px-3 py-3 text-right text-[10px] sm:text-xs font-medium text-[#86807A] uppercase tracking-wider sm:px-6">Actions</th>
@@ -1004,6 +1035,13 @@ const AdminManagement = () => {
                                                                         <div className="flex justify-center">
                                                                             <div className={`flex items-center justify-center ${reviewCounts[admin.id] ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-500'} rounded-full px-3 py-1 font-medium`}>
                                                                                 {reviewCounts[admin.id] || 0}
+                                                                            </div>
+                                                                        </div>
+                                                                    </td>
+                                                                    <td className="px-3 py-4 whitespace-nowrap text-xs sm:text-sm text-center sm:px-6">
+                                                                        <div className="flex justify-center">
+                                                                            <div className={`flex items-center justify-center ${bugCounts[admin.id] ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-500'} rounded-full px-3 py-1 font-medium`}>
+                                                                                {bugCounts[admin.id] || 0}
                                                                             </div>
                                                                         </div>
                                                                     </td>

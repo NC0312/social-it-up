@@ -15,7 +15,7 @@ import { AlertCircle, Badge, CheckCircle } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Pagination } from "../components/Pagination";
 import ProtectedRoute from "../components/ProtectedRoutes";
-import { AssignmentCell, AssignmentFilter } from "./UIutility";
+import { AssignmentCell, AssignmentFilter } from "./ReviewUtility";
 import { useAdminAuth } from "../components/providers/AdminAuthProvider";
 
 const ReviewPanel = () => {
