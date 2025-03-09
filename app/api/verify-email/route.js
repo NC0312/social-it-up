@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import nodemailer from 'nodemailer';
 import dns from 'dns';
+import axios from 'axios';
 import { promisify } from 'util';
 
 // Promisify DNS methods
@@ -23,48 +24,92 @@ export async function POST(req) {
 
         // 2. Extract domain
         const domain = email.split('@')[1].toLowerCase();
+        console.log('Extracted domain:', domain);
 
         // 3. Check domain existence with DNS lookup
         try {
-            await dnsLookup(domain);
-            console.log(`Domain exists: ${domain}`);
+            const lookupResult = await dnsLookup(domain);
+            console.log(`DNS lookup successful for ${domain}:`, lookupResult);
         } catch (lookupError) {
-            console.error(`Domain does not exist: ${domain}`, lookupError);
+            console.error(`DNS lookup failed for ${domain}:`, lookupError);
             return NextResponse.json(
                 { error: 'Email domain does not exist', type: 'nonexistent_domain' },
                 { status: 400 }
             );
         }
 
-        // 4. Check MX records to ensure domain can receive email
+        // 4. Check MX records
         try {
             const mxRecords = await resolveMx(domain);
             if (!mxRecords || mxRecords.length === 0) {
-                console.log(`No MX records found for domain: ${domain}`);
+                console.log(`No MX records found for ${domain}`);
                 return NextResponse.json(
                     { error: 'Email domain cannot receive mail', type: 'no_mx_records' },
                     { status: 400 }
                 );
             }
-            console.log(`Valid MX records found for domain: ${domain}`);
+            console.log(`MX records for ${domain}:`, mxRecords);
         } catch (mxError) {
-            console.error(`Failed to resolve MX records for ${domain}:`, mxError);
+            console.error(`MX lookup failed for ${domain}:`, mxError);
             return NextResponse.json(
                 { error: 'Email domain cannot receive mail', type: 'mx_lookup_failed' },
                 { status: 400 }
             );
         }
 
-        // 5. Set up SMTP verification
-        if (!process.env.SMTP_HOST || !process.env.SMTP_USER || !process.env.SMTP_PASSWORD) {
-            console.error('Missing SMTP configuration');
+        const zeroBounceApiKey = process.env.ZEROBOUNCE_API_KEY;
+        if (!zeroBounceApiKey) {
+            console.error('ZeroBounce API key is required for accurate email verification');
+            return NextResponse.json(
+                { error: 'Server configuration error: Email verification service not configured', type: 'server_config_error' },
+                { status: 500 }
+            );
+        }
+
+        try {
+            const response = await axios.get(
+                `https://api.zerobounce.net/v2/validate?api_key=${zeroBounceApiKey}&email=${email}`
+            );
+            const { status, sub_status } = response.data;
+            console.log(`ZeroBounce result for ${email}:`, { status, sub_status });
+
+            if (status === 'invalid' || sub_status === 'mailbox_not_found' || sub_status === 'no_connect') {
+                console.log(`Email ${email} rejected by ZeroBounce as non-existent`);
+                return NextResponse.json(
+                    { error: 'This email address does not exist', type: 'invalid_recipient' },
+                    { status: 400 }
+                );
+            }
+
+            if (status !== 'valid') {
+                console.log(`Uncertain email status for ${email}: ${status}, sub_status: ${sub_status}`);
+                return NextResponse.json(
+                    { error: 'Email verification uncertain, please try again', type: 'uncertain_status' },
+                    { status: 400 }
+                );
+            }
+
+            console.log(`Email ${email} confirmed valid by ZeroBounce`);
+        } catch (zeroBounceError) {
+            console.error('ZeroBounce verification failed:', zeroBounceError.message);
+            return NextResponse.json(
+                { error: 'Email verification service unavailable', type: 'verification_service_error' },
+                { status: 500 }
+            );
+        }
+
+        if (!process.env.SMTP_HOST || !process.env.SMTP_USER || !process.env.SMTP_PASSWORD || !process.env.SMTP_FROM_EMAIL) {
+            console.error('Missing SMTP configuration:', {
+                host: process.env.SMTP_HOST,
+                user: process.env.SMTP_USER,
+                from: process.env.SMTP_FROM_EMAIL,
+            });
             return NextResponse.json(
                 { error: 'Server configuration error', type: 'server_config_error' },
                 { status: 500 }
             );
         }
 
-        // 6. Create SMTP transporter
         const transporter = nodemailer.createTransport({
             host: process.env.SMTP_HOST,
             port: parseInt(process.env.SMTP_PORT || '587'),
@@ -75,7 +120,6 @@ export async function POST(req) {
             },
         });
 
-        // 7. Verify SMTP connection
         try {
             await transporter.verify();
             console.log('SMTP connection verified successfully');
@@ -87,13 +131,7 @@ export async function POST(req) {
             );
         }
 
-        // 8. Perform SMTP recipient verification (if available)
-        // Note: Some SMTP servers support recipient verification without sending
-        // This is an advanced feature but not all providers support it
-
-        // 9. Use callback verification as our final step
-        // Send a small test email to verify deliverability
-        const testMailOptions = {
+        const mailOptions = {
             from: process.env.SMTP_FROM_EMAIL,
             to: email,
             subject: 'Email Verification',
@@ -108,63 +146,29 @@ export async function POST(req) {
                 filename: 'logo.png',
                 path: process.cwd() + '/public/logo.png',
                 cid: 'logo',
-            }]
+            }],
         };
 
         try {
-            // Attempt to send the email
-            const info = await transporter.sendMail(testMailOptions);
+            const info = await transporter.sendMail(mailOptions);
             console.log('Verification email sent successfully:', info.messageId);
+            console.log('SMTP response:', info.response);
 
-            // If we get here, the email was accepted by the receiving mail server
             return NextResponse.json(
                 { message: 'Email verified successfully', success: true },
                 { status: 200 }
             );
         } catch (sendError) {
             console.error('Error sending verification email:', sendError);
-
-            // Parse error message for specific issues
-            const errorMsg = sendError.message.toLowerCase();
-
-            // Check for specific recipient errors
-            if (errorMsg.includes('invalid recipient') ||
-                errorMsg.includes('no such user') ||
-                errorMsg.includes('mailbox unavailable') ||
-                errorMsg.includes('recipient address rejected') ||
-                errorMsg.includes('user unknown') ||
-                errorMsg.includes('does not exist') ||
-                errorMsg.includes('invalid mailbox') ||
-                errorMsg.includes('recipient not found')) {
-
-                return NextResponse.json(
-                    { error: 'This email address does not exist or cannot receive mail', type: 'invalid_recipient' },
-                    { status: 400 }
-                );
-            }
-
-            // Check for connection errors
-            if (sendError.code === 'ECONNECTION' ||
-                sendError.code === 'ETIMEDOUT' ||
-                errorMsg.includes('connection') ||
-                errorMsg.includes('timeout')) {
-
-                return NextResponse.json(
-                    { error: 'Connection to mail server failed, cannot verify email', type: 'connection_error' },
-                    { status: 500 }
-                );
-            }
-
-            // General error case
             return NextResponse.json(
-                { error: 'Email verification failed - the address may not exist', type: 'send_error' },
-                { status: 400 }
+                { error: 'Failed to send verification email', type: 'send_error', details: sendError.message },
+                { status: 500 }
             );
         }
     } catch (error) {
         console.error('Error in verification process:', error);
         return NextResponse.json(
-            { error: 'Email verification process failed', type: 'general_error' },
+            { error: 'Email verification process failed', type: 'general_error', details: error.message },
             { status: 500 }
         );
     }
