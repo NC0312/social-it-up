@@ -6,6 +6,7 @@ import { ImSpinner8 } from 'react-icons/im';
 import { useAdminAuth } from '../components/providers/AdminAuthProvider';
 import { useRouter } from 'next/navigation';
 import { FaEye, FaEyeSlash } from "react-icons/fa";
+import Image from 'next/image';
 
 const Auth = () => {
     const router = useRouter();
@@ -29,6 +30,7 @@ const Auth = () => {
     const [confirmPassword, setConfirmPassword] = useState('');
     const [confirmPasswordError, setConfirmPasswordError] = useState('');
     const [gender, setGender] = useState('unspecified');
+    const [isEmailVerified, setIsEmailVerified] = useState(false);
     const [acceptTerms, setAcceptTerms] = useState(false);
     const [acceptTermsError, setAcceptTermsError] = useState('');
 
@@ -251,7 +253,7 @@ const Auth = () => {
 
         try {
             // Call the register function from your auth context
-            const result = await register(registerEmail, registerUsername, registerPassword, gender);
+            const result = await register(registerEmail, registerUsername, registerPassword, gender, isEmailVerified);
 
             if (result.success) {
                 // Show success message
@@ -264,6 +266,7 @@ const Auth = () => {
                 setConfirmPassword("");
                 setAcceptTerms(false);
                 setGender("unspecified");
+                setIsEmailVerified(false);
 
                 // Switch to login tab after successful registration
                 setTimeout(() => {
@@ -285,9 +288,23 @@ const Auth = () => {
     };
 
     return (
-        <div className="flex justify-center items-center min-h-screen bg-gradient-to-br from-[#FAF4ED] to-[#EFE7DD] p-4" style={{ userSelect: "none" }}>
+        <div className="relative flex justify-center items-center min-h-screen bg-gradient-to-br from-[#FAF4ED] to-[#EFE7DD] p-4" style={{ userSelect: "none" }}>
+            {/* Background Image */}
+            <div className="absolute inset-0 z-0">
+                <Image
+                    src="/city-image.jpg"
+                    alt="City Background"
+                    layout="fill"
+                    objectFit="cover"
+                    priority
+                    quality={100}
+                />
+                {/* Semi-transparent overlay for better readability */}
+                <div className="absolute inset-0 bg-black bg-opacity-40"></div>
+            </div>
+
             <motion.div
-                className="w-full max-w-md overflow-hidden rounded-2xl shadow-2xl bg-[#FAF4ED]"
+                className="w-full max-w-md overflow-hidden rounded-2xl shadow-2xl bg-[#FAF4ED] z-10"
                 initial={{ opacity: 0, y: 50 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{

@@ -3,33 +3,142 @@ import { createContext, useContext, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import {
     doc,
-    setDoc,
-    getDoc,
     collection,
     query,
     where,
     getDocs,
     addDoc,
     serverTimestamp,
-    updateDoc
+    updateDoc,
+    getDoc,
+    onSnapshot
 } from 'firebase/firestore';
-import { db } from '../../lib/firebase'; // Make sure this points to your Firebase config
+import { db, rtdb } from '../../lib/firebase';
+import { ref, set, onValue, onDisconnect } from 'firebase/database';
+import { toast } from 'sonner';
+import { AnimatePresence } from 'framer-motion';
+import AdminRemovalPopup from '../AdminRemovalPopup';
 
 const AdminAuthContext = createContext();
 
 export function AdminAuthProvider({ children }) {
     const [admin, setAdmin] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [showRemovalPopup, setShowRemovalPopup] = useState(false);
+    const [removalReason, setRemovalReason] = useState('');
     const router = useRouter();
 
     useEffect(() => {
-        // Check localStorage for existing admin session
-        const storedAdmin = localStorage.getItem('adminAuth');
-        if (storedAdmin) {
-            setAdmin(JSON.parse(storedAdmin));
+        const checkAdminStatus = async () => {
+            try {
+                // Check localStorage for existing admin session
+                const storedAdmin = localStorage.getItem('adminAuth');
+
+                if (storedAdmin) {
+                    const adminData = JSON.parse(storedAdmin);
+
+                    // Verify if admin still exists and is not removed
+                    const adminRef = doc(db, "admins", adminData.id);
+                    const adminDoc = await getDoc(adminRef);
+
+                    if (!adminDoc.exists()) {
+                        // Admin document doesn't exist anymore
+                        console.log('Admin document no longer exists');
+                        setRemovalReason('deleted');
+                        setShowRemovalPopup(true);
+                        return;
+                    }
+
+                    const currentAdminData = adminDoc.data();
+
+                    // Check if admin has been removed or status changed
+                    if (currentAdminData.removed || currentAdminData.status !== 'approved') {
+                        console.log('Admin was removed or status changed');
+                        setRemovalReason(currentAdminData.removed ? 'removed' : 'status_change');
+                        setShowRemovalPopup(true);
+                        return;
+                    }
+
+                    // Set admin in state and update online status
+                    setAdmin(adminData);
+
+                    // Update lastLogin and online status
+                    await updateDoc(adminRef, {
+                        lastLogin: serverTimestamp(),
+                        isOnline: true,
+                        lastActive: serverTimestamp()
+                    });
+
+                    // Set up real-time monitoring of admin document
+                    const unsubscribe = onSnapshot(adminRef, (docSnapshot) => {
+                        if (!docSnapshot.exists()) {
+                            // Admin document was deleted
+                            setRemovalReason('deleted');
+                            setShowRemovalPopup(true);
+                            return;
+                        }
+
+                        const updatedAdminData = docSnapshot.data();
+
+                        // Check for removal or status change
+                        if (updatedAdminData.removed || updatedAdminData.status !== 'approved') {
+                            setRemovalReason(updatedAdminData.removed ? 'removed' : 'status_change');
+                            setShowRemovalPopup(true);
+                        }
+                    });
+
+                    // Set up presence in real-time database
+                    setupPresence(adminData.id, adminData.username, adminData.role);
+
+                    // Cleanup on unmount
+                    return () => {
+                        unsubscribe();
+                    };
+                }
+            } catch (error) {
+                console.error('Error checking admin status:', error);
+                logout();
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        checkAdminStatus();
+    }, [router]);
+
+    // Set up real-time presence
+    const setupPresence = (adminId, username, role) => {
+        try {
+            const presenceRef = ref(rtdb, `status/${adminId}`);
+
+            // When admin connects
+            set(presenceRef, {
+                online: true,
+                lastActive: new Date().toISOString(),
+                username: username,
+                role: role
+            });
+
+            // When admin disconnects
+            onDisconnect(presenceRef).update({
+                online: false,
+                lastActive: new Date().toISOString()
+            });
+
+            // Listen for changes to update Firestore
+            onValue(presenceRef, (snapshot) => {
+                const status = snapshot.val();
+                if (status && admin) {
+                    updateDoc(doc(db, "admins", adminId), {
+                        isOnline: status.online,
+                        lastActive: status.online ? serverTimestamp() : new Date(status.lastActive)
+                    }).catch(err => console.error("Error updating online status:", err));
+                }
+            });
+        } catch (error) {
+            console.error("Error setting up presence:", error);
         }
-        setLoading(false);
-    }, []);
+    };
 
     const checkUsernameExists = async (username) => {
         try {
@@ -63,7 +172,7 @@ export function AdminAuthProvider({ children }) {
         return btoa(password); // Base64 encoding (NOT secure for production)
     };
 
-    const register = async (email, username, password, gender = 'unspecified') => {
+    const register = async (email, username, password, gender = 'unspecified', isEmailVerified) => {
         try {
             // Check if username already exists
             const usernameExists = await checkUsernameExists(username);
@@ -89,7 +198,8 @@ export function AdminAuthProvider({ children }) {
                 gender: gender,
                 status: 'pending', // Default status is pending
                 createdAt: serverTimestamp(),
-                updatedAt: serverTimestamp()
+                updatedAt: serverTimestamp(),
+                isEmailVerified: isEmailVerified
             });
 
             return {
@@ -135,28 +245,37 @@ export function AdminAuthProvider({ children }) {
                 return { success: false, error: "Invalid password" };
             }
 
-            // Update lastLogin timestamp for all users upon successful authentication
+            // Check if admin is removed
+            if (adminData.removed) {
+                return { success: false, error: "Your account has been removed. Please contact the administrator." };
+            }
+
+            // Set up user session data
+            const adminSession = {
+                id: adminDoc.id,
+                email: adminData.email,
+                username: adminData.username,
+                role: adminData.role, // Use the actual role from the database
+                gender: adminData.gender,
+                status: adminData.status || 'approved',
+                isAuthenticated: true
+            };
+
+            // Update admin document with lastLogin and online status
             await updateDoc(doc(db, "admins", adminDoc.id), {
-                lastLogin: serverTimestamp()  // Using serverTimestamp is better
+                lastLogin: serverTimestamp(),
+                isOnline: true,
+                lastActive: serverTimestamp()
             });
 
-            // Check role and status
+            // Set up real-time presence
+            setupPresence(adminDoc.id, adminData.username, adminData.role);
+
+            // Check role and status for login permissions
             if (adminData.role === 'superAdmin') {
                 // SuperAdmin can always login
-                const adminSession = {
-                    id: adminDoc.id,
-                    email: adminData.email,
-                    username: adminData.username,
-                    role: 'superAdmin',
-                    gender: adminData.gender,
-                    status: adminData.status || 'approved',
-                    isAuthenticated: true
-                };
-
-                // Store in localStorage
                 localStorage.setItem('adminAuth', JSON.stringify(adminSession));
                 setAdmin(adminSession);
-
                 return { success: true, isSuperAdmin: true };
             } else if (adminData.role === 'admin') {
                 // For regular admins, check if they are approved
@@ -167,22 +286,10 @@ export function AdminAuthProvider({ children }) {
                     };
                 }
 
-                // Create admin session
-                const adminSession = {
-                    id: adminDoc.id,
-                    email: adminData.email,
-                    username: adminData.username,
-                    role: 'admin',
-                    gender: adminData.gender,
-                    status: adminData.status,
-                    isAuthenticated: true
-                };
-
-                // Store in localStorage
+                // Store admin session
                 localStorage.setItem('adminAuth', JSON.stringify(adminSession));
                 setAdmin(adminSession);
                 return { success: true, isSuperAdmin: false };
-
             } else {
                 return {
                     success: false,
@@ -198,10 +305,38 @@ export function AdminAuthProvider({ children }) {
         }
     };
 
-    const logout = () => {
-        localStorage.removeItem('adminAuth');
-        setAdmin(null);
-        router.push('/login');
+    const logout = async () => {
+        try {
+            if (admin) {
+                // Update admin document to show offline status
+                await updateDoc(doc(db, "admins", admin.id), {
+                    isOnline: false,
+                    lastActive: serverTimestamp()
+                });
+
+                // Update real-time database presence
+                const presenceRef = ref(rtdb, `status/${admin.id}`);
+                await set(presenceRef, {
+                    online: false,
+                    lastActive: new Date().toISOString(),
+                    username: admin.username,
+                    role: admin.role
+                });
+            }
+        } catch (error) {
+            console.error('Error during logout:', error);
+        } finally {
+            // Clear local storage and state regardless of any errors
+            localStorage.removeItem('adminAuth');
+            setAdmin(null);
+            router.push('/login');
+        }
+    };
+
+    // Handler for closing the removal popup
+    const handleRemovalPopupClose = () => {
+        setShowRemovalPopup(false);
+        logout();
     };
 
     const value = {
@@ -216,6 +351,16 @@ export function AdminAuthProvider({ children }) {
     return (
         <AdminAuthContext.Provider value={value}>
             {children}
+
+            {/* Admin Removal Popup */}
+            <AnimatePresence>
+                {showRemovalPopup && (
+                    <AdminRemovalPopup
+                        onClose={handleRemovalPopupClose}
+                        reason={removalReason}
+                    />
+                )}
+            </AnimatePresence>
         </AdminAuthContext.Provider>
     );
 }

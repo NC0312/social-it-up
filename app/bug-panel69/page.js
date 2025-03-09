@@ -15,6 +15,8 @@ import { FaCheck } from "react-icons/fa";
 import { CheckCircle } from 'lucide-react';
 import { Pagination } from '../components/Pagination';
 import ProtectedRoute from '../components/ProtectedRoutes';
+import { BugAssignmentCell, BugAssignmentFilter } from './BugUtility';
+import { useAdminAuth } from '../components/providers/AdminAuthProvider';
 
 const BugPanel = () => {
     const fadeInLeft = {
@@ -46,7 +48,18 @@ const BugPanel = () => {
     const [selectedSubject, setSelectedSubject] = useState("");
     const [selectedItems, setSelectedItems] = useState(new Set());
     const [selectAll, setSelectAll] = useState(false);
+    const [admins, setAdmins] = useState([]);
+    const [assigningBug, setAssigningBug] = useState({});
+    const [selectedAssignment, setSelectedAssignment] = useState("");
+    const { admin } = useAdminAuth();
     const entriesPerPage = 20;
+
+
+    useEffect(() => {
+        fetchBugs();
+        fetchAdmins(); // Add this
+    }, []);
+
 
     const fetchBugs = async () => {
         try {
@@ -61,11 +74,110 @@ const BugPanel = () => {
                 priority: doc.data().priority || "low",
                 status: doc.data().status || "unresolved"
             }));
-            setBugs(data);
-            setFilteredBugs(data);
+
+            // Filter bugs based on admin role
+            let filteredData = data;
+
+            // If not a superAdmin, only show bugs assigned to this admin
+            if (admin && admin.role !== 'superAdmin') {
+                filteredData = data.filter(bug => bug.assignedTo === admin.id);
+            }
+
+            setBugs(filteredData);
+            setFilteredBugs(filteredData);
         } catch (error) {
             console.error("Error fetching bugs:", error);
             toast.error("Failed to fetch bugs");
+        }
+    };
+    const fetchAdmins = async () => {
+        try {
+            const q = query(collection(db, "admins"));
+            const snapshot = await getDocs(q);
+            const adminData = snapshot.docs.map((doc) => ({
+                id: doc.id,
+                ...doc.data(),
+                role: doc.data().role || 'admin', // Ensure role is included
+                fullName: `${doc.data().firstName || ''} ${doc.data().lastName || ''} (${doc.data().username || 'Admin'})`
+            }));
+            setAdmins(adminData);
+        } catch (error) {
+            console.error("Error fetching admins:", error);
+            toast.error("Failed to fetch admins list");
+        }
+    };
+
+    const handleAssignBug = async (docId, adminId, adminName) => {
+        try {
+            setAssigningBug(prev => ({ ...prev, [docId]: true }));
+            const bugRef = doc(db, "feedback", docId);
+
+            // If adminId is empty, this is an unassignment
+            if (!adminId) {
+                await updateDoc(bugRef, {
+                    assignedTo: null,
+                    assignedToName: "Unassigned",
+                    assignedBy: null,
+                    assignedAt: null
+                });
+                toast.success("Bug unassigned successfully!");
+            } else {
+                // Find the selected admin
+                const selectedAdmin = admins.find(a => a.id === adminId);
+
+                // Check permissions based on roles
+                // Only regular admins are restricted - superAdmins can assign to anyone including themselves
+                if (admin?.role !== 'superAdmin' && selectedAdmin?.role === 'superAdmin') {
+                    toast.error("Regular admins cannot assign bugs to superAdmins.");
+                    return;
+                }
+
+                // Proceed with assignment
+                await updateDoc(bugRef, {
+                    assignedTo: adminId,
+                    assignedToName: adminName,
+                    assignedBy: admin?.id || 'system',
+                    assignedAt: new Date()
+                });
+
+                // Show appropriate success message
+                if (adminId === admin?.id) {
+                    toast.success(`Bug assigned to yourself successfully!`);
+                } else {
+                    toast.success(`Bug assigned to ${adminName} successfully!`);
+                }
+            }
+
+            // Update local state
+            const updatedBugs = bugs.map(bug =>
+                bug.docId === docId ?
+                    {
+                        ...bug,
+                        assignedTo: adminId || null,
+                        assignedToName: adminId ? adminName : "Unassigned",
+                        assignedBy: admin?.id || 'system',
+                        assignedAt: new Date()
+                    } : bug
+            );
+
+            setBugs(updatedBugs);
+            setFilteredBugs(
+                filteredBugs.map(bug =>
+                    bug.docId === docId ?
+                        {
+                            ...bug,
+                            assignedTo: adminId || null,
+                            assignedToName: adminId ? adminName : "Unassigned",
+                            assignedBy: admin?.id || 'system',
+                            assignedAt: new Date()
+                        } : bug
+                )
+            );
+        } catch (error) {
+            console.error("Error assigning bug:", error);
+            toast.error("Failed to assign bug. Please try again.");
+        } finally {
+            setAssigningBug(prev => ({ ...prev, [docId]: false }));
         }
     };
 
@@ -82,8 +194,14 @@ const BugPanel = () => {
                 status: doc.data().status || "unresolved"
             }));
 
-            setBugs(newData);
-            setFilteredBugs(newData);
+            // Apply the same filtering as fetchBugs
+            let filteredData = newData;
+            if (admin && admin.role !== 'superAdmin') {
+                filteredData = newData.filter(bug => bug.assignedTo === admin.id);
+            }
+
+            setBugs(filteredData);
+            setFilteredBugs(filteredData);
             toast.success("Data refreshed successfully!");
         } catch (error) {
             console.error("Error refreshing data:", error);
@@ -92,7 +210,6 @@ const BugPanel = () => {
             setIssyncing(false);
         }
     };
-
     const handleDeleteAllBugs = async () => {
         if (isDeletingAll) return;
 
@@ -201,6 +318,10 @@ const BugPanel = () => {
         setSelectedStatus(e.target.value);
     };
 
+    const handleAssignmentChange = (e) => {
+        setSelectedAssignment(e.target.value);
+    };
+
     const handleFetchData = () => {
         let filtered = bugs;
 
@@ -232,6 +353,14 @@ const BugPanel = () => {
 
         if (selectedSubject) {
             filtered = filtered.filter(bug => bug.subject === selectedSubject);
+        }
+
+        if (selectedAssignment) {
+            if (selectedAssignment === "unassigned") {
+                filtered = filtered.filter(bug => !bug.assignedTo);
+            } else {
+                filtered = filtered.filter(bug => bug.assignedTo === selectedAssignment);
+            }
         }
 
         setFilteredBugs(filtered);
@@ -553,15 +682,19 @@ const BugPanel = () => {
                             <FaArrowLeft className="text-lg" />
                             <span>Back to Admin Panel</span>
                         </button> */}
-                            <button
-                                onClick={handleDeleteAllBugs}
-                                disabled={isDeletingAll}
-                                className="px-4 py-2.5 bg-red-600/90 text-white font-semibold rounded-lg shadow-lg hover:bg-red-700 transition-all duration-200 flex items-center gap-2 hover:scale-105"
-                            >
-                                <MdDeleteForever className="text-xl" />
-                                <span>{isDeletingAll ? 'Deleting...' : 'Delete All'}</span>
-                            </button>
+
+                            {admin && admin.role === 'superAdmin' && (
+                                <button
+                                    onClick={handleDeleteAllBugs}
+                                    disabled={isDeletingAll}
+                                    className="px-4 py-2.5 bg-red-600/90 text-white font-semibold rounded-lg shadow-lg hover:bg-red-700 transition-all duration-200 flex items-center gap-2 hover:scale-105"
+                                >
+                                    <MdDeleteForever className="text-xl" />
+                                    <span>{isDeletingAll ? 'Deleting...' : 'Delete All'}</span>
+                                </button>
+                            )}
                         </div>
+
                     </div>
                 </motion.div>
 
@@ -650,6 +783,15 @@ const BugPanel = () => {
                                 <option value="others">Others</option>
                             </select>
                         </div>
+                        {admin && admin.role === 'superAdmin' && (
+                            <BugAssignmentFilter
+                                value={selectedAssignment}
+                                onChange={handleAssignmentChange}
+                                admins={admins}
+                                isSuperAdmin={admin?.role === 'superAdmin'}
+                                currentAdminId={admin?.id}
+                            />
+                        )}
                     </div>
                 </motion.div>
 
@@ -675,6 +817,7 @@ const BugPanel = () => {
                                 setSelectedStatus("");
                                 setSelectedSubject("");
                                 setselectedEmail("");
+                                setSelectedAssignment("");
                                 setFilteredBugs(bugs);
                                 toast.success("Filters cleared!");
                             }}
@@ -690,14 +833,16 @@ const BugPanel = () => {
                             <FaFileExcel className="text-xl" />
                             <span className="hidden md:inline">Export CSV</span>
                         </button>
-                        <button
-                            onClick={syncData}
-                            disabled={issyncing}
-                            className="px-6 py-2.5 bg-red-600 text-white font-semibold rounded-lg shadow-lg hover:bg-red-700 transition-all duration-200 flex items-center gap-2 hover:scale-105 disabled:opacity-50"
-                        >
-                            <FaSync className={`text-xl ${issyncing ? 'animate-spin' : ''}`} />
-                            <span>{issyncing ? 'Syncing...' : 'Sync Data'}</span>
-                        </button>
+                        {admin && admin.role === 'superAdmin' && (
+                            <button
+                                onClick={syncData}
+                                disabled={issyncing}
+                                className="px-6 py-2.5 bg-red-600 text-white font-semibold rounded-lg shadow-lg hover:bg-red-700 transition-all duration-200 flex items-center gap-2 hover:scale-105 disabled:opacity-50"
+                            >
+                                <FaSync className={`text-xl ${issyncing ? 'animate-spin' : ''}`} />
+                                <span>{issyncing ? 'Syncing...' : 'Sync Data'}</span>
+                            </button>
+                        )}
                     </div>
                 </motion.div>
 
@@ -719,6 +864,7 @@ const BugPanel = () => {
                                             "Update status",
                                             "Priority",
                                             "Change Priority",
+                                            "Assigned To",
                                             "Timestamp",
                                             "Email",
                                             "Notify",
@@ -737,13 +883,15 @@ const BugPanel = () => {
                                             <tr key={bug.docId} className={`hover:bg-red-50 ${bug.status === 'resolved' ? 'opacity-50' : ''}`}>
                                                 <td className="border border-red-200 px-4 md:px-7 py-2 md:py-2 text-xs md:text-base">
                                                     <div className="flex space-x-2">
-                                                        <button
-                                                            onClick={() => handleDeleteBug(bug.docId)}
-                                                            className="text-red-500 hover:text-red-700 text-lg md:text-2xl"
-                                                            title="Delete"
-                                                        >
-                                                            <MdDeleteForever />
-                                                        </button>
+                                                        {admin && admin.role === 'superAdmin' && (
+                                                            <button
+                                                                onClick={() => handleDeleteBug(bug.docId)}
+                                                                className="text-red-500 hover:text-red-700 text-lg md:text-2xl"
+                                                                title="Delete"
+                                                            >
+                                                                <MdDeleteForever />
+                                                            </button>
+                                                        )}
                                                     </div>
                                                 </td>
                                                 <td className="border border-red-200 px-4 py-2 text-sm md:text-base">
@@ -769,6 +917,16 @@ const BugPanel = () => {
                                                         <option value="high">High</option>
                                                         <option value="highest">Highest</option>
                                                     </select>
+                                                </td>
+                                                <td className="border border-red-200 px-4 py-2 text-sm md:text-base">
+                                                    <BugAssignmentCell
+                                                        bug={bug}
+                                                        admins={admins}
+                                                        onAssign={handleAssignBug}
+                                                        isAssigning={assigningBug[bug.docId]}
+                                                        isSuperAdmin={admin?.role === 'superAdmin'}
+                                                        currentAdminId={admin?.id}
+                                                    />
                                                 </td>
                                                 <td className="border border-red-200 px-4 py-2 font-serif text-sm md:text-base whitespace-nowrap">
                                                     {bug.timestamp
