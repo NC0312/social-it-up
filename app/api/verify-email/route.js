@@ -3,6 +3,9 @@ import nodemailer from 'nodemailer';
 import dns from 'dns';
 import axios from 'axios';
 import { promisify } from 'util';
+import { db } from '../../lib/firebase'; // Adjust path to your Firebase config
+import { collection, addDoc } from 'firebase/firestore';
+import { v4 as uuidv4 } from 'uuid';
 
 // Promisify DNS methods
 const resolveMx = promisify(dns.resolveMx);
@@ -57,47 +60,62 @@ export async function POST(req) {
             );
         }
 
-        const zeroBounceApiKey = process.env.ZEROBOUNCE_API_KEY;
-        if (!zeroBounceApiKey) {
-            console.error('ZeroBounce API key is required for accurate email verification');
+        const apiKey = "4908262b109a40a3924683e141e4e767";
+        let abstractResponse;
+        try {
+            abstractResponse = await axios.get(
+                `https://emailvalidation.abstractapi.com/v1/?api_key=${apiKey}&email=${email}`
+            );
+            console.log(`AbstractAPI response for ${email}:`, abstractResponse.data);
+
+            const { is_valid_format, is_smtp_valid, is_disposable_email, deliverability } = abstractResponse.data;
+
+            if (!is_valid_format.value || is_disposable_email.value) {
+                console.log(`Email ${email} rejected: invalid format or disposable`);
+                return NextResponse.json(
+                    { error: 'Invalid or disposable email address', type: 'invalid_email' },
+                    { status: 400 }
+                );
+            }
+
+            if (!is_smtp_valid.value || deliverability !== 'DELIVERABLE') {
+                console.log(`Email ${email} rejected: SMTP invalid or undeliverable`);
+                return NextResponse.json(
+                    { error: 'Email address does not exist or is undeliverable', type: 'undeliverable' },
+                    { status: 400 }
+                );
+            }
+
+            console.log(`Email ${email} passed AbstractAPI validation`);
+        } catch (apiError) {
+            console.error('AbstractAPI request failed:', apiError.message);
             return NextResponse.json(
-                { error: 'Server configuration error: Email verification service not configured', type: 'server_config_error' },
+                { error: 'Email validation service unavailable', type: 'api_error', details: apiError.message },
                 { status: 500 }
             );
         }
+
+        // 6. Generate verification token and store in Firebase
+        const token = uuidv4();
+        const verificationData = {
+            email,
+            token,
+            createdAt: new Date().toISOString(),
+            used: false,
+        };
 
         try {
-            const response = await axios.get(
-                `https://api.zerobounce.net/v2/validate?api_key=${zeroBounceApiKey}&email=${email}`
-            );
-            const { status, sub_status } = response.data;
-            console.log(`ZeroBounce result for ${email}:`, { status, sub_status });
-
-            if (status === 'invalid' || sub_status === 'mailbox_not_found' || sub_status === 'no_connect') {
-                console.log(`Email ${email} rejected by ZeroBounce as non-existent`);
-                return NextResponse.json(
-                    { error: 'This email address does not exist', type: 'invalid_recipient' },
-                    { status: 400 }
-                );
-            }
-
-            if (status !== 'valid') {
-                console.log(`Uncertain email status for ${email}: ${status}, sub_status: ${sub_status}`);
-                return NextResponse.json(
-                    { error: 'Email verification uncertain, please try again', type: 'uncertain_status' },
-                    { status: 400 }
-                );
-            }
-
-            console.log(`Email ${email} confirmed valid by ZeroBounce`);
-        } catch (zeroBounceError) {
-            console.error('ZeroBounce verification failed:', zeroBounceError.message);
+            await addDoc(collection(db, 'emailVerifications'), verificationData);
+            console.log(`Verification token stored for ${email}: ${token}`);
+        } catch (firebaseError) {
+            console.error('Failed to store verification token:', firebaseError);
             return NextResponse.json(
-                { error: 'Email verification service unavailable', type: 'verification_service_error' },
+                { error: 'Failed to process verification', type: 'firebase_error', details: firebaseError.message },
                 { status: 500 }
             );
         }
 
+        // 7. SMTP configuration check
         if (!process.env.SMTP_HOST || !process.env.SMTP_USER || !process.env.SMTP_PASSWORD || !process.env.SMTP_FROM_EMAIL) {
             console.error('Missing SMTP configuration:', {
                 host: process.env.SMTP_HOST,
@@ -110,6 +128,7 @@ export async function POST(req) {
             );
         }
 
+        // 8. Send verification email with link
         const transporter = nodemailer.createTransport({
             host: process.env.SMTP_HOST,
             port: parseInt(process.env.SMTP_PORT || '587'),
@@ -126,18 +145,21 @@ export async function POST(req) {
         } catch (verifyError) {
             console.error('SMTP connection verification failed:', verifyError);
             return NextResponse.json(
-                { error: 'Email service unavailable', type: 'smtp_error' },
+                { error: 'Email service unavailable', type: 'smtp_error', details: verifyError.message },
                 { status: 500 }
             );
         }
 
+        const verificationLink = `http://localhost:3000/api/verify-token?token=${token}`; // Replace with your domain in production
         const mailOptions = {
             from: process.env.SMTP_FROM_EMAIL,
             to: email,
-            subject: 'Email Verification',
+            subject: 'Verify Your Email - Social It Up',
             html: `
                 <h1>Hello ${firstName},</h1>
-                <p>Your email is verified successfully.</p>
+                <p>Please verify your email by clicking the link below:</p>
+                <a href="${verificationLink}" style="display: inline-block; padding: 10px 20px; background-color: #36302A; color: white; text-decoration: none; border-radius: 5px;">Verify Email</a>
+                <p>If you didn’t request this, please ignore this email.</p>
                 <p>Best regards,</p>
                 <p>Team Social It Up</p>
                 <img src="cid:logo" style="width: 79px; height: 70px;"/>
@@ -155,7 +177,7 @@ export async function POST(req) {
             console.log('SMTP response:', info.response);
 
             return NextResponse.json(
-                { message: 'Email verified successfully', success: true },
+                { message: 'Verification email sent. Please check your inbox to confirm.', success: true },
                 { status: 200 }
             );
         } catch (sendError) {
