@@ -682,15 +682,19 @@ const BugPanel = () => {
                             <FaArrowLeft className="text-lg" />
                             <span>Back to Admin Panel</span>
                         </button> */}
-                            <button
-                                onClick={handleDeleteAllBugs}
-                                disabled={isDeletingAll}
-                                className="px-4 py-2.5 bg-red-600/90 text-white font-semibold rounded-lg shadow-lg hover:bg-red-700 transition-all duration-200 flex items-center gap-2 hover:scale-105"
-                            >
-                                <MdDeleteForever className="text-xl" />
-                                <span>{isDeletingAll ? 'Deleting...' : 'Delete All'}</span>
-                            </button>
+
+                            {admin && admin.role === 'superAdmin' && (
+                                <button
+                                    onClick={handleDeleteAllBugs}
+                                    disabled={isDeletingAll}
+                                    className="px-4 py-2.5 bg-red-600/90 text-white font-semibold rounded-lg shadow-lg hover:bg-red-700 transition-all duration-200 flex items-center gap-2 hover:scale-105"
+                                >
+                                    <MdDeleteForever className="text-xl" />
+                                    <span>{isDeletingAll ? 'Deleting...' : 'Delete All'}</span>
+                                </button>
+                            )}
                         </div>
+
                     </div>
                 </motion.div>
 
@@ -779,13 +783,15 @@ const BugPanel = () => {
                                 <option value="others">Others</option>
                             </select>
                         </div>
-                        <BugAssignmentFilter
-                            value={selectedAssignment}
-                            onChange={handleAssignmentChange}
-                            admins={admins}
-                            isSuperAdmin={admin?.role === 'superAdmin'}
-                            currentAdminId={admin?.id}
-                        />
+                        {admin && admin.role === 'superAdmin' && (
+                            <BugAssignmentFilter
+                                value={selectedAssignment}
+                                onChange={handleAssignmentChange}
+                                admins={admins}
+                                isSuperAdmin={admin?.role === 'superAdmin'}
+                                currentAdminId={admin?.id}
+                            />
+                        )}
                     </div>
                 </motion.div>
 
@@ -827,14 +833,16 @@ const BugPanel = () => {
                             <FaFileExcel className="text-xl" />
                             <span className="hidden md:inline">Export CSV</span>
                         </button>
-                        <button
-                            onClick={syncData}
-                            disabled={issyncing}
-                            className="px-6 py-2.5 bg-red-600 text-white font-semibold rounded-lg shadow-lg hover:bg-red-700 transition-all duration-200 flex items-center gap-2 hover:scale-105 disabled:opacity-50"
-                        >
-                            <FaSync className={`text-xl ${issyncing ? 'animate-spin' : ''}`} />
-                            <span>{issyncing ? 'Syncing...' : 'Sync Data'}</span>
-                        </button>
+                        {admin && admin.role === 'superAdmin' && (
+                            <button
+                                onClick={syncData}
+                                disabled={issyncing}
+                                className="px-6 py-2.5 bg-red-600 text-white font-semibold rounded-lg shadow-lg hover:bg-red-700 transition-all duration-200 flex items-center gap-2 hover:scale-105 disabled:opacity-50"
+                            >
+                                <FaSync className={`text-xl ${issyncing ? 'animate-spin' : ''}`} />
+                                <span>{issyncing ? 'Syncing...' : 'Sync Data'}</span>
+                            </button>
+                        )}
                     </div>
                 </motion.div>
 
@@ -875,13 +883,15 @@ const BugPanel = () => {
                                             <tr key={bug.docId} className={`hover:bg-red-50 ${bug.status === 'resolved' ? 'opacity-50' : ''}`}>
                                                 <td className="border border-red-200 px-4 md:px-7 py-2 md:py-2 text-xs md:text-base">
                                                     <div className="flex space-x-2">
-                                                        <button
-                                                            onClick={() => handleDeleteBug(bug.docId)}
-                                                            className="text-red-500 hover:text-red-700 text-lg md:text-2xl"
-                                                            title="Delete"
-                                                        >
-                                                            <MdDeleteForever />
-                                                        </button>
+                                                        {admin && admin.role === 'superAdmin' && (
+                                                            <button
+                                                                onClick={() => handleDeleteBug(bug.docId)}
+                                                                className="text-red-500 hover:text-red-700 text-lg md:text-2xl"
+                                                                title="Delete"
+                                                            >
+                                                                <MdDeleteForever />
+                                                            </button>
+                                                        )}
                                                     </div>
                                                 </td>
                                                 <td className="border border-red-200 px-4 py-2 text-sm md:text-base">

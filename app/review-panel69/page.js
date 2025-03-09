@@ -709,6 +709,7 @@ const ReviewPanel = () => {
                                 <FaArrowLeft className="text-lg" />
                                 <span>Back to Admin Panel</span>
                             </button>
+                            {admin && admin.role === 'superAdmin' && (
                             <button
                                 onClick={handleDeleteAllReviews}
                                 disabled={isDeletingAll}
@@ -717,6 +718,7 @@ const ReviewPanel = () => {
                                 <MdDeleteForever className="text-xl" />
                                 <span>{isDeletingAll ? 'Deleting...' : 'Delete All'}</span>
                             </button>
+                            )}
                         </div>
                     </div>
                 </motion.div>
@@ -823,12 +825,14 @@ const ReviewPanel = () => {
                                 </select>
                             </div>
 
+                            {admin && admin.role === 'superAdmin' && (
                             <AssignmentFilter
                                 value={selectedAssignment}
                                 onChange={handleAssignmentChange}
                                 admins={admins}
                                 isSuperAdmin={admin?.role === 'superAdmin'}
                             />
+                            )}
                         </div>
                     </div>
                 </motion.div>
@@ -857,7 +861,7 @@ const ReviewPanel = () => {
                                 setSelectedClientStatus("");
                                 setSelectedName("");
                                 setSelectedCompany("");
-                                setSelectedAssignment(""); // Make sure to clear this
+                                setSelectedAssignment("");
                                 setFilteredReviews(reviews);
                                 toast.success("Filters cleared!");
                             }}
@@ -873,6 +877,7 @@ const ReviewPanel = () => {
                             <FaFileExcel className="text-xl" />
                             <span className="hidden md:inline">Export CSV</span>
                         </button>
+                        {admin && admin.role === 'superAdmin' && (
                         <button
                             onClick={syncData}
                             disabled={issyncing}
@@ -881,6 +886,7 @@ const ReviewPanel = () => {
                             <FaSync className={`text-xl ${issyncing ? 'animate-spin' : ''}`} />
                             <span>{issyncing ? 'Syncing...' : 'Sync Data'}</span>
                         </button>
+                        )}
                     </div>
                 </motion.div>
 
@@ -937,13 +943,15 @@ const ReviewPanel = () => {
                                         displayedReviews.map((review) => (
                                             <tr key={review.docId} className={`hover:bg-green-50 ${review.clientStatus === 'Reached out' ? 'opacity-50' : ''}`}>
                                                 <td className="border border-green-200 px-4 md:px-7 py-2 md:py-2 text-xs md:text-base">
-                                                    <button
-                                                        onClick={() => handleDeleteReview(review.docId)}
-                                                        className="text-red-500 hover:text-red-700 text-lg md:text-2xl"
-                                                        title="Delete"
-                                                    >
-                                                        <MdDeleteForever />
-                                                    </button>
+                                                    {admin && admin.role === 'superAdmin' && (
+                                                        <button
+                                                            onClick={() => handleDeleteReview(review.docId)}
+                                                            className="text-red-500 hover:text-red-700 text-lg md:text-2xl"
+                                                            title="Delete"
+                                                        >
+                                                            <MdDeleteForever />
+                                                        </button>
+                                                    )}
                                                 </td>
                                                 <td className="border border-green-200 px-4 py-2 text-sm md:text-base">
                                                     <PriorityDisplay priority={review.priority} />
