@@ -270,7 +270,7 @@ const AdminManagement = () => {
                     reviewCounts[assignedTo] = (reviewCounts[assignedTo] || 0) + 1;
                 }
             });
-            
+
             setReviewCounts(reviewCounts);
         } catch (error) {
             console.error("Error fetching review counts:", error);
@@ -389,6 +389,18 @@ const AdminManagement = () => {
             setConfirmAction(null);
         }
     };
+
+    const copyEmailToClipboard = (email) => {
+        navigator.clipboard
+          .writeText(email)
+          .then(() => {
+            toast.success("Email copied to clipboard!")
+          })
+          .catch((error) => {
+            console.error("Failed to copy email:", error)
+            toast.error("Failed to copy email to clipboard")
+          })
+      }
 
     // Handle admin rejection/deletion
     const handleDelete = async (adminId, adminType) => {
@@ -797,7 +809,15 @@ const AdminManagement = () => {
                                                                         </div>
                                                                     </td>
                                                                     <td className="px-3 py-4 whitespace-nowrap text-xs sm:text-sm text-[#575553] sm:px-6">
-                                                                        {admin.email}
+                                                                        <div
+                                                                            className="cursor-pointer hover:text-[#36302A] hover:underline group relative"
+                                                                            onClick={() => copyEmailToClipboard(admin.email)}
+                                                                        >
+                                                                            {admin.email}
+                                                                            <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-[#36302A] rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap pointer-events-none z-10">
+                                                                                Click to copy
+                                                                            </div>
+                                                                        </div>
                                                                     </td>
                                                                     <td className="px-3 py-4 whitespace-nowrap text-xs sm:text-sm text-[#575553] capitalize hidden sm:table-cell sm:px-6">
                                                                         {admin.gender || 'Unspecified'}
@@ -984,8 +1004,14 @@ const AdminManagement = () => {
                                                                     </td>
                                                                     <td className="px-4 py-3 text-sm text-gray-700">
                                                                         <div className="flex items-center gap-2">
-                                                                            <span className="font-medium truncate max-w-[200px]">
+                                                                            <span
+                                                                                className="font-medium truncate max-w-[200px] cursor-pointer hover:text-[#36302A] hover:underline group relative"
+                                                                                onClick={() => copyEmailToClipboard(admin.email)}
+                                                                            >
                                                                                 {admin.email}
+                                                                                <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-[#36302A] rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap pointer-events-none z-10">
+                                                                                    Click to copy
+                                                                                </div>
                                                                             </span>
                                                                             {admin.isEmailVerified ? (
                                                                                 <div className="flex items-center text-emerald-600 text-xs bg-emerald-50 px-2 py-0.5 rounded-full">

@@ -34,7 +34,8 @@
     "sonner": "^1.7.1",
     "swiper": "^9.4.1",
     "tailwind-merge": "^2.6.0",
-    "tailwindcss-animate": "^1.0.7"
+    "tailwindcss-animate": "^1.0.7",
+    "uuid": "^11.1.0"
   },
   "devDependencies": {
     "@shadcn/ui": "^0.0.4",
