@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FaCommentDots, FaInfoCircle } from 'react-icons/fa';
 import { addDoc, collection } from 'firebase/firestore';
-import { db } from '../lib/firebase';
+import { db } from '../../lib/firebase';
 
 const InquireModal = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);

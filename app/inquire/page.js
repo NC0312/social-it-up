@@ -1,14 +1,14 @@
 'use client';
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { motion, useAnimation, useMotionValue, AnimatePresence } from 'framer-motion';
-import CountrySelector from '../components/CountrySelector';
+import CountrySelector from '../components/Inquire/CountrySelector';
 import { FaInfoCircle } from "react-icons/fa";
 import { addDoc, collection } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import ReCAPTCHA from "react-google-recaptcha";
-import InquireModal from '../components/InquireModal';
+import InquireModal from '../components/Inquire/InquireModal';
 import { ImSpinner8 } from 'react-icons/im';
-import RatingModal from '../components/RatingModal';
+import RatingModal from '../components/Inquire/RatingModal';
 
 
 const Inquire = () => {

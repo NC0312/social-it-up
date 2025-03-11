@@ -3,13 +3,13 @@ import { motion } from "framer-motion";
 import { useRef } from "react";
 import { useInView } from "framer-motion";
 
-import Endorsements from "./components/Home/Endorsements";
-import FAQs from "./components/Home/faqs";
-import HeroSection from "./components/Home/HeroSection";
-import HomeExt1 from "./components/Home/HomeExt1";
-import LegacyCarousel from "./components/Home/LegacyCarousel";
-import OurServices from "./components/Home/OurServices";
-import QuoteSection from "./components/Home/QuoteSection";
+import Endorsements from "../Endorsements";
+import FAQs from "../faqs";
+import HeroSection from "./components/HeroSection";
+import HomeExt1 from "./components/HomeExt1";
+import LegacyCarousel from "../LegacyCarousel";
+import OurServices from "../OurServices";
+import QuoteSection from "./components/QuoteSection";
 
 // const fadeInUp = {
 //   hidden: { opacity: 0, y: 20 },

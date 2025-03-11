@@ -7,7 +7,7 @@ import { motion } from "framer-motion";
 import { AnimatePresence } from "framer-motion";
 import { usePathname, useRouter } from "next/navigation";
 import { Menu } from 'lucide-react';
-import { useAdminAuth } from "./providers/AdminAuthProvider";
+import { useAdminAuth } from "../providers/AdminAuthProvider";
 import {
   collection,
   query,
@@ -15,7 +15,7 @@ import {
   getDocs,
   orderBy
 } from 'firebase/firestore';
-import { db } from '../lib/firebase';
+import { db } from '../../lib/firebase';
 import { toast } from "sonner";
 import { LogOut, Settings } from 'lucide-react';
 
