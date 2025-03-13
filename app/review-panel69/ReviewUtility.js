@@ -2,9 +2,11 @@
 import { useState } from "react";
 import { BsPersonCheck } from "react-icons/bs";
 import { FaCheck, FaUser } from "react-icons/fa";
+import { toast } from "sonner";
 
 export const AssignmentCell = ({ review, admins, onAssign, isAssigning, isSuperAdmin, currentAdminId }) => {
     const [isOpen, setIsOpen] = useState(false);
+    const [isSendingEmail, setIsSendingEmail] = useState(false);
 
     // Filter admins based on role permissions
     const filteredAdmins = isSuperAdmin
@@ -27,17 +29,89 @@ export const AssignmentCell = ({ review, admins, onAssign, isAssigning, isSuperA
         ? `Assigned by: ${assignerName}\nDate: ${formattedAssignmentDate}`
         : "";
 
-    // Handle assignment selection
-    const handleAssignment = (adminId, adminName) => {
-        onAssign(review.docId, adminId, adminName);
-        setIsOpen(false);
+    // Handle assignment selection and email notification
+    const handleAssignment = async (adminId, adminName) => {
+        // If unassigning, don't send email
+        if (!adminId) {
+            onAssign(review.docId, adminId, adminName);
+            setIsOpen(false);
+            return;
+        }
+
+        try {
+            setIsSendingEmail(true);
+
+            // First call the assignment function (which updates Firestore)
+            const assignmentSuccess = await onAssign(review.docId, adminId, adminName);
+
+            if (assignmentSuccess) {
+                toast.success(`Successfully assigned to ${adminName}!`);
+
+                // Try to send email but don't block if it fails
+                try {
+                    // Find the selected admin details for email
+                    const selectedAdmin = admins.find(a => a.id === adminId);
+
+                    if (selectedAdmin?.email) {
+                        // Get the current admin's name as the assigner
+                        const currentAdmin = admins.find(a => a.id === currentAdminId);
+                        const currentAdminName = currentAdmin ? currentAdmin.fullName : 'System Admin';
+
+                        // Create a simplified version of the review object
+                        const simplifiedReview = {
+                            docId: review.docId,
+                            firstName: review.firstName,
+                            lastName: review.lastName,
+                            email: review.email,
+                            company: review.company,
+                            priority: review.priority
+                        };
+
+                        // Send email notification as a background task
+                        fetch('/api/send-assignment-email', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({
+                                recipientEmail: selectedAdmin.email,
+                                recipientName: selectedAdmin.firstName || adminName,
+                                assignerName: currentAdminName,
+                                reviewDetails: simplifiedReview
+                            }),
+                        })
+                            .then(response => {
+                                if (response.ok) {
+                                    toast.success(`Email notification sent to ${adminName}`);
+                                } else {
+                                    toast.warning(`Assignment completed, but email notification couldn't be sent`);
+                                }
+                            })
+                            .catch(() => {
+                                toast.warning(`Assignment completed, but email notification couldn't be sent`);
+                            });
+                    } else {
+                        toast.warning('Admin assigned, but email notification could not be sent (no email found)');
+                    }
+                } catch (emailError) {
+                    console.error('Email error:', emailError);
+                    // Don't show another toast here as we already showed assignment success
+                }
+            }
+        } catch (error) {
+            console.error('Error in assignment process:', error);
+            toast.error('Assignment failed. Please try again.');
+        } finally {
+            setIsSendingEmail(false);
+            setIsOpen(false);
+        }
     };
 
     // For regular admins: Display only, no dropdown
     if (!isSuperAdmin) {
         return (
             <div className="px-2 py-1 text-sm flex items-center group relative">
-                <BsPersonCheck className="mr-2 text-green-600" />
+                <div className={`w-3 h-3 rounded-full mr-2 ${review.assignedTo ? 'bg-green-500' : 'bg-gray-300'}`}></div>
                 <span className="text-gray-700">{review.assignedToName || "Unassigned"}</span>
                 {review.assignedTo && (
                     <div className="absolute bottom-full left-0 mb-2 px-3 py-2 bg-gray-800 text-white text-xs rounded whitespace-pre opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-10">
@@ -48,23 +122,25 @@ export const AssignmentCell = ({ review, admins, onAssign, isAssigning, isSuperA
         );
     }
 
-    // For superadmins: Custom dropdown UI
+    // For superadmins: Custom dropdown UI with loading indicator for email
     return (
         <div className="relative">
             {/* Dropdown Trigger */}
             <button
                 onClick={() => setIsOpen(!isOpen)}
-                disabled={isAssigning}
-                className={`w-full flex items-center justify-between px-3 py-2 rounded-lg border border-green-300 bg-white text-sm font-medium text-gray-700
-            ${isAssigning ? "opacity-50 cursor-not-allowed" : "hover:bg-green-50 focus:ring-2 focus:ring-green-500"} transition-all duration-200`}
+                disabled={isAssigning || isSendingEmail}
+                className={`w-full flex items-center justify-between px-3 py-2 rounded-lg border ${review.assignedTo ? 'border-green-300' : 'border-gray-300'} bg-white text-sm font-medium text-gray-700
+            ${(isAssigning || isSendingEmail) ? "opacity-50 cursor-not-allowed" : "hover:bg-green-50 focus:ring-2 focus:ring-green-500"} transition-all duration-200`}
             >
                 <span className="flex items-center gap-2">
-                    {isAssigning ? (
+                    {isAssigning || isSendingEmail ? (
                         <div className="animate-spin rounded-full h-4 w-4 border-2 border-green-500 border-t-transparent"></div>
                     ) : (
-                        <FaUser className="text-green-600" />
+                        <div className={`w-3 h-3 rounded-full ${review.assignedTo ? 'bg-green-500' : 'bg-gray-300'}`}></div>
                     )}
-                    {isAssigning ? "Assigning..." : (review.assignedToName || "Unassigned")}
+                    {isAssigning ? "Assigning..." :
+                        isSendingEmail ? "Sending email..." :
+                            (review.assignedToName || "Unassigned")}
                 </span>
                 <span className={`transform transition-transform ${isOpen ? "rotate-180" : ""}`}>
                     ▼
@@ -79,7 +155,7 @@ export const AssignmentCell = ({ review, admins, onAssign, isAssigning, isSuperA
                         onClick={() => handleAssignment("", "Unassigned")}
                         className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-green-100 transition-colors duration-200"
                     >
-                        <FaUser className="text-gray-500" />
+                        <div className="w-3 h-3 rounded-full bg-gray-300"></div>
                         Unassigned
                         {!review.assignedTo && <FaCheck className="ml-auto text-green-600" />}
                     </button>
@@ -91,7 +167,7 @@ export const AssignmentCell = ({ review, admins, onAssign, isAssigning, isSuperA
                             onClick={() => handleAssignment(admin.id, admin.fullName)}
                             className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-green-100 transition-colors duration-200"
                         >
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-2 flex-grow">
                                 <div className="w-5 h-5 rounded-full bg-green-600 text-white flex items-center justify-center text-xs">
                                     {admin.firstName?.charAt(0) || "A"}
                                 </div>
@@ -121,6 +197,7 @@ export const AssignmentCell = ({ review, admins, onAssign, isAssigning, isSuperA
         </div>
     );
 };
+
 
 export const AssignmentFilter = ({ value, onChange, admins, isSuperAdmin }) => {
     // Filter the admin list based on user permissions
