@@ -2,7 +2,7 @@
 
 import React from "react";
 import { motion } from "framer-motion";
-import AboutExt1 from "../components/AboutExt1";
+import AboutExt1 from "../components/About/AboutExt1";
 
 const About = () => {
     const fadeInLeft = {

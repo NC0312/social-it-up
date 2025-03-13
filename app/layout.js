@@ -1,8 +1,8 @@
 import localFont from "next/font/local";
 import "./globals.css";
-import Header from "./components/Header";
+import Header from "./components/Layout/Header";
 import DynamicTitle from "./components/DynamicTitle";
-import Footer from "./components/Footer";
+import Footer from "./components/Layout/Footer";
 import { Toaster } from "sonner";
 import Chatbot from "./components/Chatbot";
 import { DevToolsBlocker } from "@/utils/devToolsBlocker";

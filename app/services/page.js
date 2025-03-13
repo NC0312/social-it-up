@@ -2,18 +2,18 @@
 import Link from 'next/link';
 import React from 'react';
 import { motion } from 'framer-motion';
-import ServicesBranding from '../components/ServicesBranding';
-import ServicesDigitalMarketing from '../components/ServicesDigitalMarketing';
-import ServicesWebsite from '../components/ServicesWebsite';
-import ServicesFinancialServices from '../components/ServicesFinancialServices';
-import ServicesInfiniteScroll from '../components/ServicesInfiniteScroll';
+import ServicesBranding from '../components/Services/ServicesBranding';
+import ServicesDigitalMarketing from '../components/Services/ServicesDigitalMarketing';
+import ServicesWebsite from '../components/Services/ServicesWebsite';
+import ServicesFinancialServices from '../components/Services/ServicesFinancialServices';
+import ServicesInfiniteScroll from '../components/Services/ServicesInfiniteScroll';
 
 const Services = () => {
   // Animation variants
   const fadeIn = {
     hidden: { opacity: 0, y: 20 },
-    visible: { 
-      opacity: 1, 
+    visible: {
+      opacity: 1,
       y: 0,
       transition: { duration: 0.6 }
     }
@@ -36,7 +36,7 @@ const Services = () => {
   };
 
   return (
-    <main className="w-full" style={{userSelect:"none"}}>
+    <main className="w-full" style={{ userSelect: "none" }}>
       {/* Hero Section */}
       <motion.section
         initial={{ opacity: 0 }}

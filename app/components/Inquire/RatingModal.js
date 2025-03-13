@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { doc, updateDoc, getDoc, setDoc } from 'firebase/firestore';
-import { db } from '../lib/firebase';
+import { db } from '../../lib/firebase';
 
 const RatingModal = ({ isOpen: externalIsOpen = true, onClose }) => {
     const [isOpen, setIsOpen] = useState(externalIsOpen);
@@ -42,7 +42,7 @@ const RatingModal = ({ isOpen: externalIsOpen = true, onClose }) => {
         try {
             const ratingRef = doc(db, 'ratings', ratingData.label.toLowerCase());
             const ratingDoc = await getDoc(ratingRef);
-            
+
             if (ratingDoc.exists()) {
                 // Update existing rating count
                 await updateDoc(ratingRef, {
@@ -69,7 +69,7 @@ const RatingModal = ({ isOpen: externalIsOpen = true, onClose }) => {
             try {
                 const selectedEmoji = emojis.find(e => e.rating === selectedRating);
                 await updateRatingInFirebase(selectedEmoji);
-                
+
                 setIsSubmitted(true);
                 setTimeout(() => {
                     setIsOpen(false);
@@ -126,8 +126,8 @@ const RatingModal = ({ isOpen: externalIsOpen = true, onClose }) => {
                                             onMouseEnter={() => setHoveredRating(item.rating)}
                                             onMouseLeave={() => setHoveredRating(null)}
                                             className={`group relative flex flex-col items-center justify-center p-2 rounded-lg transition-all duration-300
-                                                ${selectedRating === item.rating 
-                                                    ? 'bg-[#36302A]/10 scale-110 shadow-lg' 
+                                                ${selectedRating === item.rating
+                                                    ? 'bg-[#36302A]/10 scale-110 shadow-lg'
                                                     : 'hover:bg-[#36302A]/5'}`}
                                         >
                                             <AnimatePresence>
@@ -141,7 +141,7 @@ const RatingModal = ({ isOpen: externalIsOpen = true, onClose }) => {
                                                     />
                                                 )}
                                             </AnimatePresence>
-                                            
+
                                             <div className="flex flex-col items-center relative z-10">
                                                 <motion.span
                                                     animate={{
@@ -152,7 +152,7 @@ const RatingModal = ({ isOpen: externalIsOpen = true, onClose }) => {
                                                 >
                                                     {item.emoji}
                                                 </motion.span>
-                                                
+
                                                 <motion.span
                                                     animate={{
                                                         opacity: selectedRating === item.rating || hoveredRating === item.rating ? 1 : 0.8,
@@ -161,7 +161,7 @@ const RatingModal = ({ isOpen: externalIsOpen = true, onClose }) => {
                                                 >
                                                     {item.label}
                                                 </motion.span>
-                                                
+
                                                 {selectedRating === item.rating && (
                                                     <motion.div
                                                         initial={{ width: 0 }}
@@ -171,7 +171,7 @@ const RatingModal = ({ isOpen: externalIsOpen = true, onClose }) => {
                                                     />
                                                 )}
                                             </div>
-                                            
+
                                             {hoveredRating === item.rating && selectedRating !== item.rating && (
                                                 <motion.div
                                                     initial={{ opacity: 0, scale: 0.8 }}
