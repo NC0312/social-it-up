@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
-import { collection, getDocs, query, where, orderBy, deleteDoc, doc, writeBatch, addDoc } from "firebase/firestore";
+import React, { useEffect, useState } from "react";
+import { collection, getDocs, query, orderBy, deleteDoc, doc, writeBatch, addDoc } from "firebase/firestore";
 import { db } from "../lib/firebase";
 import { toast } from "sonner";
 import {
@@ -9,13 +9,9 @@ import {
   MdContentCopy,
   MdOutlineSaveAlt,
   MdFilterList,
-  MdMoreVert,
   MdInfo,
   MdOutlineRefresh,
-  MdOutlineViewColumn,
   MdClose,
-  MdOutlineUndo,
-  MdSearch,
   MdOutlineViewModule,
   MdOutlineTableRows
 } from "react-icons/md";
@@ -25,14 +21,8 @@ import {
   FaExternalLinkAlt,
   FaFileExcel,
   FaSync,
-  FaFilter,
-  FaCalendarAlt,
   FaChevronDown,
   FaChevronUp,
-  FaCheckSquare,
-  FaRegSquare,
-  FaEllipsisV,
-  FaBars
 } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
 import { Pagination } from "../components/Pagination";
@@ -222,7 +212,6 @@ const AdminPanel = () => {
   const [issyncing, setIssyncing] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [viewMode, setViewMode] = useState("table"); // table or card
-  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [detailModalInquiry, setDetailModalInquiry] = useState(null);
   const [contextMenu, setContextMenu] = useState({ show: false, x: 0, y: 0, item: null });
   const [selectedRows, setSelectedRows] = useState([]);
@@ -262,7 +251,7 @@ const AdminPanel = () => {
     if (autoRefresh) {
       const interval = setInterval(() => {
         syncData(true); // silent refresh
-      }, 30000); // every 30 seconds
+      }, 5000); // every 5 seconds
       setRefreshInterval(interval);
       return () => clearInterval(interval);
     } else if (refreshInterval) {
@@ -503,26 +492,6 @@ const AdminPanel = () => {
     } else {
       toast.warning("No data matches the selected filters.");
     }
-  };
-
-  // Save current filter as a preset
-  const handleSaveFilter = () => {
-    const filterName = prompt("Enter a name for this filter preset:");
-    if (!filterName) return;
-
-    const newFilter = {
-      name: filterName,
-      filter: {
-        company: selectedCompany,
-        name: selectedName,
-        dateRange: dateRange,
-        services: selectedServices,
-        signedUp: signedUp
-      }
-    };
-
-    setSavedFilters([...savedFilters, newFilter]);
-    toast.success(`Filter "${filterName}" saved!`);
   };
 
   // Apply a saved filter preset
@@ -884,15 +853,16 @@ const AdminPanel = () => {
           <div className="flex justify-between items-start mb-3">
             <div>
               <div className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  checked={selectedRows.includes(inquiry.id)}
-                  onChange={(e) => {
-                    e.stopPropagation();
-                    handleRowSelect(inquiry.id);
-                  }}
-                  className="h-4 w-4"
-                />
+                <div onClick={(e) => e.stopPropagation()}>
+                  <input
+                    type="checkbox"
+                    checked={selectedRows.includes(inquiry.id)}
+                    onChange={(e) => {
+                      handleRowSelect(inquiry.id);
+                    }}
+                    className="h-4 w-4"
+                  />
+                </div>
                 <h3 className="font-medium text-lg">{inquiry.firstName} {inquiry.lastName}</h3>
                 {isNewInquiry() && <span className="px-2 py-0.5 text-xs bg-blue-100 text-blue-800 rounded-full">New</span>}
               </div>
@@ -905,6 +875,7 @@ const AdminPanel = () => {
             </div>
           </div>
 
+          {/* Rest of the card component remains the same */}
           <div className="grid grid-cols-2 gap-2 text-sm mb-3">
             <div>
               <p className="text-gray-500">Email:</p>
@@ -987,72 +958,6 @@ const AdminPanel = () => {
   return (
     <ProtectedRoute>
       <div className="bg-gradient-to-b from-[#FAF4ED] to-white min-h-screen relative">
-        {/* Collapsible Sidebar */}
-        <AnimatePresence>
-          {sidebarOpen && (
-            <motion.div
-              initial={{ x: -280 }}
-              animate={{ x: 0 }}
-              exit={{ x: -280 }}
-              className="fixed top-0 left-0 bottom-0 w-64 bg-white shadow-lg z-50"
-            >
-              <div className="p-4 border-b">
-                <div className="flex justify-between items-center">
-                  <h2 className="font-serif text-xl font-bold text-[#36302A]">Navigation</h2>
-                  <button
-                    onClick={() => setSidebarOpen(false)}
-                    className="p-1 rounded-full hover:bg-gray-100"
-                  >
-                    <MdClose />
-                  </button>
-                </div>
-              </div>
-
-              <div className="p-4">
-                <h3 className="text-sm font-medium text-gray-500 mb-2">PANELS</h3>
-                <ul className="space-y-2">
-                  <li>
-                    <a className="block p-2 bg-[#36302A]/10 rounded-lg text-[#36302A] font-medium">
-                      Admin Panel
-                    </a>
-                  </li>
-                  <li>
-                    <a
-                      className="block p-2 hover:bg-[#36302A]/5 rounded-lg cursor-pointer"
-                      onClick={() => router.push('/review-panel69')}
-                    >
-                      Review Panel
-                    </a>
-                  </li>
-                </ul>
-              </div>
-
-              <div className="p-4 border-t">
-                <h3 className="text-sm font-medium text-gray-500 mb-2">SAVED FILTERS</h3>
-                <ul className="space-y-1">
-                  {savedFilters.map((filter, index) => (
-                    <li key={index}>
-                      <button
-                        onClick={() => handleApplySavedFilter(filter)}
-                        className="block w-full text-left p-2 hover:bg-[#36302A]/5 rounded-lg cursor-pointer text-sm"
-                      >
-                        {filter.name}
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-
-                <button
-                  onClick={handleSaveFilter}
-                  className="mt-3 w-full flex items-center justify-center gap-1 p-2 border border-dashed border-[#36302A]/40 rounded-lg text-sm text-[#36302A] hover:bg-[#36302A]/5"
-                >
-                  <span>Save Current Filter</span>
-                </button>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
         <div className="p-4 md:p-8">
           {/* Enhanced Header Section */}
           <motion.div
@@ -1063,25 +968,19 @@ const AdminPanel = () => {
           >
             <div className="flex flex-col md:flex-row justify-between items-center border-b border-[#36302A]/50 py-6 pb-4 mb-8">
               <div className="flex items-center gap-3">
-                <button
-                  onClick={() => setSidebarOpen(true)}
-                  className="p-2 hover:bg-[#36302A]/10 rounded-full mr-2"
-                >
-                  <FaBars />
-                </button>
                 <h1 className="text-4xl md:text-6xl font-serif font-bold bg-gradient-to-r from-[#36302A] to-[#5a4c3f] bg-clip-text text-transparent">
                   Admin Panel
                 </h1>
                 <span className="text-4xl animate-bounce">👨‍💻</span>
               </div>
               <div className="flex items-center gap-4 mt-4 md:mt-0">
-                {/* <button
+                <button
                   onClick={() => router.push('/review-panel69')}
                   className="px-4 py-2.5 bg-[#36302A] text-[#FAF4ED] font-semibold rounded-lg shadow-lg hover:bg-[#2C2925] transition-all duration-200 flex items-center gap-2"
                 >
                   <span>Review Panel</span>
                   <FaArrowRight className="text-lg" />
-                </button> */}
+                </button>
                 <button
                   onClick={() => {
                     if (window.confirm('Are you sure you want to delete all data? This action cannot be undone.')) {
@@ -1260,16 +1159,6 @@ const AdminPanel = () => {
                         </select>
                         <p className="text-xs text-gray-500">Hold Ctrl/Cmd to select multiple</p>
                       </div>
-
-                      <div className="space-y-2 flex flex-col justify-end">
-                        <button
-                          onClick={handleSaveFilter}
-                          className="w-full px-4 py-2.5 border border-[#36302A] text-[#36302A] font-medium rounded-lg hover:bg-[#36302A]/5 transition-colors flex items-center justify-center gap-1"
-                        >
-                          <MdOutlineSaveAlt />
-                          Save This Filter
-                        </button>
-                      </div>
                     </div>
                   </motion.div>
                 )}
@@ -1436,14 +1325,30 @@ const AdminPanel = () => {
                         <tr>
                           <th className="border border-[#36302A]/50 px-4 py-4 text-left font-semibold text-sm">
                             <div className="flex items-center gap-2">
-                              <input
-                                type="checkbox"
-                                checked={selectAll}
-                                onChange={handleSelectAll}
-                                className="h-4 w-4"
-                              />
+                              {selectAll ? (
+                                <div
+                                  className="flex h-4 w-4 items-center justify-center bg-blue-600 text-white"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleSelectAll();
+                                  }}
+                                >
+                                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                  </svg>
+                                </div>
+                              ) : (
+                                <input
+                                  type="checkbox"
+                                  checked={selectAll}
+                                  onChange={handleSelectAll}
+                                  className="h-4 w-4"
+                                  onClick={(e) => e.stopPropagation()}
+                                />
+                              )}
                               <span>Select</span>
                             </div>
+
                           </th>
                           <th className="border border-[#36302A]/50 px-4 py-4 text-left font-semibold text-sm">
                             Action
@@ -1508,7 +1413,7 @@ const AdminPanel = () => {
                               Messages
                             </th>
                           )}
-                          <th className="border border-[#36302A]/50 px-4 py-4 text-right font-semibold text-sm w-10">
+                          {/* <th className="border border-[#36302A]/50 px-4 py-4 text-right font-semibold text-sm w-10">
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
@@ -1519,7 +1424,7 @@ const AdminPanel = () => {
                             >
                               <MdOutlineViewColumn />
                             </button>
-                          </th>
+                          </th> */}
                         </tr>
                       </thead>
                       <tbody>
@@ -1536,20 +1441,34 @@ const AdminPanel = () => {
                             return (
                               <tr
                                 key={inquiry.id}
-                                className={`hover:bg-[#F2EAE2] cursor-pointer ${isNew() ? 'bg-blue-50' : ''} ${inquiry.isChecked ? 'border-l-4 border-green-500' : ''}`}
+                                className={`hover:bg-[#F2EAE2] cursor-pointer ${isNew() ? 'bg-blue-50' : ''} ${inquiry.isChecked ? 'border-l-4 border-[#36302A]' : ''}`}
                                 onClick={() => handleRowClick(inquiry)}
                                 onContextMenu={(e) => handleContextMenu(e, inquiry)}
                               >
                                 <td className="border border-[#36302A]/20 px-4 py-3 text-sm">
-                                  <input
-                                    type="checkbox"
-                                    checked={selectedRows.includes(inquiry.id)}
-                                    onChange={(e) => {
-                                      e.stopPropagation();
-                                      handleRowSelect(inquiry.id);
-                                    }}
-                                    className="h-4 w-4"
-                                  />
+                                  {selectedRows.includes(inquiry.id) ? (
+                                    <div
+                                      className="flex h-4 w-4 items-center justify-center bg-blue-600 text-white"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleRowSelect(inquiry.id);
+                                      }}
+                                    >
+                                      <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                                        <polyline points="20 6 9 17 4 12"></polyline>
+                                      </svg>
+                                    </div>
+                                  ) : (
+                                    <input
+                                      type="checkbox"
+                                      checked={selectedRows.includes(inquiry.id)}
+                                      onChange={(e) => {
+                                        e.stopPropagation();
+                                        handleRowSelect(inquiry.id);
+                                      }}
+                                      className="h-4 w-4"
+                                    />
+                                  )}
                                 </td>
                                 <td className="border border-[#36302A]/20 px-4 py-3 text-sm">
                                   <div className="flex space-x-2">
@@ -1658,7 +1577,7 @@ const AdminPanel = () => {
                                     {inquiry.messages}
                                   </td>
                                 )}
-                                <td className="border border-[#36302A]/20 px-4 py-3 text-center">
+                                {/* <td className="border border-[#36302A]/20 px-4 py-3 text-center">
                                   <button
                                     onClick={(e) => {
                                       e.stopPropagation();
@@ -1668,7 +1587,7 @@ const AdminPanel = () => {
                                   >
                                     <FaEllipsisV />
                                   </button>
-                                </td>
+                                </td> */}
                               </tr>
                             );
                           })
