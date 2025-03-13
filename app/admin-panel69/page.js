@@ -27,28 +27,110 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { Pagination } from "../components/Pagination";
 import ProtectedRoute from "../components/ProtectedRoutes";
+import { FilterAccordion } from "../review-panel69/UiUtility";
 
 // New component for statistics cards
-const StatisticsCard = ({ icon, title, value, trend, color }) => (
-  <motion.div
-    className={`bg-white rounded-xl shadow-md p-4 border-l-4 ${color}`}
-    whileHover={{ y: -5, boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)" }}
-    transition={{ duration: 0.2 }}
-  >
-    <div className="flex justify-between items-start">
-      <div>
-        <p className="text-gray-500 text-sm">{title}</p>
-        <h3 className="text-2xl font-bold mt-1">{value}</h3>
-        {trend && (
-          <p className={`text-xs mt-1 ${trend.includes('+') ? 'text-green-500' : 'text-red-500'}`}>
-            {trend} since yesterday
-          </p>
-        )}
+const StatisticsCard = ({ icon: Icon, title, value, trend, color }) => {
+  // Define color schemes based on the color prop
+  const getColorScheme = () => {
+    switch (color) {
+      case 'green':
+        return {
+          gradient: 'from-green-50 to-green-100',
+          iconBg: 'bg-green-200',
+          iconColor: 'text-green-700',
+          trendUp: 'text-green-600',
+          trendDown: 'text-red-600',
+          border: 'border-green-300'
+        };
+      case 'blue':
+        return {
+          gradient: 'from-blue-50 to-blue-100',
+          iconBg: 'bg-blue-200',
+          iconColor: 'text-blue-700',
+          trendUp: 'text-green-600',
+          trendDown: 'text-red-600',
+          border: 'border-blue-300'
+        };
+      case 'amber':
+        return {
+          gradient: 'from-amber-50 to-amber-100',
+          iconBg: 'bg-amber-200',
+          iconColor: 'text-amber-700',
+          trendUp: 'text-green-600',
+          trendDown: 'text-red-600',
+          border: 'border-amber-300'
+        };
+      case 'purple':
+        return {
+          gradient: 'from-purple-50 to-purple-100',
+          iconBg: 'bg-purple-200',
+          iconColor: 'text-purple-700',
+          trendUp: 'text-green-600',
+          trendDown: 'text-red-600',
+          border: 'border-purple-300'
+        };
+      case 'red':
+        return {
+          gradient: 'from-red-50 to-red-100',
+          iconBg: 'bg-red-200',
+          iconColor: 'text-red-700',
+          trendUp: 'text-green-600',
+          trendDown: 'text-red-600',
+          border: 'border-red-300'
+        };
+      default:
+        return {
+          gradient: 'from-gray-50 to-gray-100',
+          iconBg: 'bg-gray-200',
+          iconColor: 'text-gray-700',
+          trendUp: 'text-green-600',
+          trendDown: 'text-red-600',
+          border: 'border-gray-300'
+        };
+    }
+  };
+
+  const colorScheme = getColorScheme();
+
+  // Determine if trend is positive or negative
+  const isTrendPositive = trend && trend.includes('+');
+  const trendColor = isTrendPositive ? colorScheme.trendUp : colorScheme.trendDown;
+  const trendIcon = isTrendPositive ? '↑' : '↓';
+
+  return (
+    <motion.div
+      className={`bg-gradient-to-br ${colorScheme.gradient} rounded-xl shadow-sm border border-none overflow-hidden`}
+      whileHover={{ y: -5, boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)" }}
+      transition={{ duration: 0.2 }}
+    >
+      <div className="p-6">
+        <div className="flex justify-between items-start">
+          <div>
+            <p className="text-sm font-medium text-gray-700">{title}</p>
+            <h3 className="text-3xl font-bold text-gray-900 mt-1">{value}</h3>
+            {trend && (
+              <div className="flex items-center mt-2">
+                <span className={`${trendColor} text-sm font-medium flex items-center`}>
+                  <span className="mr-1">{trendIcon}</span>
+                  {trend}
+                </span>
+                <span className="text-xs text-gray-500 ml-1">since yesterday</span>
+              </div>
+            )}
+          </div>
+          <div className={`p-3 ${colorScheme.iconBg} rounded-full ${colorScheme.iconColor}`}>
+            {typeof Icon === 'string' ? (
+              <span className="text-xl">{Icon}</span>
+            ) : (
+              <Icon className="w-6 h-6" />
+            )}
+          </div>
+        </div>
       </div>
-      <div className="text-2xl opacity-70">{icon}</div>
-    </div>
-  </motion.div>
-);
+    </motion.div>
+  );
+};
 
 // Loading skeleton component
 const TableSkeleton = () => (
@@ -1005,29 +1087,29 @@ const AdminPanel = () => {
             className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8"
           >
             <StatisticsCard
-              icon="📊"
+              icon={MdInfo} // Using Lucide/React-icons instead of emoji string
               title="Total Inquiries"
               value={inquiries.length}
-              color="border-blue-500"
+              color="blue" // Using predefined color scheme
             />
             <StatisticsCard
-              icon="🔔"
+              icon="🔔" // Using emoji is also supported
               title="Today's Inquiries"
               value={getTodayInquiries()}
-              trend="+3"
-              color="border-green-500"
+              trend={"+3"} // Adding trend information
+              color="green"
             />
             <StatisticsCard
-              icon="✉️"
+              icon={FaExternalLinkAlt} // Using a different icon
               title="Newsletter Signup Rate"
               value={getSignupRate()}
-              color="border-purple-500"
+              color="amber"
             />
             <StatisticsCard
-              icon="🔍"
+              icon={MdFilterList}
               title="Most Requested Service"
               value={getMostRequestedService()}
-              color="border-amber-500"
+              color="purple"
             />
           </motion.div>
 
@@ -1040,129 +1122,131 @@ const AdminPanel = () => {
             className="mb-8"
           >
             <div className="bg-white p-6 rounded-xl shadow-sm border border-[#36302A]/10">
-              <div className="flex justify-between items-center mb-4">
-                <div className="flex items-center gap-2">
-                  <MdFilterList className="text-xl" />
-                  <h2 className="text-lg font-medium">Filters</h2>
-                </div>
-                <button
-                  onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
-                  className="text-sm flex items-center gap-1 text-[#36302A] hover:text-[#2C2925]"
-                >
-                  {showAdvancedFilters ? "Simple Filters" : "Advanced Filters"}
-                  {showAdvancedFilters ? <FaChevronUp /> : <FaChevronDown />}
-                </button>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-4">
-                <div className="space-y-2">
-                  <label className="block text-sm font-medium text-[#36302A] items-center gap-2" htmlFor="name-filter">
-                    <span className="text-lg">👤</span> Filter By FirstName
-                  </label>
-                  <input
-                    id="name-filter"
-                    type="text"
-                    value={selectedName}
-                    onChange={(e) => setSelectedName(e.target.value)}
-                    placeholder="Enter FirstName"
-                    className="w-full border border-[#36302A]/20 rounded-lg px-4 py-2.5 shadow-sm focus:outline-none focus:ring-2 focus:ring-[#36302A] focus:border-transparent transition-all duration-200 placeholder-[#36302A]/60"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <label className="block text-sm font-medium text-[#36302A] items-center gap-2" htmlFor="company-filter">
-                    <span className="text-lg">🏢</span> Filter By BrandName
-                  </label>
-                  <input
-                    id="company-filter"
-                    type="text"
-                    value={selectedCompany}
-                    onChange={(e) => setSelectedCompany(e.target.value)}
-                    placeholder="Enter BrandName"
-                    className="w-full border border-[#36302A]/20 rounded-lg px-4 py-2.5 shadow-sm focus:outline-none focus:ring-2 focus:ring-[#36302A] focus:border-transparent transition-all duration-200 placeholder-[#36302A]/60"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <label className="block text-sm font-medium text-[#36302A] items-center gap-2" htmlFor="signup-filter">
-                    <span className="text-lg">✉️</span> Newsletter Signup Status
-                  </label>
-                  <select
-                    id="signup-filter"
-                    value={signedUp}
-                    onChange={(e) => setSignedUp(e.target.value)}
-                    className="w-full border border-[#36302A]/20 rounded-lg px-4 py-2.5 shadow-sm focus:outline-none focus:ring-2 focus:ring-[#36302A] focus:border-transparent transition-all duration-200 bg-white"
+              <FilterAccordion className={"bg-[#FAF4ED] text-[#36302A] hover:bg-[#F0E6DD]"}>
+                <div className="flex justify-between items-center mb-4">
+                  <div className="flex items-center gap-2">
+                    <MdFilterList className="text-xl" />
+                    <h2 className="text-lg font-medium">Filters</h2>
+                  </div>
+                  <button
+                    onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+                    className="text-sm flex items-center gap-1 text-[#36302A] hover:text-[#2C2925]"
                   >
-                    <option value="">All Signups</option>
-                    <option value="Yes">Signed Up</option>
-                    <option value="No">Not Signed Up</option>
-                  </select>
+                    {showAdvancedFilters ? "Simple Filters" : "Advanced Filters"}
+                    {showAdvancedFilters ? <FaChevronUp /> : <FaChevronDown />}
+                  </button>
                 </div>
-              </div>
 
-              {/* Advanced filters section */}
-              <AnimatePresence>
-                {showAdvancedFilters && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: "auto", opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    className="overflow-hidden"
-                  >
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4 border-t">
-                      <div className="space-y-2">
-                        <label className="block text-sm font-medium text-[#36302A] items-center gap-2">
-                          <span className="text-lg">📅</span> Date Range
-                        </label>
-                        <div className="grid grid-cols-2 gap-2">
-                          <div>
-                            <label className="text-xs text-gray-500 mb-1 block">From</label>
-                            <input
-                              type="date"
-                              value={dateRange.start}
-                              onChange={(e) => setDateRange({ ...dateRange, start: e.target.value })}
-                              className="w-full border border-[#36302A]/20 rounded-lg px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-[#36302A] focus:border-transparent transition-all duration-200"
-                            />
-                          </div>
-                          <div>
-                            <label className="text-xs text-gray-500 mb-1 block">To</label>
-                            <input
-                              type="date"
-                              value={dateRange.end}
-                              onChange={(e) => setDateRange({ ...dateRange, end: e.target.value })}
-                              className="w-full border border-[#36302A]/20 rounded-lg px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-[#36302A] focus:border-transparent transition-all duration-200"
-                            />
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-4">
+                  <div className="space-y-2">
+                    <label className="block text-sm font-medium text-[#36302A] items-center gap-2" htmlFor="name-filter">
+                      <span className="text-lg">👤</span> Filter By FirstName
+                    </label>
+                    <input
+                      id="name-filter"
+                      type="text"
+                      value={selectedName}
+                      onChange={(e) => setSelectedName(e.target.value)}
+                      placeholder="Enter FirstName"
+                      className="w-full border border-[#36302A]/20 rounded-lg px-4 py-2.5 shadow-sm focus:outline-none focus:ring-2 focus:ring-[#36302A] focus:border-transparent transition-all duration-200 placeholder-[#36302A]/60"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="block text-sm font-medium text-[#36302A] items-center gap-2" htmlFor="company-filter">
+                      <span className="text-lg">🏢</span> Filter By BrandName
+                    </label>
+                    <input
+                      id="company-filter"
+                      type="text"
+                      value={selectedCompany}
+                      onChange={(e) => setSelectedCompany(e.target.value)}
+                      placeholder="Enter BrandName"
+                      className="w-full border border-[#36302A]/20 rounded-lg px-4 py-2.5 shadow-sm focus:outline-none focus:ring-2 focus:ring-[#36302A] focus:border-transparent transition-all duration-200 placeholder-[#36302A]/60"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="block text-sm font-medium text-[#36302A] items-center gap-2" htmlFor="signup-filter">
+                      <span className="text-lg">✉️</span> Newsletter Signup Status
+                    </label>
+                    <select
+                      id="signup-filter"
+                      value={signedUp}
+                      onChange={(e) => setSignedUp(e.target.value)}
+                      className="w-full border border-[#36302A]/20 rounded-lg px-4 py-2.5 shadow-sm focus:outline-none focus:ring-2 focus:ring-[#36302A] focus:border-transparent transition-all duration-200 bg-white"
+                    >
+                      <option value="">All Signups</option>
+                      <option value="Yes">Signed Up</option>
+                      <option value="No">Not Signed Up</option>
+                    </select>
+                  </div>
+                </div>
+
+                {/* Advanced filters section */}
+                <AnimatePresence>
+                  {showAdvancedFilters && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: "auto", opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      className="overflow-hidden"
+                    >
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4 border-t">
+                        <div className="space-y-2">
+                          <label className="block text-sm font-medium text-[#36302A] items-center gap-2">
+                            <span className="text-lg">📅</span> Date Range
+                          </label>
+                          <div className="grid grid-cols-2 gap-2">
+                            <div>
+                              <label className="text-xs text-gray-500 mb-1 block">From</label>
+                              <input
+                                type="date"
+                                value={dateRange.start}
+                                onChange={(e) => setDateRange({ ...dateRange, start: e.target.value })}
+                                className="w-full border border-[#36302A]/20 rounded-lg px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-[#36302A] focus:border-transparent transition-all duration-200"
+                              />
+                            </div>
+                            <div>
+                              <label className="text-xs text-gray-500 mb-1 block">To</label>
+                              <input
+                                type="date"
+                                value={dateRange.end}
+                                onChange={(e) => setDateRange({ ...dateRange, end: e.target.value })}
+                                className="w-full border border-[#36302A]/20 rounded-lg px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-[#36302A] focus:border-transparent transition-all duration-200"
+                              />
+                            </div>
                           </div>
                         </div>
-                      </div>
 
-                      <div className="space-y-2">
-                        <label className="block text-sm font-medium text-[#36302A] items-center gap-2" htmlFor="services-filter">
-                          <span className="text-lg">🛠️</span> Services
-                        </label>
-                        <select
-                          id="services-filter"
-                          multiple
-                          value={selectedServices}
-                          onChange={(e) => {
-                            const options = Array.from(e.target.selectedOptions, option => option.value);
-                            setSelectedServices(options);
-                          }}
-                          className="w-full border border-[#36302A]/20 rounded-lg px-4 py-2.5 shadow-sm focus:outline-none focus:ring-2 focus:ring-[#36302A] focus:border-transparent transition-all duration-200 bg-white"
-                          size={3}
-                        >
-                          {availableServices.map(service => (
-                            <option key={service} value={service}>
-                              {service}
-                            </option>
-                          ))}
-                        </select>
-                        <p className="text-xs text-gray-500">Hold Ctrl/Cmd to select multiple</p>
+                        <div className="space-y-2">
+                          <label className="block text-sm font-medium text-[#36302A] items-center gap-2" htmlFor="services-filter">
+                            <span className="text-lg">🛠️</span> Services
+                          </label>
+                          <select
+                            id="services-filter"
+                            multiple
+                            value={selectedServices}
+                            onChange={(e) => {
+                              const options = Array.from(e.target.selectedOptions, option => option.value);
+                              setSelectedServices(options);
+                            }}
+                            className="w-full border border-[#36302A]/20 rounded-lg px-4 py-2.5 shadow-sm focus:outline-none focus:ring-2 focus:ring-[#36302A] focus:border-transparent transition-all duration-200 bg-white"
+                            size={3}
+                          >
+                            {availableServices.map(service => (
+                              <option key={service} value={service}>
+                                {service}
+                              </option>
+                            ))}
+                          </select>
+                          <p className="text-xs text-gray-500">Hold Ctrl/Cmd to select multiple</p>
+                        </div>
                       </div>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </FilterAccordion>
             </div>
           </motion.div>
 

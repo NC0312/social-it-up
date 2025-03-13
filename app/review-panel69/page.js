@@ -17,6 +17,7 @@ import { Pagination } from "../components/Pagination";
 import ProtectedRoute from "../components/ProtectedRoutes";
 import { AssignmentCell, AssignmentFilter } from "./ReviewUtility";
 import { useAdminAuth } from "../components/providers/AdminAuthProvider";
+import { DashboardSummary, FilterAccordion } from "./UiUtility";
 
 const ReviewPanel = () => {
     const fadeInLeft = {
@@ -151,9 +152,12 @@ const ReviewPanel = () => {
                         } : review
                 )
             );
+
+            return true; // Return success to the caller
         } catch (error) {
             console.error("Error assigning review:", error);
             toast.error("Failed to assign review. Please try again.");
+            return false; // Return failure to the caller
         } finally {
             setAssigningReview(prev => ({ ...prev, [docId]: false }));
         }
@@ -588,24 +592,18 @@ const ReviewPanel = () => {
         }
     };
 
-    const handleClientStatusUpdate = async (docId, currentStatus) => {
-        // Only allow changing from 'Pending' to 'Reached out'
-        if (currentStatus === 'Reached out') {
-            toast.info("Client status cannot be changed back to Pending.");
-            return;
-        }
-
-        if (!window.confirm("Are you sure you want to update the client status to 'Reached out'? This action cannot be undone.")) {
+    const handleClientStatusUpdate = async (docId, currentStatus, newStatus) => {
+        if (!window.confirm(`Are you sure you want to update the client status to '${newStatus}'?`)) {
             return;
         }
 
         try {
             const reviewRef = doc(db, "reviews", docId);
-            await updateDoc(reviewRef, { clientStatus: 'Reached out' });
+            await updateDoc(reviewRef, { clientStatus: newStatus });
 
             // Update local state
             const updatedReviews = reviews.map(review =>
-                review.docId === docId ? { ...review, clientStatus: 'Reached out' } : review
+                review.docId === docId ? { ...review, clientStatus: newStatus } : review
             );
             setReviews(updatedReviews);
             setFilteredReviews(updatedReviews);
@@ -626,6 +624,20 @@ const ReviewPanel = () => {
                         textColor: 'text-orange-700',
                         borderColor: 'border-orange-200',
                         prefix: '•'
+                    };
+                case 'In Progress':
+                    return {
+                        bgColor: 'bg-blue-50',
+                        textColor: 'text-blue-700',
+                        borderColor: 'border-blue-200',
+                        prefix: '↻'
+                    };
+                case 'No Response':
+                    return {
+                        bgColor: 'bg-red-50',
+                        textColor: 'text-red-700',
+                        borderColor: 'border-red-200',
+                        prefix: '✗'
                     };
                 case 'Reached out':
                     return {
@@ -662,26 +674,44 @@ const ReviewPanel = () => {
         );
     };
 
-    const UpdateStatusCell = ({ status, onUpdate, disabled }) => {
-        return (
-            <button
-                onClick={onUpdate}
-                disabled={disabled}
-                className={`group relative flex items-center justify-center p-2 rounded-lg transition-all duration-200 ${disabled
-                    ? 'bg-gray-100 cursor-not-allowed'
-                    : 'bg-green-50 hover:bg-green-100 active:bg-green-200'
-                    }`}
-            >
-                <CheckCircle
-                    className={`w-6 h-6 transition-all duration-200 ${disabled ? 'text-gray-400' : 'text-green-600 group-hover:text-green-700'
-                        }`}
-                />
+    const UpdateStatusCell = ({ status, onUpdate }) => {
+        const [isOpen, setIsOpen] = useState(false);
 
-                {/* Tooltip */}
-                <span className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-gray-800 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">
-                    {disabled ? 'Already reached out' : 'Mark as reached out'}
-                </span>
-            </button>
+        const statuses = ["Pending", "In Progress", "No Response", "Reached out"];
+        const currentIndex = statuses.indexOf(status);
+
+        // Filter out the current status from options
+        const availableStatuses = statuses.filter(s => s !== status);
+
+        return (
+            <div className="relative">
+                <button
+                    onClick={() => setIsOpen(!isOpen)}
+                    className="group flex items-center justify-center p-2 rounded-lg bg-green-50 hover:bg-green-100 active:bg-green-200 transition-all duration-200"
+                >
+                    <Badge className="w-5 h-5 text-green-600 group-hover:text-green-700" />
+                    <span className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-gray-800 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">
+                        Update status
+                    </span>
+                </button>
+
+                {isOpen && (
+                    <div className="absolute z-30 mt-1 right-0 bg-white border border-gray-200 rounded-lg shadow-lg w-40">
+                        {availableStatuses.map((newStatus) => (
+                            <button
+                                key={newStatus}
+                                onClick={() => {
+                                    onUpdate(newStatus);
+                                    setIsOpen(false);
+                                }}
+                                className="w-full text-left px-3 py-2 hover:bg-green-50 text-sm flex items-center gap-2"
+                            >
+                                <StatusCell status={newStatus} />
+                            </button>
+                        ))}
+                    </div>
+                )}
+            </div>
         );
     };
 
@@ -710,18 +740,20 @@ const ReviewPanel = () => {
                                 <span>Back to Admin Panel</span>
                             </button>
                             {admin && admin.role === 'superAdmin' && (
-                            <button
-                                onClick={handleDeleteAllReviews}
-                                disabled={isDeletingAll}
-                                className="px-4 py-2.5 bg-red-600/90 text-white font-semibold rounded-lg shadow-lg hover:bg-red-700 transition-all duration-200 flex items-center gap-2 hover:scale-105"
-                            >
-                                <MdDeleteForever className="text-xl" />
-                                <span>{isDeletingAll ? 'Deleting...' : 'Delete All'}</span>
-                            </button>
+                                <button
+                                    onClick={handleDeleteAllReviews}
+                                    disabled={isDeletingAll}
+                                    className="px-4 py-2.5 bg-red-600/90 text-white font-semibold rounded-lg shadow-lg hover:bg-red-700 transition-all duration-200 flex items-center gap-2 hover:scale-105"
+                                >
+                                    <MdDeleteForever className="text-xl" />
+                                    <span>{isDeletingAll ? 'Deleting...' : 'Delete All'}</span>
+                                </button>
                             )}
                         </div>
                     </div>
                 </motion.div>
+
+                <DashboardSummary reviews={reviews} />
 
                 {/* Enhanced Filter Section */}
                 <motion.div
@@ -731,109 +763,113 @@ const ReviewPanel = () => {
                     viewport={{ once: true }}
                 >
                     <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                            {/* First row - most important filters */}
-                            <div className="space-y-2">
-                                <label className="flex items-center gap-1 text-sm font-medium text-gray-700" htmlFor="date-filter">
-                                    <span>📅</span> Date
-                                </label>
-                                <input
-                                    id="date-filter"
-                                    type="date"
-                                    value={selectedDate}
-                                    onChange={handleDateChange}
-                                    className="w-full border border-gray-200 rounded-lg p-2 focus:ring-1 focus:ring-green-500"
-                                />
-                            </div>
+                        <FilterAccordion className={"bg-green-50 text-green-800 hover:bg-green-100"}>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                {/* First row - most important filters */}
+                                <div className="space-y-2">
+                                    <label className="flex items-center gap-1 text-sm font-medium text-gray-700" htmlFor="date-filter">
+                                        <span>📅</span> Date
+                                    </label>
+                                    <input
+                                        id="date-filter"
+                                        type="date"
+                                        value={selectedDate}
+                                        onChange={handleDateChange}
+                                        className="w-full border border-gray-200 rounded-lg p-2 focus:ring-1 focus:ring-green-500"
+                                    />
+                                </div>
 
-                            <div className="space-y-2">
-                                <label className="flex items-center gap-1 text-sm font-medium text-gray-700" htmlFor="name-filter">
-                                    <span>👤</span> Name
-                                </label>
-                                <input
-                                    id="name-filter"
-                                    type="text"
-                                    value={selectedName}
-                                    onChange={handleNameChange}
-                                    placeholder="Enter FirstName"
-                                    className="w-full border border-gray-200 rounded-lg p-2 focus:ring-1 focus:ring-green-500"
-                                />
-                            </div>
+                                <div className="space-y-2">
+                                    <label className="flex items-center gap-1 text-sm font-medium text-gray-700" htmlFor="name-filter">
+                                        <span>👤</span> Name
+                                    </label>
+                                    <input
+                                        id="name-filter"
+                                        type="text"
+                                        value={selectedName}
+                                        onChange={handleNameChange}
+                                        placeholder="Enter FirstName"
+                                        className="w-full border border-gray-200 rounded-lg p-2 focus:ring-1 focus:ring-green-500"
+                                    />
+                                </div>
 
-                            <div className="space-y-2">
-                                <label className="flex items-center gap-1 text-sm font-medium text-gray-700" htmlFor="company-filter">
-                                    <span>🏢</span> Brand
-                                </label>
-                                <input
-                                    id="company-filter"
-                                    type="text"
-                                    value={selectedCompany}
-                                    onChange={handleCompanyChange}
-                                    placeholder="Enter BrandName"
-                                    className="w-full border border-gray-200 rounded-lg p-2 focus:ring-1 focus:ring-green-500"
-                                />
-                            </div>
+                                <div className="space-y-2">
+                                    <label className="flex items-center gap-1 text-sm font-medium text-gray-700" htmlFor="company-filter">
+                                        <span>🏢</span> Brand
+                                    </label>
+                                    <input
+                                        id="company-filter"
+                                        type="text"
+                                        value={selectedCompany}
+                                        onChange={handleCompanyChange}
+                                        placeholder="Enter BrandName"
+                                        className="w-full border border-gray-200 rounded-lg p-2 focus:ring-1 focus:ring-green-500"
+                                    />
+                                </div>
 
-                            {/* Second row - additional filters with dropdown */}
-                            <div className="space-y-2">
-                                <label className="flex items-center gap-1 text-sm font-medium text-gray-700" htmlFor="priority-filter">
-                                    <span>🎯</span> Priority
-                                </label>
-                                <select
-                                    id="priority-filter"
-                                    value={selectedPriority}
-                                    onChange={handlePriorityChange}
-                                    className="w-full border border-gray-200 rounded-lg p-2 focus:ring-1 focus:ring-green-500 bg-white"
-                                >
-                                    <option value="">All Priorities</option>
-                                    <option value="low">Low</option>
-                                    <option value="medium">Medium</option>
-                                    <option value="high">High</option>
-                                    <option value="highest">Highest</option>
-                                </select>
-                            </div>
+                                {/* Second row - additional filters with dropdown */}
+                                <div className="space-y-2">
+                                    <label className="flex items-center gap-1 text-sm font-medium text-gray-700" htmlFor="priority-filter">
+                                        <span>🎯</span> Priority
+                                    </label>
+                                    <select
+                                        id="priority-filter"
+                                        value={selectedPriority}
+                                        onChange={handlePriorityChange}
+                                        className="w-full border border-gray-200 rounded-lg p-2 focus:ring-1 focus:ring-green-500 bg-white"
+                                    >
+                                        <option value="">All Priorities</option>
+                                        <option value="low">Low</option>
+                                        <option value="medium">Medium</option>
+                                        <option value="high">High</option>
+                                        <option value="highest">Highest</option>
+                                    </select>
+                                </div>
 
-                            <div className="space-y-2">
-                                <label className="flex items-center gap-1 text-sm font-medium text-gray-700" htmlFor="client-status-filter">
-                                    <span>📊</span> Status
-                                </label>
-                                <select
-                                    id="client-status-filter"
-                                    value={selectedClientStatus}
-                                    onChange={handleClientStatusChange}
-                                    className="w-full border border-gray-200 rounded-lg p-2 focus:ring-1 focus:ring-green-500 bg-white"
-                                >
-                                    <option value="">All Statuses</option>
-                                    <option value="Pending">Pending</option>
-                                    <option value="Reached out">Reached Out</option>
-                                </select>
-                            </div>
+                                <div className="space-y-2">
+                                    <label className="flex items-center gap-1 text-sm font-medium text-gray-700" htmlFor="client-status-filter">
+                                        <span>📊</span> Status
+                                    </label>
+                                    <select
+                                        id="client-status-filter"
+                                        value={selectedClientStatus}
+                                        onChange={handleClientStatusChange}
+                                        className="w-full border border-gray-200 rounded-lg p-2 focus:ring-1 focus:ring-green-500 bg-white"
+                                    >
+                                        <option value="">All Statuses</option>
+                                        <option value="Pending">Pending</option>
+                                        <option value="In Progress">In Progress</option>
+                                        <option value="No Response">No Response</option>
+                                        <option value="Reached out">Reached Out</option>
+                                    </select>
+                                </div>
 
-                            <div className="space-y-2">
-                                <label className="flex items-center gap-1 text-sm font-medium text-gray-700" htmlFor="signup-filter">
-                                    <span>📝</span> Newsletter
-                                </label>
-                                <select
-                                    id="signup-filter"
-                                    value={signedUp}
-                                    onChange={handleSignUpChange}
-                                    className="w-full border border-gray-200 rounded-lg p-2 focus:ring-1 focus:ring-green-500 bg-white"
-                                >
-                                    <option value="">All Signups</option>
-                                    <option value="Yes">Subscribed</option>
-                                    <option value="No">Not Subscribed</option>
-                                </select>
-                            </div>
+                                <div className="space-y-2">
+                                    <label className="flex items-center gap-1 text-sm font-medium text-gray-700" htmlFor="signup-filter">
+                                        <span>📝</span> Newsletter
+                                    </label>
+                                    <select
+                                        id="signup-filter"
+                                        value={signedUp}
+                                        onChange={handleSignUpChange}
+                                        className="w-full border border-gray-200 rounded-lg p-2 focus:ring-1 focus:ring-green-500 bg-white"
+                                    >
+                                        <option value="">All Signups</option>
+                                        <option value="Yes">Subscribed</option>
+                                        <option value="No">Not Subscribed</option>
+                                    </select>
+                                </div>
 
-                            {admin && admin.role === 'superAdmin' && (
-                            <AssignmentFilter
-                                value={selectedAssignment}
-                                onChange={handleAssignmentChange}
-                                admins={admins}
-                                isSuperAdmin={admin?.role === 'superAdmin'}
-                            />
-                            )}
-                        </div>
+                                {admin && admin.role === 'superAdmin' && (
+                                    <AssignmentFilter
+                                        value={selectedAssignment}
+                                        onChange={handleAssignmentChange}
+                                        admins={admins}
+                                        isSuperAdmin={admin?.role === 'superAdmin'}
+                                    />
+                                )}
+                            </div>
+                        </FilterAccordion>
                     </div>
                 </motion.div>
 
@@ -878,14 +914,14 @@ const ReviewPanel = () => {
                             <span className="hidden md:inline">Export CSV</span>
                         </button>
                         {admin && admin.role === 'superAdmin' && (
-                        <button
-                            onClick={syncData}
-                            disabled={issyncing}
-                            className="px-6 py-2.5 bg-green-600 text-white font-semibold rounded-lg shadow-lg hover:bg-green-700 transition-all duration-200 flex items-center gap-2 hover:scale-105 disabled:opacity-50"
-                        >
-                            <FaSync className={`text-xl ${issyncing ? 'animate-spin' : ''}`} />
-                            <span>{issyncing ? 'Syncing...' : 'Sync Data'}</span>
-                        </button>
+                            <button
+                                onClick={syncData}
+                                disabled={issyncing}
+                                className="px-6 py-2.5 bg-green-600 text-white font-semibold rounded-lg shadow-lg hover:bg-green-700 transition-all duration-200 flex items-center gap-2 hover:scale-105 disabled:opacity-50"
+                            >
+                                <FaSync className={`text-xl ${issyncing ? 'animate-spin' : ''}`} />
+                                <span>{issyncing ? 'Syncing...' : 'Sync Data'}</span>
+                            </button>
                         )}
                     </div>
                 </motion.div>
@@ -974,8 +1010,7 @@ const ReviewPanel = () => {
                                                 <td className="border border-green-200 px-4 py-2">
                                                     <UpdateStatusCell
                                                         status={review.clientStatus}
-                                                        onUpdate={() => handleClientStatusUpdate(review.docId, review.clientStatus)}
-                                                        disabled={review.clientStatus === 'Reached out'}
+                                                        onUpdate={(newStatus) => handleClientStatusUpdate(review.docId, review.clientStatus, newStatus)}
                                                     />
                                                 </td>
                                                 <td className="border border-green-200 px-4 py-2">
@@ -985,6 +1020,7 @@ const ReviewPanel = () => {
                                                         onAssign={handleAssignReview}
                                                         isAssigning={assigningReview[review.docId]}
                                                         isSuperAdmin={admin?.role === 'superAdmin'}
+                                                        currentAdminId={admin?.id}
                                                     />
                                                 </td>
                                                 <td className="border border-green-200 px-4 py-2 font-serif text-sm md:text-base whitespace-nowrap">
