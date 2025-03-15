@@ -203,6 +203,7 @@ const ReviewPanel = () => {
         }
     };
 
+
     const handleDeleteAllReviews = async () => {
         if (isDeletingAll) return;
 
@@ -592,6 +593,7 @@ const ReviewPanel = () => {
         }
     };
 
+
     const handleClientStatusUpdate = async (docId, currentStatus, newStatus) => {
         if (!window.confirm(`Are you sure you want to update the client status to '${newStatus}'?`)) {
             return;
@@ -599,11 +601,23 @@ const ReviewPanel = () => {
 
         try {
             const reviewRef = doc(db, "reviews", docId);
-            await updateDoc(reviewRef, { clientStatus: newStatus });
+            const updateData = { clientStatus: newStatus };
+
+            // If moving to "In Progress" from "Pending", store the timestamp
+            if (currentStatus === "Pending" && newStatus === "In Progress") {
+                updateData.inProgressStartedAt = new Date(); // Store as a Date object (Firestore will convert to Timestamp)
+            }
+
+            // If moving away from "In Progress", optionally clear the timestamp
+            if (currentStatus === "In Progress" && newStatus !== "In Progress") {
+                updateData.inProgressStartedAt = null; // Clear the timestamp when leaving "In Progress"
+            }
+
+            await updateDoc(reviewRef, updateData);
 
             // Update local state
             const updatedReviews = reviews.map(review =>
-                review.docId === docId ? { ...review, clientStatus: newStatus } : review
+                review.docId === docId ? { ...review, clientStatus: newStatus, inProgressStartedAt: updateData.inProgressStartedAt } : review
             );
             setReviews(updatedReviews);
             setFilteredReviews(updatedReviews);
@@ -614,6 +628,30 @@ const ReviewPanel = () => {
             toast.error("Failed to update client status. Please try again.");
         }
     };
+
+    
+    // const handleClientStatusUpdate = async (docId, currentStatus, newStatus) => {
+    //     if (!window.confirm(`Are you sure you want to update the client status to '${newStatus}'?`)) {
+    //         return;
+    //     }
+
+    //     try {
+    //         const reviewRef = doc(db, "reviews", docId);
+    //         await updateDoc(reviewRef, { clientStatus: newStatus });
+
+    //         // Update local state
+    //         const updatedReviews = reviews.map(review =>
+    //             review.docId === docId ? { ...review, clientStatus: newStatus } : review
+    //         );
+    //         setReviews(updatedReviews);
+    //         setFilteredReviews(updatedReviews);
+
+    //         toast.success("Client status updated successfully!");
+    //     } catch (error) {
+    //         console.error("Error updating client status:", error);
+    //         toast.error("Failed to update client status. Please try again.");
+    //     }
+    // };
 
     const StatusCell = ({ status }) => {
         const getStatusConfig = (status) => {
