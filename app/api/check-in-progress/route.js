@@ -1,16 +1,19 @@
-import { NextResponse } from 'next/server';
-import { db } from '../../lib/firebase';
-import { collection, query, where, getDocs } from 'firebase/firestore';
-import nodemailer from 'nodemailer';
-
 export async function GET() {
+    if (process.env.ENABLE_CRON !== "true") {
+        console.log("Cron job is disabled for this environment.");
+        return NextResponse.json(
+            { message: "Cron job is disabled for this environment." },
+            { status: 403 }
+        );
+    }
+
     try {
         const reviewsRef = collection(db, 'reviews');
         const q = query(reviewsRef, where('clientStatus', '==', 'In Progress'), where('inProgressStartedAt', '!=', null));
         const snapshot = await getDocs(q);
 
         const oneWeekAgo = new Date();
-        oneWeekAgo.setDate(oneWeekAgo.getDate() - 7); 
+        oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
 
         const overdueReviews = snapshot.docs
             .map(doc => ({
@@ -25,11 +28,10 @@ export async function GET() {
             return NextResponse.json({ message: 'No overdue reviews to process.', success: true }, { status: 200 });
         }
 
-
         const adminsRef = collection(db, 'admins');
         const adminsSnapshot = await getDocs(adminsRef);
         const admins = adminsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        
+
         const transporter = nodemailer.createTransport({
             host: process.env.SMTP_HOST,
             port: parseInt(process.env.SMTP_PORT || '587'),

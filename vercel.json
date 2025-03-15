@@ -2,8 +2,7 @@
     "crons": [
       {
         "path": "/api/check-in-progress",
-        "schedule": "0 0 * * 1" ,
-        "enabled": "@ENABLE_CRON"
+        "schedule": "0 0 * * 1" 
       }
     ]
   }
