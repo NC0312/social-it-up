@@ -18,6 +18,7 @@ import ProtectedRoute from "../components/ProtectedRoutes";
 import { AssignmentCell, AssignmentFilter } from "./ReviewUtility";
 import { useAdminAuth } from "../components/providers/AdminAuthProvider";
 import { DashboardSummary, FilterAccordion } from "./UiUtility";
+import { createAssignmentNotification, createHighPriorityNotification, createNotification, createStatusChangeNotification } from "../notifications/Utility";
 
 const ReviewPanel = () => {
     const fadeInLeft = {
@@ -91,6 +92,14 @@ const ReviewPanel = () => {
             setAssigningReview(prev => ({ ...prev, [docId]: true }));
             const reviewRef = doc(db, "reviews", docId);
 
+            // Find the review data
+            const reviewToAssign = reviews.find(review => review.docId === docId);
+
+            if (!reviewToAssign) {
+                toast.error("Review not found");
+                return false;
+            }
+
             // If adminId is empty, this is an unassignment
             if (!adminId) {
                 await updateDoc(reviewRef, {
@@ -108,7 +117,7 @@ const ReviewPanel = () => {
                 // Only regular admins are restricted - superAdmins can assign to anyone including themselves
                 if (admin?.role !== 'superAdmin' && selectedAdmin?.role === 'superAdmin') {
                     toast.error("Regular admins cannot assign reviews to superAdmins.");
-                    return;
+                    return false;
                 }
 
                 // Proceed with assignment
@@ -118,6 +127,34 @@ const ReviewPanel = () => {
                     assignedBy: admin?.id || 'system',
                     assignedAt: new Date()
                 });
+
+                // Create notification for the assigned admin (if it's not self-assignment)
+                if (adminId !== admin?.id) {
+                    try {
+                        // Create basic assignment notification
+                        await createAssignmentNotification({
+                            adminId,
+                            reviewId: docId,
+                            reviewData: reviewToAssign,
+                            assignedBy: admin?.id || 'system',
+                            assignerName: admin?.firstName
+                                ? `${admin.firstName} ${admin.lastName}`
+                                : admin?.username || 'Admin'
+                        });
+
+                        // If high priority, send an additional notification
+                        if (reviewToAssign.priority === 'high' || reviewToAssign.priority === 'highest') {
+                            await createHighPriorityNotification({
+                                adminId,
+                                reviewId: docId,
+                                reviewData: reviewToAssign
+                            });
+                        }
+                    } catch (notifError) {
+                        console.error("Error creating notification:", notifError);
+                        // Don't fail the assignment just because notification failed
+                    }
+                }
 
                 // Show appropriate success message
                 if (adminId === admin?.id) {
@@ -490,6 +527,14 @@ const ReviewPanel = () => {
         try {
             setLoadingNotifications(prev => ({ ...prev, [docId]: true }));
 
+            // Find the review data
+            const reviewToNotify = reviews.find(review => review.docId === docId);
+
+            if (!reviewToNotify) {
+                toast.error("Review not found");
+                return;
+            }
+
             // Show immediate "queued" toast
             toast.info('Notification email queued for sending!');
 
@@ -511,6 +556,27 @@ const ReviewPanel = () => {
                     return response.json();
                 }).then(data => {
                     toast.success('Notification email sent successfully!');
+
+                    // Update the client status to "Reached out" if not already
+                    if (reviewToNotify.clientStatus !== "Reached out") {
+                        handleClientStatusUpdate(docId, reviewToNotify.clientStatus, "Reached out");
+                    }
+
+                    // If assigned to someone else, create an in-app notification about the email being sent
+                    if (reviewToNotify.assignedTo && reviewToNotify.assignedTo !== admin?.id) {
+                        try {
+                            createNotification({
+                                adminId: reviewToNotify.assignedTo,
+                                title: 'Client Email Notification Sent',
+                                message: `${admin?.firstName || 'Admin'} has sent an email notification to ${firstName} (${email}) about their inquiry.`,
+                                type: 'email-sent',
+                                reviewId: docId,
+                                reviewData: reviewToNotify
+                            });
+                        } catch (notifError) {
+                            console.error("Error creating email notification:", notifError);
+                        }
+                    }
                 })
                 .catch(error => {
                     console.error('Error sending notification email:', error);
@@ -520,12 +586,8 @@ const ReviewPanel = () => {
                     setLoadingNotifications(prev => ({ ...prev, [docId]: false }));
                 });
 
-            setTimeout(() => {
-                setLoadingNotifications(prev => ({ ...prev, [docId]: false }));
-            }, 2000);
-
         } catch (error) {
-            console.error('Error queuing notification email:', error);
+            console.error('Error queueing notification email:', error);
             toast.error('Failed to queue notification email. Please try again.');
             setLoadingNotifications(prev => ({ ...prev, [docId]: false }));
         }
@@ -577,12 +639,62 @@ const ReviewPanel = () => {
     const handlePriorityUpdate = async (docId, newPriority) => {
         try {
             const reviewRef = doc(db, "reviews", docId);
-            await updateDoc(reviewRef, { priority: newPriority });
+
+            // Find the review to update
+            const reviewToUpdate = reviews.find(review => review.docId === docId);
+
+            if (!reviewToUpdate) {
+                toast.error("Review not found");
+                return;
+            }
+
+            // Get the old priority for comparison
+            const oldPriority = reviewToUpdate.priority;
+
+            // Update the priority in Firestore
+            await updateDoc(reviewRef, {
+                priority: newPriority,
+                priorityChangedBy: admin?.id || 'system',
+                priorityChangedAt: new Date()
+            });
+
+            // Create notification if:
+            // 1. The review is assigned to someone else
+            // 2. The priority is changed to high or highest
+            // 3. The priority was previously not high or highest
+            const isHighPriority = newPriority === 'high' || newPriority === 'highest';
+            const wasHighPriority = oldPriority === 'high' || oldPriority === 'highest';
+
+            if (reviewToUpdate.assignedTo &&
+                reviewToUpdate.assignedTo !== admin?.id &&
+                isHighPriority &&
+                !wasHighPriority) {
+                try {
+                    // Create a high priority notification
+                    await createHighPriorityNotification({
+                        adminId: reviewToUpdate.assignedTo,
+                        reviewId: docId,
+                        reviewData: {
+                            ...reviewToUpdate,
+                            priority: newPriority // Make sure to use the new priority value
+                        }
+                    });
+                } catch (notifError) {
+                    console.error("Error creating priority notification:", notifError);
+                    // Don't fail the priority update just because notification failed
+                }
+            }
 
             // Update local state
             const updatedReviews = reviews.map(review =>
-                review.docId === docId ? { ...review, priority: newPriority } : review
+                review.docId === docId ? {
+                    ...review,
+                    priority: newPriority,
+                    priorityChangedBy: admin?.id || 'system',
+                    priorityChangedAt: new Date()
+                } : review
             );
+
             setReviews(updatedReviews);
             setFilteredReviews(updatedReviews);
 
@@ -603,6 +715,14 @@ const ReviewPanel = () => {
             const reviewRef = doc(db, "reviews", docId);
             const updateData = { clientStatus: newStatus };
 
+            // Find the review data
+            const reviewToUpdate = reviews.find(review => review.docId === docId);
+
+            if (!reviewToUpdate) {
+                toast.error("Review not found");
+                return;
+            }
+
             // If moving to "In Progress" from "Pending", store the timestamp
             if (currentStatus === "Pending" && newStatus === "In Progress") {
                 updateData.inProgressStartedAt = new Date(); // Store as a Date object (Firestore will convert to Timestamp)
@@ -613,11 +733,38 @@ const ReviewPanel = () => {
                 updateData.inProgressStartedAt = null; // Clear the timestamp when leaving "In Progress"
             }
 
+            // Add who made the status change
+            updateData.statusChangedBy = admin?.id || 'system';
+            updateData.statusChangedAt = new Date();
+
             await updateDoc(reviewRef, updateData);
+
+            // Create notification for the assigned admin (if there is one and it's not the current user)
+            if (reviewToUpdate.assignedTo && reviewToUpdate.assignedTo !== admin?.id) {
+                try {
+                    await createStatusChangeNotification({
+                        adminId: reviewToUpdate.assignedTo,
+                        reviewId: docId,
+                        reviewData: reviewToUpdate,
+                        oldStatus: currentStatus,
+                        newStatus: newStatus,
+                        changedBy: admin?.id || 'system'
+                    });
+                } catch (notifError) {
+                    console.error("Error creating status change notification:", notifError);
+                    // Don't fail the status update just because notification failed
+                }
+            }
 
             // Update local state
             const updatedReviews = reviews.map(review =>
-                review.docId === docId ? { ...review, clientStatus: newStatus, inProgressStartedAt: updateData.inProgressStartedAt } : review
+                review.docId === docId ? {
+                    ...review,
+                    clientStatus: newStatus,
+                    inProgressStartedAt: updateData.inProgressStartedAt,
+                    statusChangedBy: updateData.statusChangedBy,
+                    statusChangedAt: updateData.statusChangedAt
+                } : review
             );
             setReviews(updatedReviews);
             setFilteredReviews(updatedReviews);
@@ -629,7 +776,7 @@ const ReviewPanel = () => {
         }
     };
 
-    
+
     // const handleClientStatusUpdate = async (docId, currentStatus, newStatus) => {
     //     if (!window.confirm(`Are you sure you want to update the client status to '${newStatus}'?`)) {
     //         return;

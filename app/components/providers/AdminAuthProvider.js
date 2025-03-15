@@ -15,9 +15,9 @@ import {
 } from 'firebase/firestore';
 import { db, rtdb } from '../../lib/firebase';
 import { ref, set, onValue, onDisconnect } from 'firebase/database';
-import { toast } from 'sonner';
 import { AnimatePresence } from 'framer-motion';
 import AdminRemovalPopup from '../AdminRemovalPopup';
+import { setupReminderSchedule } from '@/app/notifications/Utility';
 
 const AdminAuthContext = createContext();
 
@@ -27,6 +27,10 @@ export function AdminAuthProvider({ children }) {
     const [showRemovalPopup, setShowRemovalPopup] = useState(false);
     const [removalReason, setRemovalReason] = useState('');
     const router = useRouter();
+
+    useEffect(() => {
+        setupReminderSchedule();
+    }, []);
 
     useEffect(() => {
         const checkAdminStatus = async () => {
