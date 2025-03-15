@@ -6,14 +6,15 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { AnimatePresence } from "framer-motion";
 import { usePathname, useRouter } from "next/navigation";
-import { Menu } from 'lucide-react';
+import { Bell, Menu } from 'lucide-react';
 import { useAdminAuth } from "../providers/AdminAuthProvider";
 import {
   collection,
   query,
   where,
   getDocs,
-  orderBy
+  orderBy,
+  onSnapshot
 } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
 import { toast } from "sonner";
@@ -35,6 +36,7 @@ function Header() {
   const [approvedAdmins, setApprovedAdmins] = useState([]);
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
   const profileDropdownRef = useRef(null);
+  const [unreadNotifications, setUnreadNotifications] = useState(0);
 
   useEffect(() => {
     const routeToActiveMap = {
@@ -47,6 +49,28 @@ function Header() {
     };
     setActive(routeToActiveMap[pathname] || "Home");
   }, [pathname]);
+
+  // Set up notification listener
+  useEffect(() => {
+    if (!currentAdmin?.id) return;
+
+    // Set up real-time listener for notifications
+    // Since we now delete them instead of marking as read, we don't need to filter by read status
+    const q = query(
+      collection(db, 'notifications'),
+      where('adminId', '==', currentAdmin.id)
+    );
+
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      setUnreadNotifications(snapshot.docs.length);
+    }, (error) => {
+      console.error('Error listening to notifications:', error);
+      setUnreadNotifications(0);
+    });
+
+    // Clean up listener on unmount
+    return () => unsubscribe();
+  }, [currentAdmin]);
 
   const adminLinks = [
     { href: '/admin-panel69', label: 'Admin Panel' },
@@ -264,7 +288,7 @@ function Header() {
                   } text-md font-medium`}
                 ref={profileDropdownRef}
               >
-                <div className="relative">
+                <div className="relative flex gap-10 items-center">
                   <div
                     className="flex items-center justify-center w-8 h-8 rounded-full bg-white text-[#808D7C] font-bold cursor-pointer"
                     onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
@@ -296,6 +320,22 @@ function Header() {
                       </button>
                     </div>
                   )}
+
+                  {/* Enhanced Notification Bell */}
+                  <Link href="/notifications" className="relative group">
+                    <Bell
+                      size={24}
+                      className="text-white hover:text-gray-200 transition-colors"
+                    />
+                    {unreadNotifications > 0 && (
+                      <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                        {unreadNotifications > 99 ? '99+' : unreadNotifications}
+                      </span>
+                    )}
+                    <span className="absolute hidden group-hover:block bg-[#36302A] text-white text-xs rounded px-2 py-1 -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap">
+                      {unreadNotifications > 0 ? `${unreadNotifications} unread notifications` : 'No new notifications'}
+                    </span>
+                  </Link>
                 </div>
               </li>
             ) : (
@@ -452,6 +492,21 @@ function Header() {
               {/* User menu for Mobile Menu */}
               {isAuthenticated ? (
                 <>
+                  <li className="pt-4">
+                    <Link
+                      href="/notifications"
+                      className="px-4 py-2 bg-[#36302A] text-white rounded-md hover:bg-[#514840] transition flex items-center justify-center relative"
+                      onClick={handleMenuToggle}
+                    >
+                      <Bell size={16} className="mr-2" />
+                      Notifications
+                      {unreadNotifications > 0 && (
+                        <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                          {unreadNotifications > 99 ? '99+' : unreadNotifications}
+                        </span>
+                      )}
+                    </Link>
+                  </li>
                   <li className="pt-4">
                     <Link
                       href="/profile"
