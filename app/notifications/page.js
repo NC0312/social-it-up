@@ -14,7 +14,7 @@ import {
     deleteAllNotifications,
     deleteExpiredNotifications
 } from './Utility';
-import { AlertCircle, Clock, Calendar } from 'lucide-react';
+import { AlertCircle, Clock, Calendar, CheckCircle2, ClockCountdown } from 'lucide-react';
 
 const Notifications = () => {
     const { admin } = useAdminAuth();
@@ -212,6 +212,12 @@ const Notifications = () => {
                     icon: <AlertCircle className="text-blue-600" size={22} />,
                     bg: 'bg-blue-50'
                 };
+            case 'reminder':
+                return {
+                    border: 'border-l-amber-600',
+                    icon: <ClockCountdown className="text-amber-600" size={22} />,
+                    bg: 'bg-amber-50'
+                };
             default:
                 return {
                     border: 'border-l-[#36302A]',
@@ -332,6 +338,14 @@ const Notifications = () => {
                                                                     {notification.reviewData.clientStatus}
                                                                 </span>
                                                             </div>
+
+                                                            {/* Additional info for reminder notifications */}
+                                                            {notification.type === 'reminder' && (
+                                                                <div className="col-span-2 mt-2 flex items-center gap-2 text-amber-700 bg-amber-100 p-2 rounded">
+                                                                    <ClockCountdown size={16} />
+                                                                    <span>This review has been in progress for over a week and requires attention</span>
+                                                                </div>
+                                                            )}
                                                         </div>
                                                     </div>
                                                 )}
@@ -351,13 +365,23 @@ const Notifications = () => {
                                                         disabled={deleteInProgress[notification.id]}
                                                         className="px-4 py-2 bg-red-50 text-red-700 text-sm rounded-lg hover:bg-red-100 transition-colors flex items-center gap-2"
                                                     >
-                                                        {deleteInProgress[notification.id] ? (
+                                                        {deleteInProgress[notification.id] && (
                                                             <div className="animate-spin h-4 w-4 border-2 border-red-600 rounded-full border-t-transparent"></div>
-                                                        ) : (
-                                                            <FaTrash size={14} />
                                                         )}
                                                         Dismiss
                                                     </button>
+
+                                                    {/* For reminder notifications, add option to mark as resolved */}
+                                                    {notification.type === 'reminder' && (
+                                                        <button
+                                                            onClick={() => handleDeleteNotification(notification.id)}
+                                                            disabled={deleteInProgress[notification.id]}
+                                                            className="px-4 py-2 bg-amber-50 text-amber-700 text-sm rounded-lg hover:bg-amber-100 transition-colors flex items-center gap-2"
+                                                        >
+                                                            <CheckCircle2 size={14} />
+                                                            Mark as Addressed
+                                                        </button>
+                                                    )}
                                                 </div>
                                             </div>
                                         </div>

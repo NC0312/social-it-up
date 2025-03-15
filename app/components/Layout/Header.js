@@ -333,7 +333,7 @@ function Header() {
                       </span>
                     )}
                     <span className="absolute hidden group-hover:block bg-[#36302A] text-white text-xs rounded px-2 py-1 -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap">
-                      {unreadNotifications > 0 ? `${unreadNotifications} unread notifications` : 'No new notifications'}
+                      {unreadNotifications > 0 ? `${unreadNotifications} new notifications` : 'No new notifications'}
                     </span>
                   </Link>
                 </div>

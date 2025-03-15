@@ -272,3 +272,91 @@ export const getNotifications = async (adminId) => {
         return [];
     }
 };
+
+
+/**
+ * Check for reviews that have been in "In Progress" status for a week and send reminders
+ * @returns {Promise<number>} - Number of reminders sent
+ */
+export const checkInProgressReminders = async () => {
+    try {
+        // Calculate the timestamp for 7 days ago
+        const oneWeekAgo = new Date();
+        oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+        const oneWeekAgoTimestamp = Timestamp.fromDate(oneWeekAgo);
+
+        // Query for reviews that:
+        // 1. Are in "In Progress" status
+        // 2. Have been in that status for at least a week
+        // 3. Have an assigned admin
+        const reviewsQuery = query(
+            collection(db, "reviews"),
+            where("clientStatus", "==", "In Progress"),
+            where("inProgressStartedAt", "<=", oneWeekAgoTimestamp),
+            where("assignedTo", "!=", null)
+        );
+
+        const snapshot = await getDocs(reviewsQuery);
+
+        if (snapshot.empty) {
+            console.log('No reviews needing reminders found');
+            return 0;
+        }
+
+        let reminderCount = 0;
+
+        // Process each review that needs a reminder
+        for (const doc of snapshot.docs) {
+            const review = {
+                docId: doc.id,
+                ...doc.data()
+            };
+
+            // Calculate how many days the review has been in progress
+            const inProgressDate = review.inProgressStartedAt.toDate();
+            const currentDate = new Date();
+            const daysInProgress = Math.floor((currentDate - inProgressDate) / (1000 * 60 * 60 * 24));
+
+            // Create a reminder notification for the assigned admin
+            await createNotification({
+                adminId: review.assignedTo,
+                reviewId: review.docId,
+                type: 'reminder',
+                title: 'Review Reminder: Follow-up Needed',
+                message: `The inquiry from ${review.company || 'a client'} has been in "In Progress" status for ${daysInProgress} days. Please follow up or update its status.`,
+                reviewData: {
+                    firstName: review.firstName || 'N/A',
+                    lastName: review.lastName || 'N/A',
+                    company: review.company || 'N/A',
+                    priority: review.priority || 'low',
+                    clientStatus: review.clientStatus,
+                    email: review.email || 'N/A'
+                }
+            });
+
+            reminderCount++;
+        }
+
+        console.log(`Sent ${reminderCount} reminder notifications`);
+        return reminderCount;
+    } catch (error) {
+        console.error('Error checking for reminders:', error);
+        return 0;
+    }
+};
+
+/**
+ * Schedule the reminder check to run daily
+ * This can be called when the application initializes
+ */
+export const setupReminderSchedule = () => {
+    // Run initial check
+    checkInProgressReminders();
+
+    // Schedule daily checks
+    // In a real app, this would be better handled by a cloud function or cron job
+    const TWENTY_FOUR_HOURS = 24 * 60 * 60 * 1000;
+    setInterval(() => {
+        checkInProgressReminders();
+    }, TWENTY_FOUR_HOURS);
+};
