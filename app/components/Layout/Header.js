@@ -299,14 +299,14 @@ function Header() {
                   </div>
 
                   {isProfileDropdownOpen && (
-                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50">
+                    <div className="absolute right-0 top-full mt-3 w-48 bg-white rounded-md shadow-lg py-1 z-50">
                       <div className="px-4 py-2 text-sm text-gray-700 border-b border-gray-100">
                         <div className="font-medium">@{currentAdmin?.username}</div>
                         <div className="text-xs text-gray-500 capitalize">{currentAdmin?.role || 'admin'}</div>
                       </div>
                       <Link
                         href="/profile"
-                        className="px-4 py-2 text-sm text-gray-700 hover:bg-[#808D7C] hover:text-white transition flex items-center"
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-[#808D7C] hover:text-white transition flex items-center"
                       >
                         <Settings size={16} className="mr-2" />
                         Profile Settings
@@ -321,7 +321,7 @@ function Header() {
                     </div>
                   )}
 
-                  {/* Enhanced Notification Bell */}
+                  {/* Notification Bell remains unchanged */}
                   <Link href="/notifications" className="relative group">
                     <Bell
                       size={24}
