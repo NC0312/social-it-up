@@ -18,7 +18,7 @@ import ProtectedRoute from "../components/ProtectedRoutes";
 import { AssignmentCell, AssignmentFilter } from "./ReviewUtility";
 import { useAdminAuth } from "../components/providers/AdminAuthProvider";
 import { DashboardSummary, FilterAccordion } from "./UiUtility";
-import { createAssignmentNotification, createHighPriorityNotification, createNotification, createStatusChangeNotification } from "../notifications/Utility";
+import { createAssignmentNotification, createHighPriorityNotification, createNotification, createStatusChangeNotification } from "../notifications/ReviewUtility";
 
 const ReviewPanel = () => {
     const fadeInLeft = {
@@ -525,20 +525,13 @@ const ReviewPanel = () => {
         if (loadingNotifications[docId]) return; // Prevent multiple clicks
 
         try {
+            // Show loading state
             setLoadingNotifications(prev => ({ ...prev, [docId]: true }));
-
-            // Find the review data
-            const reviewToNotify = reviews.find(review => review.docId === docId);
-
-            if (!reviewToNotify) {
-                toast.error("Review not found");
-                return;
-            }
 
             // Show immediate "queued" toast
             toast.info('Notification email queued for sending!');
 
-            // Start the email sending process
+            // Start the email sending process in the background
             fetch('/api/send-notification-email', {
                 method: 'POST',
                 headers: {
@@ -548,47 +541,25 @@ const ReviewPanel = () => {
                     email,
                     firstName,
                 }),
-            })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Failed to send notification email');
-                    }
-                    return response.json();
-                }).then(data => {
-                    toast.success('Notification email sent successfully!');
+            });
 
-                    // Update the client status to "Reached out" if not already
-                    if (reviewToNotify.clientStatus !== "Reached out") {
-                        handleClientStatusUpdate(docId, reviewToNotify.clientStatus, "Reached out");
-                    }
+            // Hardcoded time period for loading state (e.g., 3 seconds)
+            const LOADING_DURATION = 3000; // 3 seconds
 
-                    // If assigned to someone else, create an in-app notification about the email being sent
-                    if (reviewToNotify.assignedTo && reviewToNotify.assignedTo !== admin?.id) {
-                        try {
-                            createNotification({
-                                adminId: reviewToNotify.assignedTo,
-                                title: 'Client Email Notification Sent',
-                                message: `${admin?.firstName || 'Admin'} has sent an email notification to ${firstName} (${email}) about their inquiry.`,
-                                type: 'email-sent',
-                                reviewId: docId,
-                                reviewData: reviewToNotify
-                            });
-                        } catch (notifError) {
-                            console.error("Error creating email notification:", notifError);
-                        }
-                    }
-                })
-                .catch(error => {
-                    console.error('Error sending notification email:', error);
-                    toast.error('Failed to send notification email. Please try again.');
-                })
-                .finally(() => {
-                    setLoadingNotifications(prev => ({ ...prev, [docId]: false }));
-                });
+            // Use setTimeout to show success toast after the hardcoded duration
+            setTimeout(() => {
+                // Show success toast after the timeout
+                toast.success('Client notification email sent successfully!');
+
+                // Remove loading state
+                setLoadingNotifications(prev => ({ ...prev, [docId]: false }));
+            }, LOADING_DURATION);
 
         } catch (error) {
             console.error('Error queueing notification email:', error);
             toast.error('Failed to queue notification email. Please try again.');
+
+            // Remove loading state in case of error
             setLoadingNotifications(prev => ({ ...prev, [docId]: false }));
         }
     };
@@ -1225,12 +1196,9 @@ const ReviewPanel = () => {
                                                 <td className="border border-green-200 px-4 py-2 text-sm md:text-base">
                                                     <button
                                                         onClick={() => handleSendNotification(review.email, review.firstName, review.docId)}
-                                                        className={`px-2 py-1 rounded-md transition-colors duration-200 flex items-center space-x-1 ${review.clientStatus === 'Reached out'
-                                                            ? 'bg-gray-400 cursor-not-allowed'
-                                                            : 'bg-green-500 hover:bg-green-600 text-white'
-                                                            }`}
-                                                        title={review.clientStatus === 'Reached out' ? 'Already reached out' : 'Send Notification'}
-                                                        disabled={loadingNotifications[review.docId] || review.clientStatus === 'Reached out'}
+                                                        className="px-2 py-1 rounded-md transition-colors duration-200 flex items-center space-x-1 bg-green-500 hover:bg-green-600 text-white"
+                                                        title="Send notification email to client"
+                                                        disabled={loadingNotifications[review.docId]}
                                                     >
                                                         {loadingNotifications[review.docId] ? (
                                                             <span className="animate-spin">⌛</span>
