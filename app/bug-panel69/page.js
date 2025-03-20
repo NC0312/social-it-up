@@ -12,11 +12,12 @@ import { BsFillSendFill } from "react-icons/bs";
 import { HiBellAlert } from "react-icons/hi2";
 import PriorityDisplay from "../components/PriorityDisplay";
 import { FaCheck } from "react-icons/fa";
-import { CheckCircle } from 'lucide-react';
+import { Badge, CheckCircle } from 'lucide-react';
 import { Pagination } from '../components/Pagination';
 import ProtectedRoute from '../components/ProtectedRoutes';
 import { BugAssignmentCell, BugAssignmentFilter } from './BugUtility';
 import { useAdminAuth } from '../components/providers/AdminAuthProvider';
+import { DashboardSummary, FilterAccordion } from './UiUtility';
 
 const BugPanel = () => {
     const fadeInLeft = {
@@ -629,31 +630,46 @@ const BugPanel = () => {
         );
     };
 
-    const UpdateStatusCell = ({ onResolve, isResolved }) => {
-        return (
-            <button
-                onClick={onResolve}
-                disabled={isResolved}
-                className={`
-                    group relative flex items-center justify-center p-2 
-                    rounded-lg transition-all duration-200 
-                    ${isResolved
-                        ? 'bg-gray-100 cursor-not-allowed'
-                        : 'bg-green-50 hover:bg-green-100 active:bg-green-200'
-                    }
-                `}
-            >
-                <CheckCircle
-                    className={`
-                        w-6 h-6 transition-all duration-200 
-                        ${isResolved ? 'text-gray-400' : 'text-green-600 group-hover:text-green-700'}
-                    `}
-                />
+    // Fixed UpdateStatusCell component
+    const UpdateStatusCell = ({ isResolved, onResolve }) => {
+        const [isOpen, setIsOpen] = useState(false);
 
-                <span className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-gray-800 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">
-                    {isResolved ? 'Already resolved' : 'Mark as resolved'}
-                </span>
-            </button>
+        // Function to handle the status change
+        const handleStatusChange = () => {
+            onResolve();
+            setIsOpen(false);
+        };
+
+        return (
+            <div className="relative">
+                <button
+                    onClick={() => setIsOpen(!isOpen)}
+                    className="group flex items-center justify-center p-2 rounded-lg bg-red-50 hover:bg-red-100 active:bg-red-200 transition-all duration-200"
+                    aria-label="Toggle status menu"
+                >
+                    <Badge className="w-5 h-5 text-red-600 group-hover:text-red-700" />
+                    <span className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-gray-800 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">
+                        Update status
+                    </span>
+                </button>
+
+                {isOpen && (
+                    <div className="absolute z-50 mt-1 right-0 bg-white border border-gray-200 rounded-lg shadow-lg w-40">
+                        {/* Show appropriate option based on current status */}
+                        <button
+                            onClick={handleStatusChange}
+                            className="w-full text-left px-3 py-2 hover:bg-red-50 text-sm flex items-center gap-2"
+                            disabled={isResolved}
+                        >
+                            {isResolved ? (
+                                <StatusCell status="unresolved" />
+                            ) : (
+                                <StatusCell status="resolved" />
+                            )}
+                        </button>
+                    </div>
+                )}
+            </div>
         );
     };
 
@@ -698,6 +714,8 @@ const BugPanel = () => {
                     </div>
                 </motion.div>
 
+                <DashboardSummary bugs={bugs} />
+
                 {/* Enhanced Filter Section */}
                 <motion.div
                     variants={fadeInRight}
@@ -705,93 +723,97 @@ const BugPanel = () => {
                     whileInView="visible"
                     viewport={{ once: true }}
                 >
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8 bg-white p-6 rounded-xl shadow-sm border border-red-100">
-                        <div className="space-y-2">
-                            <label className="block text-sm font-medium text-red-800 items-center gap-2" htmlFor="date-filter">
-                                <span className="text-lg">📅</span> Filter by Date
-                            </label>
-                            <input
-                                id="date-filter"
-                                type="date"
-                                value={selectedDate}
-                                onChange={handleDateChange}
-                                className="w-full border border-red-200 rounded-lg px-4 py-2.5 shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-200"
-                            />
-                        </div>
+                    <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                        <FilterAccordion className={"bg-red-50 text-red-800 hover:bg-red-100"}>
+                            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8 bg-white p-6 rounded-xl shadow-sm border border-red-100">
+                                <div className="space-y-2">
+                                    <label className="block text-sm font-medium text-red-800 items-center gap-2" htmlFor="date-filter">
+                                        <span className="text-lg">📅</span> Filter by Date
+                                    </label>
+                                    <input
+                                        id="date-filter"
+                                        type="date"
+                                        value={selectedDate}
+                                        onChange={handleDateChange}
+                                        className="w-full border border-red-200 rounded-lg px-4 py-2.5 shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-200"
+                                    />
+                                </div>
 
-                        <div className="space-y-2">
-                            <label className="block text-sm font-medium text-[#36302A] items-center gap-2" htmlFor="email-filter">
-                                <span className="text-lg">✉️</span>Filter By Email
-                            </label>
-                            <input
-                                id="email-filter"
-                                type="text"
-                                value={selectedEmail}
-                                onChange={handleEmailChange}
-                                placeholder="Enter Email"
-                                className="w-full border border-[#36302A]/20 rounded-lg px-4 py-2.5 shadow-sm focus:outline-none focus:ring-2 focus:ring-[#36302A] focus:border-transparent transition-all duration-200 placeholder-[#36302A]/60"
-                            />
-                        </div>
+                                <div className="space-y-2">
+                                    <label className="block text-sm font-medium text-[#36302A] items-center gap-2" htmlFor="email-filter">
+                                        <span className="text-lg">✉️</span>Filter By Email
+                                    </label>
+                                    <input
+                                        id="email-filter"
+                                        type="text"
+                                        value={selectedEmail}
+                                        onChange={handleEmailChange}
+                                        placeholder="Enter Email"
+                                        className="w-full border border-[#36302A]/20 rounded-lg px-4 py-2.5 shadow-sm focus:outline-none focus:ring-2 focus:ring-[#36302A] focus:border-transparent transition-all duration-200 placeholder-[#36302A]/60"
+                                    />
+                                </div>
 
-                        <div className="space-y-2">
-                            <label className="block text-sm font-medium text-red-800 items-center gap-2" htmlFor="priority-filter">
-                                <span className="text-lg">🎯</span> Priority Level
-                            </label>
-                            <select
-                                id="priority-filter"
-                                value={selectedPriority}
-                                onChange={handlePriorityChange}
-                                className="w-full border border-red-200 rounded-lg px-4 py-2.5 shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-200 bg-white"
-                            >
-                                <option value="">All Priorities</option>
-                                <option value="low">Low Priority</option>
-                                <option value="medium">Medium Priority</option>
-                                <option value="high">High Priority</option>
-                                <option value="highest">Highest Priority</option>
-                            </select>
-                        </div>
+                                <div className="space-y-2">
+                                    <label className="block text-sm font-medium text-red-800 items-center gap-2" htmlFor="priority-filter">
+                                        <span className="text-lg">🎯</span> Priority Level
+                                    </label>
+                                    <select
+                                        id="priority-filter"
+                                        value={selectedPriority}
+                                        onChange={handlePriorityChange}
+                                        className="w-full border border-red-200 rounded-lg px-4 py-2.5 shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-200 bg-white"
+                                    >
+                                        <option value="">All Priorities</option>
+                                        <option value="low">Low Priority</option>
+                                        <option value="medium">Medium Priority</option>
+                                        <option value="high">High Priority</option>
+                                        <option value="highest">Highest Priority</option>
+                                    </select>
+                                </div>
 
-                        <div className="space-y-2">
-                            <label className="block text-sm font-medium text-red-800 items-center gap-2" htmlFor="status-filter">
-                                <span className="text-lg">📊</span> Bug Status
-                            </label>
-                            <select
-                                id="status-filter"
-                                value={selectedStatus}
-                                onChange={handleStatusChange}
-                                className="w-full border border-red-200 rounded-lg px-4 py-2.5 shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-200 bg-white"
-                            >
-                                <option value="">All Statuses</option>
-                                <option value="resolved">Resolved</option>
-                                <option value="unresolved">Unresolved</option>
-                            </select>
-                        </div>
+                                <div className="space-y-2">
+                                    <label className="block text-sm font-medium text-red-800 items-center gap-2" htmlFor="status-filter">
+                                        <span className="text-lg">📊</span> Bug Status
+                                    </label>
+                                    <select
+                                        id="status-filter"
+                                        value={selectedStatus}
+                                        onChange={handleStatusChange}
+                                        className="w-full border border-red-200 rounded-lg px-4 py-2.5 shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-200 bg-white"
+                                    >
+                                        <option value="">All Statuses</option>
+                                        <option value="resolved">Resolved</option>
+                                        <option value="unresolved">Unresolved</option>
+                                    </select>
+                                </div>
 
-                        <div className="space-y-2">
-                            <label className="block text-sm font-medium text-red-800 items-center gap-2" htmlFor="subject-filter">
-                                <span className="text-lg">📊</span> Subject
-                            </label>
-                            <select
-                                id="subject-filter"
-                                value={selectedSubject}
-                                onChange={handleSubjectChange}
-                                className="w-full border border-red-200 rounded-lg px-4 py-2.5 shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-200 bg-white"
-                            >
-                                <option value="">All Subjects</option>
-                                <option value="bug">Bugs</option>
-                                <option value="form-issue">Form-Issue</option>
-                                <option value="others">Others</option>
-                            </select>
-                        </div>
-                        {admin && admin.role === 'superAdmin' && (
-                            <BugAssignmentFilter
-                                value={selectedAssignment}
-                                onChange={handleAssignmentChange}
-                                admins={admins}
-                                isSuperAdmin={admin?.role === 'superAdmin'}
-                                currentAdminId={admin?.id}
-                            />
-                        )}
+                                <div className="space-y-2">
+                                    <label className="block text-sm font-medium text-red-800 items-center gap-2" htmlFor="subject-filter">
+                                        <span className="text-lg">📊</span> Subject
+                                    </label>
+                                    <select
+                                        id="subject-filter"
+                                        value={selectedSubject}
+                                        onChange={handleSubjectChange}
+                                        className="w-full border border-red-200 rounded-lg px-4 py-2.5 shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-200 bg-white"
+                                    >
+                                        <option value="">All Subjects</option>
+                                        <option value="bug">Bugs</option>
+                                        <option value="form-issue">Form-Issue</option>
+                                        <option value="others">Others</option>
+                                    </select>
+                                </div>
+                                {admin && admin.role === 'superAdmin' && (
+                                    <BugAssignmentFilter
+                                        value={selectedAssignment}
+                                        onChange={handleAssignmentChange}
+                                        admins={admins}
+                                        isSuperAdmin={admin?.role === 'superAdmin'}
+                                        currentAdminId={admin?.id}
+                                    />
+                                )}
+                            </div>
+                        </FilterAccordion>
                     </div>
                 </motion.div>
 
@@ -802,7 +824,7 @@ const BugPanel = () => {
                     whileInView="visible"
                     viewport={{ once: true }}
                 >
-                    <div className="flex flex-wrap gap-4 mb-8">
+                    <div className="flex flex-wrap gap-4 mb-8 pt-5">
                         <button
                             onClick={handleFetchData}
                             className="px-6 py-2.5 bg-red-600 text-white font-semibold rounded-lg shadow-lg hover:bg-red-700 transition-all duration-200 flex items-center gap-2 hover:scale-105"
@@ -860,10 +882,10 @@ const BugPanel = () => {
                                     <tr>
                                         {[
                                             "Action",
-                                            "Bug Status",
-                                            "Update status",
                                             "Priority",
                                             "Change Priority",
+                                            "Bug Status",
+                                            "Update status",
                                             "Assigned To",
                                             "Timestamp",
                                             "Email",
@@ -895,15 +917,6 @@ const BugPanel = () => {
                                                     </div>
                                                 </td>
                                                 <td className="border border-red-200 px-4 py-2 text-sm md:text-base">
-                                                    <StatusCell status={bug.status} />
-                                                </td>
-                                                <td className="border border-red-200 px-8 py-2">
-                                                    <UpdateStatusCell
-                                                        onResolve={() => handleMarkAsResolved(bug.docId)}
-                                                        isResolved={bug.status === 'resolved'}
-                                                    />
-                                                </td>
-                                                <td className="border border-red-200 px-4 py-2 text-sm md:text-base">
                                                     <PriorityDisplay priority={bug.priority} />
                                                 </td>
                                                 <td className="border border-red-200 px-4 py-2 text-sm md:text-base">
@@ -917,6 +930,15 @@ const BugPanel = () => {
                                                         <option value="high">High</option>
                                                         <option value="highest">Highest</option>
                                                     </select>
+                                                </td>
+                                                <td className="border border-red-200 px-4 py-2 text-sm md:text-base">
+                                                    <StatusCell status={bug.status} />
+                                                </td>
+                                                <td className="border border-red-200 px-8 py-2">
+                                                    <UpdateStatusCell
+                                                        onResolve={() => handleMarkAsResolved(bug.docId)}
+                                                        isResolved={bug.status === 'resolved'}
+                                                    />
                                                 </td>
                                                 <td className="border border-red-200 px-4 py-2 text-sm md:text-base">
                                                     <BugAssignmentCell
@@ -975,20 +997,22 @@ const BugPanel = () => {
                 </motion.div>
 
                 {/* Enhanced Pagination */}
-                {filteredBugs.length > 0 && (
-                    <Pagination
-                        currentPage={currentPage}
-                        totalPages={totalPages}
-                        totalRecords={filteredBugs.length}
-                        startIndex={startIndex}
-                        endIndex={endIndex}
-                        onPageChange={handlePageChange}
-                        pageButtonsStyles={"bg-red-600 hover:bg-[#2C2925] text-white font-serif"}
-                        recordInfoStyles={"text-gray-800 font-serif"}
-                    />
-                )}
-            </div>
-        </ProtectedRoute>
+                {
+                    filteredBugs.length > 0 && (
+                        <Pagination
+                            currentPage={currentPage}
+                            totalPages={totalPages}
+                            totalRecords={filteredBugs.length}
+                            startIndex={startIndex}
+                            endIndex={endIndex}
+                            onPageChange={handlePageChange}
+                            pageButtonsStyles={"bg-red-600 hover:bg-[#2C2925] text-white font-serif"}
+                            recordInfoStyles={"text-gray-800 font-serif"}
+                        />
+                    )
+                }
+            </div >
+        </ProtectedRoute >
     );
 };
 

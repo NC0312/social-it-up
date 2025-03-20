@@ -13,7 +13,7 @@ import {
     deleteNotification,
     deleteAllNotifications,
     deleteExpiredNotifications
-} from './Utility';
+} from './ReviewUtility';
 import { AlertCircle, Clock, Calendar, CheckCircle2, ClockCountdown } from 'lucide-react';
 
 const Notifications = () => {
