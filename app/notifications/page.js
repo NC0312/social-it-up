@@ -58,7 +58,7 @@ const Notifications = () => {
                 id: doc.id,
                 ...doc.data(),
                 createdAt: doc.data().createdAt?.toDate() || new Date(),
-                expiresAt: doc.data().expiresAt?.toDate() || new Date(Date.now() + 48 * 60 * 60 * 1000)
+                expiresAt: doc.data().expiresAt?.toDate() || new Date(Date.now() + 168 * 60 * 60 * 1000)
             }));
 
             setNotifications(notificationData);
