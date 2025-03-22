@@ -17,7 +17,7 @@ import { db, rtdb } from "../../lib/firebase"
 import { ref, set, onValue, onDisconnect } from "firebase/database"
 import { AnimatePresence } from "framer-motion"
 import AdminRemovalPopup from "../AdminRemovalPopup"
-import { setupReminderSchedule } from "@/app/notifications/ReviewUtility"
+import { setupReminderSchedule } from "@/app/notifications/Utility"
 
 const AdminAuthContext = createContext()
 

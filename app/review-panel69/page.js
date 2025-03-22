@@ -4,21 +4,18 @@ import { collection, getDocs, query, orderBy, deleteDoc, doc, writeBatch, update
 import { db } from "../lib/firebase";
 import { toast } from "sonner";
 import { MdDeleteForever, MdContentCopy } from "react-icons/md";
-import { FaArrowLeft, FaExternalLinkAlt, FaFileDownload, FaFileExcel, FaSync } from "react-icons/fa";
-import { IoMdSend } from "react-icons/io";
+import { FaArrowLeft, FaExternalLinkAlt, FaFileExcel, FaSync } from "react-icons/fa";
 import { useRouter } from 'next/navigation';
 import { motion } from "framer-motion";
-import { BsFillSendFill } from "react-icons/bs";
 import { HiBellAlert } from "react-icons/hi2";
 import PriorityDisplay from "../components/PriorityDisplay";
-import { AlertCircle, Badge, CheckCircle } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from 'lucide-react';
 import { Pagination } from "../components/Pagination";
 import ProtectedRoute from "../components/ProtectedRoutes";
 import { AssignmentCell, AssignmentFilter } from "./ReviewUtility";
 import { useAdminAuth } from "../components/providers/AdminAuthProvider";
 import { DashboardSummary, FilterAccordion } from "./UiUtility";
-import { createAssignmentNotification, createHighPriorityNotification, createNotification, createStatusChangeNotification } from "../notifications/ReviewUtility";
+import { createHighPriorityNotification, createHighPriorityReviewNotification, createReviewAssignmentNotification, createReviewStatusChangeNotification } from "../notifications/Utility";
 
 const ReviewPanel = () => {
     const fadeInLeft = {
@@ -132,7 +129,7 @@ const ReviewPanel = () => {
                 if (adminId !== admin?.id) {
                     try {
                         // Create basic assignment notification
-                        await createAssignmentNotification({
+                        await createReviewAssignmentNotification({
                             adminId,
                             reviewId: docId,
                             reviewData: reviewToAssign,
@@ -642,7 +639,7 @@ const ReviewPanel = () => {
                 !wasHighPriority) {
                 try {
                     // Create a high priority notification
-                    await createHighPriorityNotification({
+                    await createHighPriorityReviewNotification({
                         adminId: reviewToUpdate.assignedTo,
                         reviewId: docId,
                         reviewData: {
@@ -713,7 +710,7 @@ const ReviewPanel = () => {
             // Create notification for the assigned admin (if there is one and it's not the current user)
             if (reviewToUpdate.assignedTo && reviewToUpdate.assignedTo !== admin?.id) {
                 try {
-                    await createStatusChangeNotification({
+                    await createReviewStatusChangeNotification({
                         adminId: reviewToUpdate.assignedTo,
                         reviewId: docId,
                         reviewData: reviewToUpdate,
