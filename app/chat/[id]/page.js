@@ -40,7 +40,7 @@ export default function ChatPage() {
                 });
             } else {
                 toast.error("Review not found");
-                router.push("/review-panel");
+                router.push("/review-panel69");
             }
         } catch (error) {
             console.error("Error fetching review:", error);
