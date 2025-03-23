@@ -74,6 +74,7 @@ function Header() {
 
   const adminLinks = [
     { href: '/admin-panel69', label: 'Admin Panel' },
+    {href:'/review-panel69',label:'Review Panel'},
     { href: '/bug-panel69', label: 'Bugs & Issues' },
     { href: '/rating-dashboard69', label: 'Rating Dashboard' },
     { href: '/admin-management69', label: 'Admin Management' }
@@ -576,6 +577,20 @@ function Header() {
                   </Link>
                 </li>
               )}
+
+
+              {isDevelopment && (
+                <li className="pt-6">
+                  <Link
+                    href="/admin-panel69"
+                    className="px-4 py-2 bg-[#2563EB] text-white rounded-md hover:bg-[#808D7C] transition"
+                    onClick={handleMenuToggle}
+                  >
+                    Review Panel
+                  </Link>
+                </li>
+              )}
+
               {isDevelopment && (
                 <li className="pt-4">
                   <Link
