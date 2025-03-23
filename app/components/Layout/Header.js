@@ -74,6 +74,7 @@ function Header() {
 
   const adminLinks = [
     { href: '/admin-panel69', label: 'Admin Panel' },
+    {href:'/review-panel69',label:'Review Panel'},
     { href: '/bug-panel69', label: 'Bugs & Issues' },
     { href: '/rating-dashboard69', label: 'Rating Dashboard' },
     { href: '/admin-management69', label: 'Admin Management' }
@@ -148,6 +149,18 @@ function Header() {
       setIsLoading(false);
     }
   };
+
+  const getGreeting = () => {
+    const currentHour = new Date().getHours();
+    if (currentHour >= 2 && currentHour < 12) {
+      return "Good Morning";
+    } else if (currentHour >= 12 && currentHour < 18) {
+      return "Good Afternoon";
+    } else {
+      return "Good Evening";
+    }
+  };
+
 
   const handleMenuToggle = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -409,10 +422,18 @@ function Header() {
         </div>
 
         {/* Development Mode Text */}
-        {isDevelopment && isAuthenticated && (
-          <div className="absolute left-1/4 transform -translate-x-1/2 ml-36 md:ml-0 text-white text-xs md:text-lg font-light md:font-semibold" style={{ userSelect: "none" }}>
-            Hi, {currentAdmin?.role === 'superAdmin' ? 'SuperAdmin' : 'Admin'}!👋
-          </div>
+        {isDevelopment && (
+          <>
+            {isAuthenticated ? (
+              <div className="absolute left-1/4 transform -translate-x-1/2 ml-36 md:ml-0 text-white text-xs md:text-lg font-light md:font-semibold" style={{ userSelect: "none" }}>
+                {getGreeting()}, {currentAdmin?.username}!👋
+              </div>
+            ) : (
+              <div className="absolute left-1/4 transform -translate-x-1/2 ml-36 md:ml-0 text-white text-xs md:text-lg font-light md:font-semibold" style={{ userSelect: "none" }}>
+                {getGreeting()}👋
+              </div>
+            )}
+          </>
         )}
 
         {/* Mobile view components remain the same */}
@@ -556,6 +577,20 @@ function Header() {
                   </Link>
                 </li>
               )}
+
+
+              {isDevelopment && (
+                <li className="pt-6">
+                  <Link
+                    href="/admin-panel69"
+                    className="px-4 py-2 bg-[#2563EB] text-white rounded-md hover:bg-[#808D7C] transition"
+                    onClick={handleMenuToggle}
+                  >
+                    Review Panel
+                  </Link>
+                </li>
+              )}
+
               {isDevelopment && (
                 <li className="pt-4">
                   <Link
