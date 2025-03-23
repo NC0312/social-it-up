@@ -18,6 +18,7 @@ import ProtectedRoute from '../components/ProtectedRoutes';
 import { BugAssignmentCell, BugAssignmentFilter } from './BugUtility';
 import { useAdminAuth } from '../components/providers/AdminAuthProvider';
 import { DashboardSummary, FilterAccordion } from './UiUtility';
+import { createBugAssignmentNotification, createHighPriorityBugNotification } from '../notifications/Utility';
 
 const BugPanel = () => {
     const fadeInLeft = {
@@ -148,6 +149,21 @@ const BugPanel = () => {
                     toast.success(`Bug assigned to ${adminName} successfully!`);
                 }
             }
+
+            const bugToAssign = bugs.find(bug => bug.docId === docId);
+
+            if (adminId && bugToAssign && adminId !== admin?.id) {
+                await createBugAssignmentNotification({
+                    adminId,
+                    bugId: docId,
+                    bugData: bugToAssign,
+                    assignedBy: admin?.id || 'system',
+                    assignerName: admin?.firstName
+                        ? `${admin.firstName} ${admin.lastName}`
+                        : admin?.username || 'Admin'
+                });
+            }
+
 
             // Update local state
             const updatedBugs = bugs.map(bug =>
@@ -534,6 +550,18 @@ const BugPanel = () => {
             const updatedBugs = bugs.map(bug =>
                 bug.docId === docId ? { ...bug, priority: newPriority } : bug
             );
+
+            const updatedBug = bugs.find(bug => bug.docId === docId);
+            const isHighPriority = newPriority === 'high' || newPriority === 'highest';
+
+            if (updatedBug && isHighPriority && updatedBug.assignedTo) {
+                await createHighPriorityBugNotification({
+                    adminId: updatedBug.assignedTo,
+                    bugId: docId,
+                    bugData: updatedBug
+                });
+            }
+
             setBugs(updatedBugs);
             setFilteredBugs(updatedBugs);
 

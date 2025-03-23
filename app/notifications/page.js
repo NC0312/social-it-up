@@ -1,10 +1,10 @@
 'use client';
 import React, { useEffect, useState } from 'react';
-import { collection, query, where, orderBy, getDocs, onSnapshot, Timestamp } from 'firebase/firestore';
+import { collection, query, where, orderBy, onSnapshot, } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { useAdminAuth } from '../components/providers/AdminAuthProvider';
 import { toast } from 'sonner';
-import { FaArrowLeft, FaBell, FaCheck, FaCheckDouble, FaTrash } from 'react-icons/fa';
+import { FaArrowLeft, FaBell, FaTrash } from 'react-icons/fa';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { Card } from '@/components/ui/card';
@@ -13,8 +13,8 @@ import {
     deleteNotification,
     deleteAllNotifications,
     deleteExpiredNotifications
-} from './ReviewUtility';
-import { AlertCircle, Clock, Calendar, CheckCircle2, ClockCountdown } from 'lucide-react';
+} from './Utility';
+import { AlertCircle, Clock, Calendar, CheckCircle2, ClockCountdown, Clock1 } from 'lucide-react';
 
 const Notifications = () => {
     const { admin } = useAdminAuth();
@@ -215,7 +215,6 @@ const Notifications = () => {
             case 'reminder':
                 return {
                     border: 'border-l-amber-600',
-                    icon: <ClockCountdown className="text-amber-600" size={22} />,
                     bg: 'bg-amber-50'
                 };
             default:
