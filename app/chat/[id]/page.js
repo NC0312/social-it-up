@@ -295,7 +295,7 @@ export default function ChatPage() {
         <div className="p-4 md:p-8 bg-gradient-to-b from-green-50 to-white min-h-screen">
             <div className="flex justify-between items-center mb-8">
                 <button
-                    onClick={() => router.push("/review-panel")}
+                    onClick={() => router.push("/review-panel69")}
                     className="px-4 py-2.5 bg-green-600 text-white font-semibold rounded-lg shadow-lg hover:bg-green-700 transition-all duration-200 flex items-center gap-2 hover:translate-x-[-4px]"
                 >
                     <FaArrowLeft className="text-lg" />
