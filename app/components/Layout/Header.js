@@ -149,6 +149,18 @@ function Header() {
     }
   };
 
+  const getGreeting = () => {
+    const currentHour = new Date().getHours();
+    if (currentHour >= 2 && currentHour < 12) {
+      return "Good Morning";
+    } else if (currentHour >= 12 && currentHour < 18) {
+      return "Good Afternoon";
+    } else {
+      return "Good Evening";
+    }
+  };
+
+
   const handleMenuToggle = () => {
     setIsMenuOpen(!isMenuOpen);
   };
@@ -409,10 +421,18 @@ function Header() {
         </div>
 
         {/* Development Mode Text */}
-        {isDevelopment && isAuthenticated && (
-          <div className="absolute left-1/4 transform -translate-x-1/2 ml-36 md:ml-0 text-white text-xs md:text-lg font-light md:font-semibold" style={{ userSelect: "none" }}>
-            Hi, {currentAdmin?.role === 'superAdmin' ? 'SuperAdmin' : 'Admin'}!👋
-          </div>
+        {isDevelopment && (
+          <>
+            {isAuthenticated ? (
+              <div className="absolute left-1/4 transform -translate-x-1/2 ml-36 md:ml-0 text-white text-xs md:text-lg font-light md:font-semibold" style={{ userSelect: "none" }}>
+                {getGreeting()}, {currentAdmin?.username}!👋
+              </div>
+            ) : (
+              <div className="absolute left-1/4 transform -translate-x-1/2 ml-36 md:ml-0 text-white text-xs md:text-lg font-light md:font-semibold" style={{ userSelect: "none" }}>
+                {getGreeting()}👋
+              </div>
+            )}
+          </>
         )}
 
         {/* Mobile view components remain the same */}
