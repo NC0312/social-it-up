@@ -31,7 +31,10 @@ import {
     Check,
     X,
     Mail,
+    MoreVertical,
+    Smile,
 } from 'lucide-react';
+import Picker from 'emoji-picker-react'; // Import emoji picker
 
 const AdminChat = () => {
     const { admin: currentAdmin, isAuthenticated, loading } = useAdminAuth();
@@ -47,6 +50,8 @@ const AdminChat = () => {
     const [sidebarOpen, setSidebarOpen] = useState(true);
     const [unreadCounts, setUnreadCounts] = useState({});
     const [processedMessages, setProcessedMessages] = useState({});
+    const [showEmojiPicker, setShowEmojiPicker] = useState(false); // State for emoji picker
+    const [dropdownMessageId, setDropdownMessageId] = useState(null); // State for dropdown
     const messagesEndRef = useRef(null);
     const messagesContainerRef = useRef(null);
 
@@ -80,6 +85,11 @@ const AdminChat = () => {
                 ease: 'easeInOut',
             },
         },
+    };
+
+    const dropdownVariants = {
+        hidden: { opacity: 0, scale: 0.95 },
+        visible: { opacity: 1, scale: 1, transition: { duration: 0.2 } },
     };
 
     // Fetch all admins and set up real-time listener
@@ -194,9 +204,9 @@ const AdminChat = () => {
 
     // Handle admin selection
     const handleSelectAdmin = (admin) => {
-        console.log('Selecting admin:', admin); // Debug log
+        console.log('Selecting admin:', admin);
         setSelectedAdmin(admin);
-        setMessages([]); // Clear messages to avoid showing old conversation
+        setMessages([]);
     };
 
     // Send a new message
@@ -224,6 +234,12 @@ const AdminChat = () => {
         }
     };
 
+    // Handle emoji selection
+    const onEmojiClick = (emojiObject) => {
+        setNewMessage((prev) => prev + emojiObject.emoji);
+        setShowEmojiPicker(false); // Close picker after selection
+    };
+
     // Edit a message
     const handleEditMessage = async (messageId) => {
         if (!editedText.trim()) return;
@@ -239,6 +255,7 @@ const AdminChat = () => {
             });
             setEditingMessage(null);
             setEditedText('');
+            setDropdownMessageId(null); // Close dropdown
             toast.success('Message updated successfully');
         } catch (error) {
             console.error('Error editing message:', error);
@@ -255,6 +272,7 @@ const AdminChat = () => {
             await updateDoc(messageRef, {
                 deletedFor: arrayUnion(currentAdmin.id),
             });
+            setDropdownMessageId(null); // Close dropdown
             toast.success('Message deleted for you');
         } catch (error) {
             console.error('Error deleting message for me:', error);
@@ -274,6 +292,7 @@ const AdminChat = () => {
                 deletedBy: currentAdmin.id,
                 deletedAt: serverTimestamp(),
             });
+            setDropdownMessageId(null); // Close dropdown
             toast.success('Message deleted for everyone');
         } catch (error) {
             console.error('Error deleting message for everyone:', error);
@@ -427,7 +446,7 @@ const AdminChat = () => {
                                                 key={message.id}
                                                 className={`flex ${
                                                     isSender ? 'justify-end' : 'justify-start'
-                                                } mb-4`}
+                                                } mb-4 relative group`} // Added group for hover
                                                 variants={messageVariants}
                                                 initial="hidden"
                                                 animate="visible"
@@ -459,9 +478,10 @@ const AdminChat = () => {
                                                                     Save
                                                                 </button>
                                                                 <button
-                                                                    onClick={() =>
-                                                                        setEditingMessage(null)
-                                                                    }
+                                                                    onClick={() => {
+                                                                        setEditingMessage(null);
+                                                                        setDropdownMessageId(null);
+                                                                    }}
                                                                     className="bg-gray-300 text-[#36302A] px-3 py-1 rounded hover:bg-gray-400"
                                                                 >
                                                                     Cancel
@@ -475,41 +495,76 @@ const AdminChat = () => {
                                                                 {formatTimestamp(message.timestamp)}
                                                                 {message.edited && ' (Edited)'}
                                                             </div>
-                                                            {isSender && (
-                                                                <div className="flex gap-2 mt-2">
-                                                                    <button
-                                                                        onClick={() => {
-                                                                            setEditingMessage(message.id);
-                                                                            setEditedText(message.text);
-                                                                        }}
-                                                                        className="text-xs hover:underline flex items-center gap-1"
-                                                                    >
-                                                                        <Edit size={12} /> Edit
-                                                                    </button>
-                                                                    <button
-                                                                        onClick={() =>
-                                                                            handleDeleteForMe(message.id)
-                                                                        }
-                                                                        className="text-xs hover:underline flex items-center gap-1"
-                                                                    >
-                                                                        <Trash2 size={12} /> Delete for Me
-                                                                    </button>
-                                                                    <button
-                                                                        onClick={() =>
-                                                                            handleDeleteForEveryone(
-                                                                                message.id
-                                                                            )
-                                                                        }
-                                                                        className="text-xs hover:underline flex items-center gap-1"
-                                                                    >
-                                                                        <Trash2 size={12} /> Delete for
-                                                                        Everyone
-                                                                    </button>
-                                                                </div>
-                                                            )}
                                                         </>
                                                     )}
                                                 </div>
+                                                {isSender && editingMessage !== message.id && (
+                                                    <div className="absolute right-0 top-0 mt-1 mr-1">
+                                                        <motion.button
+                                                            onClick={() =>
+                                                                setDropdownMessageId(
+                                                                    dropdownMessageId === message.id
+                                                                        ? null
+                                                                        : message.id
+                                                                )
+                                                            }
+                                                            className="text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                                                            whileHover={{ scale: 1.1 }}
+                                                            whileTap={{ scale: 0.9 }}
+                                                        >
+                                                            <MoreVertical size={16} />
+                                                        </motion.button>
+                                                        <AnimatePresence>
+                                                            {dropdownMessageId === message.id && (
+                                                                <motion.div
+                                                                    className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10"
+                                                                    variants={dropdownVariants}
+                                                                    initial="hidden"
+                                                                    animate="visible"
+                                                                    exit="hidden"
+                                                                >
+                                                                    <div className="py-1">
+                                                                        <button
+                                                                            onClick={() => {
+                                                                                setEditingMessage(
+                                                                                    message.id
+                                                                                );
+                                                                                setEditedText(
+                                                                                    message.text
+                                                                                );
+                                                                            }}
+                                                                            className="block w-full text-left px-4 py-2 text-sm text-[#36302A] hover:bg-[#F8F2EA] flex items-center gap-2"
+                                                                        >
+                                                                            <Edit size={14} /> Edit
+                                                                        </button>
+                                                                        <button
+                                                                            onClick={() =>
+                                                                                handleDeleteForMe(
+                                                                                    message.id
+                                                                                )
+                                                                            }
+                                                                            className="block w-full text-left px-4 py-2 text-sm text-[#36302A] hover:bg-[#F8F2EA] flex items-center gap-2"
+                                                                        >
+                                                                            <Trash2 size={14} /> Delete
+                                                                            for Me
+                                                                        </button>
+                                                                        <button
+                                                                            onClick={() =>
+                                                                                handleDeleteForEveryone(
+                                                                                    message.id
+                                                                                )
+                                                                            }
+                                                                            className="block w-full text-left px-4 py-2 text-sm text-[#36302A] hover:bg-[#F8F2EA] flex items-center gap-2"
+                                                                        >
+                                                                            <Trash2 size={14} /> Delete
+                                                                            for Everyone
+                                                                        </button>
+                                                                    </div>
+                                                                </motion.div>
+                                                            )}
+                                                        </AnimatePresence>
+                                                    </div>
+                                                )}
                                             </motion.div>
                                         )
                                     );
@@ -519,7 +574,7 @@ const AdminChat = () => {
                         </div>
 
                         {/* Message Input */}
-                        <div className="p-4 bg-white border-t border-[#E2D9CE] flex items-center gap-3 sticky bottom-0">
+                        <div className="p-4 bg-white border-t border-[#E2D9CE] flex items-center gap-3 sticky bottom-0 relative">
                             <input
                                 type="text"
                                 value={newMessage}
@@ -528,6 +583,19 @@ const AdminChat = () => {
                                 placeholder="Type a message..."
                                 className="flex-1 p-2 rounded border border-[#E2D9CE] focus:outline-none focus:ring-2 focus:ring-[#36302A]"
                             />
+                            <motion.button
+                                onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                                className="p-2 rounded-full hover:bg-[#F8F2EA]"
+                                whileHover={{ scale: 1.1 }}
+                                whileTap={{ scale: 0.9 }}
+                            >
+                                <Smile size={20} />
+                            </motion.button>
+                            {showEmojiPicker && (
+                                <div className="absolute bottom-16 right-4 z-10">
+                                    <Picker onEmojiClick={onEmojiClick} />
+                                </div>
+                            )}
                             <motion.button
                                 onClick={handleSendMessage}
                                 className="bg-[#36302A] text-white p-2 rounded-full"
