@@ -73,8 +73,9 @@ function Header() {
   }, [currentAdmin]);
 
   const adminLinks = [
+    { href: '/admin-chat', label: 'Chat with Admins' },
     { href: '/admin-panel69', label: 'Admin Panel' },
-    {href:'/review-panel69',label:'Review Panel'},
+    { href: '/review-panel69', label: 'Review Panel' },
     { href: '/bug-panel69', label: 'Bugs & Issues' },
     { href: '/rating-dashboard69', label: 'Rating Dashboard' },
     { href: '/admin-management69', label: 'Admin Management' }
@@ -569,6 +570,18 @@ function Header() {
               {isDevelopment && (
                 <li className="pt-6">
                   <Link
+                    href="/admin-chat"
+                    className="px-4 py-2 bg-[#2563EB] text-white rounded-md hover:bg-[#808D7C] transition"
+                    onClick={handleMenuToggle}
+                  >
+                    Chat with Admins
+                  </Link>
+                </li>
+              )}
+
+              {isDevelopment && (
+                <li className="pt-6">
+                  <Link
                     href="/admin-panel69"
                     className="px-4 py-2 bg-[#2563EB] text-white rounded-md hover:bg-[#808D7C] transition"
                     onClick={handleMenuToggle}
@@ -582,7 +595,7 @@ function Header() {
               {isDevelopment && (
                 <li className="pt-6">
                   <Link
-                    href="/admin-panel69"
+                    href="/review-panel69"
                     className="px-4 py-2 bg-[#2563EB] text-white rounded-md hover:bg-[#808D7C] transition"
                     onClick={handleMenuToggle}
                   >

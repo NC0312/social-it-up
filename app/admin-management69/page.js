@@ -11,8 +11,6 @@ import {
     updateDoc,
     deleteDoc,
     onSnapshot,
-    serverTimestamp,
-    getDoc
 } from 'firebase/firestore';
 import { db, rtdb } from '../lib/firebase';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -20,20 +18,16 @@ import { toast } from "sonner";
 import {
     UserPlus,
     UserCheck,
-    UserMinus,
     Shield,
     Search,
     RefreshCw,
-    ChevronRight,
     X,
     Check,
     Trash2,
     Clock,
     Calendar,
-    AlertCircle
 } from 'lucide-react';
 import AdminProfileModal from '../components/AdminProfileModal';
-import AdminRemovalPopup from '../components/AdminRemovalPopup';
 import { ref, set } from 'firebase/database';
 
 const AdminManagement = () => {
