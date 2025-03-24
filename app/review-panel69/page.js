@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import { collection, getDocs, query, orderBy, deleteDoc, doc, writeBatch, updateDoc } from "firebase/firestore";
 import { db } from "../lib/firebase";
 import { toast } from "sonner";
-import { MdDeleteForever, MdContentCopy, MdChat } from "react-icons/md"; // Merged MdChat from newFeatured
+import { MdDeleteForever, MdContentCopy, MdChat } from "react-icons/md";
 import { FaArrowLeft, FaExternalLinkAlt, FaFileExcel, FaSync } from "react-icons/fa";
 import { useRouter } from 'next/navigation';
 import { motion } from "framer-motion";
@@ -16,7 +16,9 @@ import { AssignmentCell, AssignmentFilter } from "./ReviewUtility";
 import { useAdminAuth } from "../components/providers/AdminAuthProvider";
 import { DashboardSummary, FilterAccordion } from "./UiUtility";
 import { createHighPriorityNotification, createHighPriorityReviewNotification, createReviewAssignmentNotification, createReviewStatusChangeNotification } from "../notifications/Utility";
-import Link from "next/link"; // Merged Link from bug-fix
+import Link from "next/link";
+import { FaArrowUpRightFromSquare } from "react-icons/fa6";
+
 
 const ReviewPanel = () => {
   const fadeInLeft = {
@@ -1090,7 +1092,7 @@ const ReviewPanel = () => {
                       "Socials",
                       "Website",
                       "Messages",
-                      "Page", // From bug-fix
+                      "OpenReview", // From bug-fix
                     ].map((header) => (
                       <th
                         key={header}
@@ -1230,7 +1232,7 @@ const ReviewPanel = () => {
                         </td>
                         <td className="border border-green-200 px-4 py-2 font-serif text-sm md:text-base">
                           <Link href={`/review-panel69/${review.docId}`}>
-                            <button>page</button>
+                            <button><FaArrowUpRightFromSquare /></button>
                           </Link>
                         </td>
                       </tr>
