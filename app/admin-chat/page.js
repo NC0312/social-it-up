@@ -425,7 +425,7 @@ const AdminChat = () => {
                                         @{selectedAdmin.username}
                                     </h3>
                                 </div>
-                                <p className="text-sm text-[#86807A]">{selectedAdmin.email}</p>
+                                <p className="text-sm text-[#86807A]">{selectedAdmin.email} <span className='text-[#36302A]'>({selectedAdmin.role})</span></p>
                             </div>
                         </div>
 
