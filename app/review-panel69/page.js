@@ -1073,6 +1073,7 @@ const ReviewPanel = () => {
                   <tr>
                     {[
                       "Action",
+                      "OpenReview", // From bug-fix
                       "Chat", // From newFeatured
                       "Priority",
                       "ChangePriority",
@@ -1092,7 +1093,6 @@ const ReviewPanel = () => {
                       "Socials",
                       "Website",
                       "Messages",
-                      "OpenReview", // From bug-fix
                     ].map((header) => (
                       <th
                         key={header}
@@ -1120,6 +1120,11 @@ const ReviewPanel = () => {
                               <MdDeleteForever />
                             </button>
                           )}
+                        </td>
+                        <td className="border border-green-200 px-4 py-2 font-serif text-sm md:text-base">
+                          <Link href={`/review-panel69/${review.docId}`}>
+                            <button><FaArrowUpRightFromSquare /></button>
+                          </Link>
                         </td>
                         <td className="border border-green-200 px-4 md:px-7 py-2 md:py-2 text-xs md:text-base">
                           <button
@@ -1229,11 +1234,6 @@ const ReviewPanel = () => {
                         </td>
                         <td className="border border-green-200 px-4 py-2 font-serif text-sm md:text-base">
                           {review.messages}
-                        </td>
-                        <td className="border border-green-200 px-4 py-2 font-serif text-sm md:text-base">
-                          <Link href={`/review-panel69/${review.docId}`}>
-                            <button><FaArrowUpRightFromSquare /></button>
-                          </Link>
                         </td>
                       </tr>
                     ))
