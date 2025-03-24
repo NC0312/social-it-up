@@ -8,6 +8,7 @@ export function middleware(request) {
     '/review-panel69', 
     '/bug-panel69',
     '/rating-dashboard69', 
+    '/admin-chat',
     '/login',
     '/chat' 
   ]
@@ -31,6 +32,7 @@ export const config = {
     '/bug-panel69/:path*',
     '/login/:path*',
     '/rating-dashboard69/:path*',
-    '/chat/:path*'  
+    '/chat/:path*'  ,
+    '/admin-chat/:path*'
   ]
 }
