@@ -1,66 +1,63 @@
-"use client"
-import { useEffect, useState } from "react"
-import { collection, getDocs, query, orderBy, deleteDoc, doc, writeBatch, updateDoc } from "firebase/firestore"
-import { db } from "../lib/firebase"
-import { toast } from "sonner"
-import { MdDeleteForever, MdContentCopy, MdChat } from "react-icons/md"
-import { FaArrowLeft, FaExternalLinkAlt, FaFileExcel, FaSync } from "react-icons/fa"
-import { useRouter } from "next/navigation"
-import { motion } from "framer-motion"
-import { HiBellAlert } from "react-icons/hi2"
-import PriorityDisplay from "../components/PriorityDisplay"
-import { Badge } from "lucide-react"
-import { Pagination } from "../components/Pagination"
-import ProtectedRoute from "../components/ProtectedRoutes"
-import { AssignmentCell, AssignmentFilter } from "./ReviewUtility"
-import { useAdminAuth } from "../components/providers/AdminAuthProvider"
-import { DashboardSummary, FilterAccordion } from "./UiUtility"
-import {
-  createHighPriorityNotification,
-  createHighPriorityReviewNotification,
-  createReviewAssignmentNotification,
-  createReviewStatusChangeNotification,
-} from "../notifications/Utility"
+"use client";
+import React, { useEffect, useState } from "react";
+import { collection, getDocs, query, orderBy, deleteDoc, doc, writeBatch, updateDoc } from "firebase/firestore";
+import { db } from "../lib/firebase";
+import { toast } from "sonner";
+import { MdDeleteForever, MdContentCopy, MdChat } from "react-icons/md"; // Merged MdChat from newFeatured
+import { FaArrowLeft, FaExternalLinkAlt, FaFileExcel, FaSync } from "react-icons/fa";
+import { useRouter } from 'next/navigation';
+import { motion } from "framer-motion";
+import { HiBellAlert } from "react-icons/hi2";
+import PriorityDisplay from "../components/PriorityDisplay";
+import { Badge } from 'lucide-react';
+import { Pagination } from "../components/Pagination";
+import ProtectedRoute from "../components/ProtectedRoutes";
+import { AssignmentCell, AssignmentFilter } from "./ReviewUtility";
+import { useAdminAuth } from "../components/providers/AdminAuthProvider";
+import { DashboardSummary, FilterAccordion } from "./UiUtility";
+import { createHighPriorityNotification, createHighPriorityReviewNotification, createReviewAssignmentNotification, createReviewStatusChangeNotification } from "../notifications/Utility";
+import Link from "next/link"; // Merged Link from bug-fix
 
 const ReviewPanel = () => {
   const fadeInLeft = {
     hidden: { opacity: 0, x: -50 },
     visible: { opacity: 1, x: 0, transition: { duration: 0.6 } },
-  }
+  };
 
   const fadeInRight = {
     hidden: { opacity: 0, x: 50 },
     visible: { opacity: 1, x: 0, transition: { duration: 0.6 } },
-  }
+  };
 
   const fadeInUp = {
     hidden: { opacity: 0, y: 20 },
     visible: { opacity: 1, y: 0, transition: { duration: 0.8, delay: 0.2 } },
-  }
-  const router = useRouter()
-  const [reviews, setReviews] = useState([])
-  const [filteredReviews, setFilteredReviews] = useState([])
-  const [selectedDate, setSelectedDate] = useState("")
-  const [signedUp, setSignedUp] = useState("")
-  const [selectedPriority, setSelectedPriority] = useState("")
-  const [selectedClientStatus, setSelectedClientStatus] = useState("")
-  const [selectedName, setSelectedName] = useState("")
-  const [selectedCompany, setSelectedCompany] = useState("")
-  const [currentPage, setCurrentPage] = useState(1)
-  const [isDeleting, setIsDeleting] = useState(false)
-  const [isDeletingAll, setIsDeletingAll] = useState(false)
-  const [loadingNotifications, setLoadingNotifications] = useState({})
-  const [issyncing, setIssyncing] = useState(false)
-  const [admins, setAdmins] = useState([])
-  const [assigningReview, setAssigningReview] = useState({})
-  const [selectedAssignment, setSelectedAssignment] = useState("")
-  const { admin } = useAdminAuth()
-  const entriesPerPage = 20
+  };
+
+  const router = useRouter();
+  const [reviews, setReviews] = useState([]);
+  const [filteredReviews, setFilteredReviews] = useState([]);
+  const [selectedDate, setSelectedDate] = useState("");
+  const [signedUp, setSignedUp] = useState("");
+  const [selectedPriority, setSelectedPriority] = useState("");
+  const [selectedClientStatus, setSelectedClientStatus] = useState("");
+  const [selectedName, setSelectedName] = useState("");
+  const [selectedCompany, setSelectedCompany] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [isDeletingAll, setIsDeletingAll] = useState(false);
+  const [loadingNotifications, setLoadingNotifications] = useState({});
+  const [issyncing, setIssyncing] = useState(false);
+  const [admins, setAdmins] = useState([]);
+  const [assigningReview, setAssigningReview] = useState({});
+  const [selectedAssignment, setSelectedAssignment] = useState("");
+  const { admin } = useAdminAuth();
+  const entriesPerPage = 20;
 
   const fetchReviews = async () => {
     try {
-      const q = query(collection(db, "reviews"), orderBy("movedToReviewAt", "desc"))
-      const snapshot = await getDocs(q)
+      const q = query(collection(db, "reviews"), orderBy("movedToReviewAt", "desc"));
+      const snapshot = await getDocs(q);
       const data = snapshot.docs.map((doc) => ({
         docId: doc.id,
         ...doc.data(),
@@ -68,35 +65,35 @@ const ReviewPanel = () => {
         clientStatus: doc.data().clientStatus || "Pending",
         assignedTo: doc.data().assignedTo || null,
         assignedToName: doc.data().assignedToName || "Unassigned",
-      }))
+      }));
 
       // Filter reviews based on admin role
-      let filteredData = data
+      let filteredData = data;
 
       // If not a superAdmin, only show reviews assigned to this admin
       if (admin && admin.role !== "superAdmin") {
-        filteredData = data.filter((review) => review.assignedTo === admin.id)
+        filteredData = data.filter((review) => review.assignedTo === admin.id);
       }
 
-      setReviews(filteredData)
-      setFilteredReviews(filteredData)
+      setReviews(filteredData);
+      setFilteredReviews(filteredData);
     } catch (error) {
-      console.error("Error fetching reviews:", error)
-      toast.error("Failed to fetch reviews")
+      console.error("Error fetching reviews:", error);
+      toast.error("Failed to fetch reviews");
     }
-  }
+  };
 
   const handleAssignReview = async (docId, adminId, adminName) => {
     try {
-      setAssigningReview((prev) => ({ ...prev, [docId]: true }))
-      const reviewRef = doc(db, "reviews", docId)
+      setAssigningReview((prev) => ({ ...prev, [docId]: true }));
+      const reviewRef = doc(db, "reviews", docId);
 
       // Find the review data
-      const reviewToAssign = reviews.find((review) => review.docId === docId)
+      const reviewToAssign = reviews.find((review) => review.docId === docId);
 
       if (!reviewToAssign) {
-        toast.error("Review not found")
-        return false
+        toast.error("Review not found");
+        return false;
       }
 
       // If adminId is empty, this is an unassignment
@@ -106,17 +103,17 @@ const ReviewPanel = () => {
           assignedToName: "Unassigned",
           assignedBy: null,
           assignedAt: null,
-        })
-        toast.success("Review unassigned successfully!")
+        });
+        toast.success("Review unassigned successfully!");
       } else {
         // Find the selected admin
-        const selectedAdmin = admins.find((a) => a.id === adminId)
+        const selectedAdmin = admins.find((a) => a.id === adminId);
 
         // Check permissions based on roles
         // Only regular admins are restricted - superAdmins can assign to anyone including themselves
         if (admin?.role !== "superAdmin" && selectedAdmin?.role === "superAdmin") {
-          toast.error("Regular admins cannot assign reviews to superAdmins.")
-          return false
+          toast.error("Regular admins cannot assign reviews to superAdmins.");
+          return false;
         }
 
         // Proceed with assignment
@@ -125,7 +122,7 @@ const ReviewPanel = () => {
           assignedToName: adminName,
           assignedBy: admin?.id || "system",
           assignedAt: new Date(),
-        })
+        });
 
         // Create notification for the assigned admin (if it's not self-assignment)
         if (adminId !== admin?.id) {
@@ -137,7 +134,7 @@ const ReviewPanel = () => {
               reviewData: reviewToAssign,
               assignedBy: admin?.id || "system",
               assignerName: admin?.firstName ? `${admin.firstName} ${admin.lastName}` : admin?.username || "Admin",
-            })
+            });
 
             // If high priority, send an additional notification
             if (reviewToAssign.priority === "high" || reviewToAssign.priority === "highest") {
@@ -145,19 +142,19 @@ const ReviewPanel = () => {
                 adminId,
                 reviewId: docId,
                 reviewData: reviewToAssign,
-              })
+              });
             }
           } catch (notifError) {
-            console.error("Error creating notification:", notifError)
+            console.error("Error creating notification:", notifError);
             // Don't fail the assignment just because notification failed
           }
         }
 
         // Show appropriate success message
         if (adminId === admin?.id) {
-          toast.success(`Review assigned to yourself successfully!`)
+          toast.success(`Review assigned to yourself successfully!`);
         } else {
-          toast.success(`Review assigned to ${adminName} successfully!`)
+          toast.success(`Review assigned to ${adminName} successfully!`);
         }
       }
 
@@ -172,9 +169,9 @@ const ReviewPanel = () => {
               assignedAt: new Date(),
             }
           : review,
-      )
+      );
 
-      setReviews(updatedReviews)
+      setReviews(updatedReviews);
       setFilteredReviews(
         filteredReviews.map((review) =>
           review.docId === docId
@@ -187,266 +184,266 @@ const ReviewPanel = () => {
               }
             : review,
         ),
-      )
+      );
 
-      return true // Return success to the caller
+      return true; // Return success to the caller
     } catch (error) {
-      console.error("Error assigning review:", error)
-      toast.error("Failed to assign review. Please try again.")
-      return false // Return failure to the caller
+      console.error("Error assigning review:", error);
+      toast.error("Failed to assign review. Please try again.");
+      return false; // Return failure to the caller
     } finally {
-      setAssigningReview((prev) => ({ ...prev, [docId]: false }))
+      setAssigningReview((prev) => ({ ...prev, [docId]: false }));
     }
-  }
+  };
 
   const syncData = async () => {
-    setIssyncing(true)
+    setIssyncing(true);
     try {
-      const reviewsRef = collection(db, "reviews")
-      const q = query(reviewsRef, orderBy("timestamp", "desc"))
-      const querySnapshot = await getDocs(q)
+      const reviewsRef = collection(db, "reviews");
+      const q = query(reviewsRef, orderBy("timestamp", "desc"));
+      const querySnapshot = await getDocs(q);
 
       const newData = querySnapshot.docs.map((doc) => ({
         docId: doc.id,
         ...doc.data(),
         clientStatus: doc.data().clientStatus || "Pending",
-      }))
-      setReviews(newData)
-      setFilteredReviews(newData)
-      toast.success("Data refreshed successfully!")
+      }));
+      setReviews(newData);
+      setFilteredReviews(newData);
+      toast.success("Data refreshed successfully!");
     } catch (error) {
-      console.error("Error refreshing data:", error)
-      toast.error("Failed to refresh data")
+      console.error("Error refreshing data:", error);
+      toast.error("Failed to refresh data");
     } finally {
-      setIssyncing(false)
+      setIssyncing(false);
     }
-  }
+  };
 
   const fetchAdmins = async () => {
     try {
-      const q = query(collection(db, "admins"))
-      const snapshot = await getDocs(q)
+      const q = query(collection(db, "admins"));
+      const snapshot = await getDocs(q);
       const adminData = snapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
         role: doc.data().role || "admin", // Ensure role is included
         fullName: `${doc.data().firstName || ""} ${doc.data().lastName || ""} (${doc.data().username || "Admin"})`,
-      }))
-      setAdmins(adminData)
+      }));
+      setAdmins(adminData);
     } catch (error) {
-      console.error("Error fetching admins:", error)
-      toast.error("Failed to fetch admins list")
+      console.error("Error fetching admins:", error);
+      toast.error("Failed to fetch admins list");
     }
-  }
+  };
 
   const handleDeleteAllReviews = async () => {
-    if (isDeletingAll) return
+    if (isDeletingAll) return;
 
     try {
-      setIsDeletingAll(true)
+      setIsDeletingAll(true);
 
       if (!window.confirm("Are you sure you want to delete ALL reviews? This action cannot be undone!")) {
-        setIsDeletingAll(false)
-        return
+        setIsDeletingAll(false);
+        return;
       }
 
-      const reviewsCollection = collection(db, "reviews")
-      const snapshot = await getDocs(reviewsCollection)
+      const reviewsCollection = collection(db, "reviews");
+      const snapshot = await getDocs(reviewsCollection);
 
-      const batchSize = 500
-      let batch = writeBatch(db)
-      let count = 0
-      let totalDeleted = 0
+      const batchSize = 500;
+      let batch = writeBatch(db);
+      let count = 0;
+      let totalDeleted = 0;
 
       for (const document of snapshot.docs) {
-        batch.delete(doc(db, "reviews", document.id))
-        count++
-        totalDeleted++
+        batch.delete(doc(db, "reviews", document.id));
+        count++;
+        totalDeleted++;
 
         if (count >= batchSize) {
-          await batch.commit()
-          batch = writeBatch(db)
-          count = 0
+          await batch.commit();
+          batch = writeBatch(db);
+          count = 0;
         }
       }
 
       if (count > 0) {
-        await batch.commit()
+        await batch.commit();
       }
 
-      setReviews([])
-      setFilteredReviews([])
-      setCurrentPage(1)
+      setReviews([]);
+      setFilteredReviews([]);
+      setCurrentPage(1);
 
-      toast.success(`Successfully deleted ${totalDeleted} reviews!`)
+      toast.success(`Successfully deleted ${totalDeleted} reviews!`);
     } catch (error) {
-      console.error("Error deleting all reviews:", error)
-      toast.error("Failed to delete all reviews. Please try again.")
+      console.error("Error deleting all reviews:", error);
+      toast.error("Failed to delete all reviews. Please try again.");
     } finally {
-      setIsDeletingAll(false)
+      setIsDeletingAll(false);
     }
-  }
+  };
 
   const handleDeleteReview = async (docId) => {
-    if (isDeleting) return
+    if (isDeleting) return;
 
     try {
-      setIsDeleting(true)
+      setIsDeleting(true);
 
       if (!window.confirm("Are you sure you want to delete this review?")) {
-        setIsDeleting(false)
-        return
+        setIsDeleting(false);
+        return;
       }
 
-      const reviewRef = doc(db, "reviews", docId)
-      await deleteDoc(reviewRef)
+      const reviewRef = doc(db, "reviews", docId);
+      await deleteDoc(reviewRef);
 
-      const updatedReviews = reviews.filter((review) => review.docId !== docId)
-      const updatedFilteredReviews = filteredReviews.filter((review) => review.docId !== docId)
+      const updatedReviews = reviews.filter((review) => review.docId !== docId);
+      const updatedFilteredReviews = filteredReviews.filter((review) => review.docId !== docId);
 
-      setReviews(updatedReviews)
-      setFilteredReviews(updatedFilteredReviews)
-      toast.success("Review deleted successfully!")
+      setReviews(updatedReviews);
+      setFilteredReviews(updatedFilteredReviews);
+      toast.success("Review deleted successfully!");
 
       if (
         currentPage > 1 &&
         updatedFilteredReviews.slice((currentPage - 1) * entriesPerPage, currentPage * entriesPerPage).length === 0
       ) {
-        setCurrentPage(currentPage - 1)
+        setCurrentPage(currentPage - 1);
       }
     } catch (error) {
-      console.error("Error deleting review:", error)
-      toast.error("Failed to delete review. Please try again.")
+      console.error("Error deleting review:", error);
+      toast.error("Failed to delete review. Please try again.");
     } finally {
-      setIsDeleting(false)
+      setIsDeleting(false);
     }
-  }
+  };
 
   useEffect(() => {
-    fetchAdmins()
-  }, [])
+    fetchAdmins();
+  }, []);
 
   useEffect(() => {
-    fetchReviews()
-  }, [admin])
+    fetchReviews();
+  }, [admin]);
 
   const handleDateChange = (e) => {
-    setSelectedDate(e.target.value)
-  }
+    setSelectedDate(e.target.value);
+  };
 
   const handleSignUpChange = (e) => {
-    setSignedUp(e.target.value)
-  }
+    setSignedUp(e.target.value);
+  };
 
   const handleNameChange = (e) => {
-    setSelectedName(e.target.value)
-  }
+    setSelectedName(e.target.value);
+  };
 
   const handleCompanyChange = (e) => {
-    setSelectedCompany(e.target.value)
-  }
+    setSelectedCompany(e.target.value);
+  };
 
   const handlePriorityChange = (e) => {
-    setSelectedPriority(e.target.value)
-  }
+    setSelectedPriority(e.target.value);
+  };
 
   const handleClientStatusChange = (e) => {
-    setSelectedClientStatus(e.target.value)
-  }
+    setSelectedClientStatus(e.target.value);
+  };
 
   const handleAssignmentChange = (e) => {
-    setSelectedAssignment(e.target.value)
-  }
+    setSelectedAssignment(e.target.value);
+  };
 
   const handleFetchData = () => {
-    let filtered = reviews
+    let filtered = reviews;
 
     if (selectedDate) {
-      const selectedDateStart = new Date(selectedDate)
-      const selectedDateEnd = new Date(selectedDate)
-      selectedDateEnd.setHours(23, 59, 59, 999)
+      const selectedDateStart = new Date(selectedDate);
+      const selectedDateEnd = new Date(selectedDate);
+      selectedDateEnd.setHours(23, 59, 59, 999);
 
       filtered = filtered.filter((review) => {
-        const reviewDate = new Date(review.movedToReviewAt.seconds * 1000)
-        return reviewDate >= selectedDateStart && reviewDate <= selectedDateEnd
-      })
+        const reviewDate = new Date(review.movedToReviewAt.seconds * 1000);
+        return reviewDate >= selectedDateStart && reviewDate <= selectedDateEnd;
+      });
     }
 
-    //Brand Name filteration code...
+    // Brand Name filtration code...
     if (selectedCompany && selectedCompany.trim() !== "") {
       filtered = filtered.filter(
         (review) => review.company && review.company.toLowerCase().includes(selectedCompany.toLowerCase()),
-      )
+      );
     }
 
-    //Name filteration code...
+    // Name filtration code...
     if (selectedName && selectedName.trim() !== "") {
       filtered = filtered.filter(
         (review) => review.firstName && review.firstName.toLowerCase().includes(selectedName.toLowerCase()),
-      )
+      );
     }
 
     if (signedUp) {
       filtered = filtered.filter((review) => {
         if (signedUp === "Yes") {
-          return review.isChecked === true
+          return review.isChecked === true;
         } else if (signedUp === "No") {
-          return review.isChecked === false
+          return review.isChecked === false;
         }
-        return true
-      })
+        return true;
+      });
     }
 
     if (selectedPriority) {
-      filtered = filtered.filter((review) => review.priority === selectedPriority)
+      filtered = filtered.filter((review) => review.priority === selectedPriority);
     }
 
     // Add this condition to the handleFetchData filtering logic
     if (selectedAssignment) {
       if (selectedAssignment === "unassigned") {
-        filtered = filtered.filter((review) => !review.assignedTo)
+        filtered = filtered.filter((review) => !review.assignedTo);
       } else {
-        filtered = filtered.filter((review) => review.assignedTo === selectedAssignment)
+        filtered = filtered.filter((review) => review.assignedTo === selectedAssignment);
       }
     }
 
     if (selectedClientStatus) {
-      filtered = filtered.filter((review) => review.clientStatus === selectedClientStatus)
+      filtered = filtered.filter((review) => review.clientStatus === selectedClientStatus);
     }
 
-    setFilteredReviews(filtered)
-    setCurrentPage(1)
+    setFilteredReviews(filtered);
+    setCurrentPage(1);
 
     if (filtered.length > 0) {
-      toast.success("Data filtered successfully!")
+      toast.success("Data filtered successfully!");
     } else {
-      toast.warning("No data matches the selected filters.")
+      toast.warning("No data matches the selected filters.");
     }
-  }
+  };
 
-  const totalPages = Math.ceil(filteredReviews.length / entriesPerPage)
-  const displayedReviews = filteredReviews.slice((currentPage - 1) * entriesPerPage, currentPage * entriesPerPage)
+  const totalPages = Math.ceil(filteredReviews.length / entriesPerPage);
+  const displayedReviews = filteredReviews.slice((currentPage - 1) * entriesPerPage, currentPage * entriesPerPage);
 
   const handlePageChange = (page) => {
-    setCurrentPage(page)
-  }
+    setCurrentPage(page);
+  };
 
-  const startIndex = (currentPage - 1) * entriesPerPage + 1
-  const endIndex = Math.min(currentPage * entriesPerPage, filteredReviews.length)
+  const startIndex = (currentPage - 1) * entriesPerPage + 1;
+  const endIndex = Math.min(currentPage * entriesPerPage, filteredReviews.length);
 
   const CopyableText = ({ text, type }) => {
     const handleCopy = (e) => {
-      e.stopPropagation()
+      e.stopPropagation();
       navigator.clipboard
         .writeText(text)
         .then(() => toast.success(`${type} copied to clipboard!`))
-        .catch(() => toast.error("Failed to copy to clipboard"))
-    }
+        .catch(() => toast.error("Failed to copy to clipboard"));
+    };
 
     const handleEmailRedirect = (e) => {
-      e.stopPropagation()
-      window.open(`https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(text)}`, "_blank")
-    }
+      e.stopPropagation();
+      window.open(`https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(text)}`, "_blank");
+    };
 
     return (
       <div className="flex items-center space-x-2 group">
@@ -466,7 +463,7 @@ const ReviewPanel = () => {
             </div>
             <div className="relative group/tooltip">
               <MdContentCopy
-                className="opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer  text-green-600 hover:text-green-600"
+                className="opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer text-green-600 hover:text-green-600"
                 onClick={handleCopy}
               />
               <span className="absolute hidden group-hover/tooltip:block bg-green-700 text-white text-sm rounded px-2 py-1 -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap">
@@ -486,16 +483,16 @@ const ReviewPanel = () => {
           </div>
         )}
       </div>
-    )
-  }
+    );
+  };
 
   const ExternalLink = ({ url }) => {
     const handleClick = () => {
-      if (!url) return
+      if (!url) return;
 
-      const finalUrl = url.startsWith("http") ? url : `http://${url}`
-      window.open(finalUrl, "_blank", "noopener,noreferrer")
-    }
+      const finalUrl = url.startsWith("http") ? url : `http://${url}`;
+      window.open(finalUrl, "_blank", "noopener,noreferrer");
+    };
 
     return url ? (
       <div
@@ -508,18 +505,18 @@ const ReviewPanel = () => {
       </div>
     ) : (
       "N/A"
-    )
-  }
+    );
+  };
 
   const handleSendNotification = async (email, firstName, docId) => {
-    if (loadingNotifications[docId]) return // Prevent multiple clicks
+    if (loadingNotifications[docId]) return; // Prevent multiple clicks
 
     try {
       // Show loading state
-      setLoadingNotifications((prev) => ({ ...prev, [docId]: true }))
+      setLoadingNotifications((prev) => ({ ...prev, [docId]: true }));
 
       // Show immediate "queued" toast
-      toast.info("Notification email queued for sending!")
+      toast.info("Notification email queued for sending!");
 
       // Start the email sending process in the background
       fetch("/api/send-notification-email", {
@@ -531,27 +528,27 @@ const ReviewPanel = () => {
           email,
           firstName,
         }),
-      })
+      });
 
       // Hardcoded time period for loading state (e.g., 3 seconds)
-      const LOADING_DURATION = 3000 // 3 seconds
+      const LOADING_DURATION = 3000; // 3 seconds
 
       // Use setTimeout to show success toast after the hardcoded duration
       setTimeout(() => {
         // Show success toast after the timeout
-        toast.success("Client notification email sent successfully!")
+        toast.success("Client notification email sent successfully!");
 
         // Remove loading state
-        setLoadingNotifications((prev) => ({ ...prev, [docId]: false }))
-      }, LOADING_DURATION)
+        setLoadingNotifications((prev) => ({ ...prev, [docId]: false }));
+      }, LOADING_DURATION);
     } catch (error) {
-      console.error("Error queueing notification email:", error)
-      toast.error("Failed to queue notification email. Please try again.")
+      console.error("Error queueing notification email:", error);
+      toast.error("Failed to queue notification email. Please try again.");
 
       // Remove loading state in case of error
-      setLoadingNotifications((prev) => ({ ...prev, [docId]: false }))
+      setLoadingNotifications((prev) => ({ ...prev, [docId]: false }));
     }
-  }
+  };
 
   const convertToCSV = (data) => {
     const headers = [
@@ -569,8 +566,8 @@ const ReviewPanel = () => {
       "Messages",
       "Priority",
       "ClientStatus",
-    ]
-    const csvRows = [headers.join(",")]
+    ];
+    const csvRows = [headers.join(",")];
 
     for (const review of data) {
       const row = [
@@ -588,56 +585,56 @@ const ReviewPanel = () => {
         review.messages,
         review.priority,
         review.clientStatus,
-      ]
-      csvRows.push(row.map((field) => `"${field}"`).join(","))
+      ];
+      csvRows.push(row.map((field) => `"${field}"`).join(","));
     }
 
-    return csvRows.join("\n")
-  }
+    return csvRows.join("\n");
+  };
 
   const handleDownloadCSV = () => {
-    const csvContent = convertToCSV(filteredReviews)
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" })
-    const link = document.createElement("a")
+    const csvContent = convertToCSV(filteredReviews);
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
     if (link.download !== undefined) {
-      const url = URL.createObjectURL(blob)
-      link.setAttribute("href", url)
-      link.setAttribute("download", "reviews.csv")
-      link.style.visibility = "hidden"
-      document.body.appendChild(link)
-      link.click()
-      document.body.removeChild(link)
+      const url = URL.createObjectURL(blob);
+      link.setAttribute("href", url);
+      link.setAttribute("download", "reviews.csv");
+      link.style.visibility = "hidden";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
     }
-  }
+  };
 
   const handlePriorityUpdate = async (docId, newPriority) => {
     try {
-      const reviewRef = doc(db, "reviews", docId)
+      const reviewRef = doc(db, "reviews", docId);
 
       // Find the review to update
-      const reviewToUpdate = reviews.find((review) => review.docId === docId)
+      const reviewToUpdate = reviews.find((review) => review.docId === docId);
 
       if (!reviewToUpdate) {
-        toast.error("Review not found")
-        return
+        toast.error("Review not found");
+        return;
       }
 
       // Get the old priority for comparison
-      const oldPriority = reviewToUpdate.priority
+      const oldPriority = reviewToUpdate.priority;
 
       // Update the priority in Firestore
       await updateDoc(reviewRef, {
         priority: newPriority,
         priorityChangedBy: admin?.id || "system",
         priorityChangedAt: new Date(),
-      })
+      });
 
       // Create notification if:
       // 1. The review is assigned to someone else
       // 2. The priority is changed to high or highest
       // 3. The priority was previously not high or highest
-      const isHighPriority = newPriority === "high" || newPriority === "highest"
-      const wasHighPriority = oldPriority === "high" || oldPriority === "highest"
+      const isHighPriority = newPriority === "high" || newPriority === "highest";
+      const wasHighPriority = oldPriority === "high" || oldPriority === "highest";
 
       if (reviewToUpdate.assignedTo && reviewToUpdate.assignedTo !== admin?.id && isHighPriority && !wasHighPriority) {
         try {
@@ -649,9 +646,9 @@ const ReviewPanel = () => {
               ...reviewToUpdate,
               priority: newPriority, // Make sure to use the new priority value
             },
-          })
+          });
         } catch (notifError) {
-          console.error("Error creating priority notification:", notifError)
+          console.error("Error creating priority notification:", notifError);
           // Don't fail the priority update just because notification failed
         }
       }
@@ -666,50 +663,50 @@ const ReviewPanel = () => {
               priorityChangedAt: new Date(),
             }
           : review,
-      )
+      );
 
-      setReviews(updatedReviews)
-      setFilteredReviews(updatedReviews)
+      setReviews(updatedReviews);
+      setFilteredReviews(updatedReviews);
 
-      toast.success("Priority updated successfully!")
+      toast.success("Priority updated successfully!");
     } catch (error) {
-      console.error("Error updating priority:", error)
-      toast.error("Failed to update priority. Please try again.")
+      console.error("Error updating priority:", error);
+      toast.error("Failed to update priority. Please try again.");
     }
-  }
+  };
 
   const handleClientStatusUpdate = async (docId, currentStatus, newStatus) => {
     if (!window.confirm(`Are you sure you want to update the client status to '${newStatus}'?`)) {
-      return
+      return;
     }
 
     try {
-      const reviewRef = doc(db, "reviews", docId)
-      const updateData = { clientStatus: newStatus }
+      const reviewRef = doc(db, "reviews", docId);
+      const updateData = { clientStatus: newStatus };
 
       // Find the review data
-      const reviewToUpdate = reviews.find((review) => review.docId === docId)
+      const reviewToUpdate = reviews.find((review) => review.docId === docId);
 
       if (!reviewToUpdate) {
-        toast.error("Review not found")
-        return
+        toast.error("Review not found");
+        return;
       }
 
       // If moving to "In Progress" from "Pending", store the timestamp
       if (currentStatus === "Pending" && newStatus === "In Progress") {
-        updateData.inProgressStartedAt = new Date() // Store as a Date object (Firestore will convert to Timestamp)
+        updateData.inProgressStartedAt = new Date(); // Store as a Date object (Firestore will convert to Timestamp)
       }
 
       // If moving away from "In Progress", optionally clear the timestamp
       if (currentStatus === "In Progress" && newStatus !== "In Progress") {
-        updateData.inProgressStartedAt = null // Clear the timestamp when leaving "In Progress"
+        updateData.inProgressStartedAt = null; // Clear the timestamp when leaving "In Progress"
       }
 
       // Add who made the status change
-      updateData.statusChangedBy = admin?.id || "system"
-      updateData.statusChangedAt = new Date()
+      updateData.statusChangedBy = admin?.id || "system";
+      updateData.statusChangedAt = new Date();
 
-      await updateDoc(reviewRef, updateData)
+      await updateDoc(reviewRef, updateData);
 
       // Create notification for the assigned admin (if there is one and it's not the current user)
       if (reviewToUpdate.assignedTo && reviewToUpdate.assignedTo !== admin?.id) {
@@ -721,9 +718,9 @@ const ReviewPanel = () => {
             oldStatus: currentStatus,
             newStatus: newStatus,
             changedBy: admin?.id || "system",
-          })
+          });
         } catch (notifError) {
-          console.error("Error creating status change notification:", notifError)
+          console.error("Error creating status change notification:", notifError);
           // Don't fail the status update just because notification failed
         }
       }
@@ -739,39 +736,16 @@ const ReviewPanel = () => {
               statusChangedAt: updateData.statusChangedAt,
             }
           : review,
-      )
-      setReviews(updatedReviews)
-      setFilteredReviews(updatedReviews)
+      );
+      setReviews(updatedReviews);
+      setFilteredReviews(updatedReviews);
 
-      toast.success("Client status updated successfully!")
+      toast.success("Client status updated successfully!");
     } catch (error) {
-      console.error("Error updating client status:", error)
-      toast.error("Failed to update client status. Please try again.")
+      console.error("Error updating client status:", error);
+      toast.error("Failed to update client status. Please try again.");
     }
-  }
-
-  // const handleClientStatusUpdate = async (docId, currentStatus, newStatus) => {
-  //     if (!window.confirm(`Are you sure you want to update the client status to '${newStatus}'?`)) {
-  //         return;
-  //     }
-
-  //     try {
-  //         const reviewRef = doc(db, "reviews", docId);
-  //         await updateDoc(reviewRef, { clientStatus: newStatus });
-
-  //         // Update local state
-  //         const updatedReviews = reviews.map(review =>
-  //             review.docId === docId ? { ...review, clientStatus: newStatus } : review
-  //         );
-  //         setReviews(updatedReviews);
-  //         setFilteredReviews(updatedReviews);
-
-  //         toast.success("Client status updated successfully!");
-  //     } catch (error) {
-  //         console.error("Error updating client status:", error);
-  //         toast.error("Failed to update client status. Please try again.");
-  //     }
-  // };
+  };
 
   const StatusCell = ({ status }) => {
     const getStatusConfig = (status) => {
@@ -782,39 +756,39 @@ const ReviewPanel = () => {
             textColor: "text-orange-700",
             borderColor: "border-orange-200",
             prefix: "•",
-          }
+          };
         case "In Progress":
           return {
             bgColor: "bg-blue-50",
             textColor: "text-blue-700",
             borderColor: "border-blue-200",
             prefix: "↻",
-          }
+          };
         case "No Response":
           return {
             bgColor: "bg-red-50",
             textColor: "text-red-700",
             borderColor: "border-red-200",
             prefix: "✗",
-          }
+          };
         case "Reached out":
           return {
             bgColor: "bg-green-50",
             textColor: "text-green-700",
             borderColor: "border-green-200",
             prefix: "✓",
-          }
+          };
         default:
           return {
             bgColor: "bg-gray-50",
             textColor: "text-gray-700",
             borderColor: "border-gray-200",
             prefix: "•",
-          }
+          };
       }
-    }
+    };
 
-    const config = getStatusConfig(status)
+    const config = getStatusConfig(status);
 
     return (
       <div
@@ -831,17 +805,17 @@ const ReviewPanel = () => {
         <span className="text-lg">{config.prefix}</span>
         <span>{status}</span>
       </div>
-    )
-  }
+    );
+  };
 
   const UpdateStatusCell = ({ status, onUpdate }) => {
-    const [isOpen, setIsOpen] = useState(false)
+    const [isOpen, setIsOpen] = useState(false);
 
-    const statuses = ["Pending", "In Progress", "No Response", "Reached out"]
-    const currentIndex = statuses.indexOf(status)
+    const statuses = ["Pending", "In Progress", "No Response", "Reached out"];
+    const currentIndex = statuses.indexOf(status);
 
     // Filter out the current status from options
-    const availableStatuses = statuses.filter((s) => s !== status)
+    const availableStatuses = statuses.filter((s) => s !== status);
 
     return (
       <div className="relative">
@@ -861,8 +835,8 @@ const ReviewPanel = () => {
               <button
                 key={newStatus}
                 onClick={() => {
-                  onUpdate(newStatus)
-                  setIsOpen(false)
+                  onUpdate(newStatus);
+                  setIsOpen(false);
                 }}
                 className="w-full text-left px-3 py-2 hover:bg-green-50 text-sm flex items-center gap-2"
               >
@@ -872,8 +846,8 @@ const ReviewPanel = () => {
           </div>
         )}
       </div>
-    )
-  }
+    );
+  };
 
   return (
     <ProtectedRoute>
@@ -1047,15 +1021,15 @@ const ReviewPanel = () => {
             </button>
             <button
               onClick={() => {
-                setSelectedDate("")
-                setSignedUp("")
-                setSelectedPriority("")
-                setSelectedClientStatus("")
-                setSelectedName("")
-                setSelectedCompany("")
-                setSelectedAssignment("")
-                setFilteredReviews(reviews)
-                toast.success("Filters cleared!")
+                setSelectedDate("");
+                setSignedUp("");
+                setSelectedPriority("");
+                setSelectedClientStatus("");
+                setSelectedName("");
+                setSelectedCompany("");
+                setSelectedAssignment("");
+                setFilteredReviews(reviews);
+                toast.success("Filters cleared!");
               }}
               className="px-6 py-2.5 bg-red-600/90 text-white font-semibold rounded-lg shadow-lg hover:bg-red-700 transition-all duration-200 flex items-center gap-2 hover:scale-105"
             >
@@ -1097,7 +1071,7 @@ const ReviewPanel = () => {
                   <tr>
                     {[
                       "Action",
-                      "Chat",
+                      "Chat", // From newFeatured
                       "Priority",
                       "ChangePriority",
                       "Client Status",
@@ -1116,6 +1090,7 @@ const ReviewPanel = () => {
                       "Socials",
                       "Website",
                       "Messages",
+                      "Page", // From bug-fix
                     ].map((header) => (
                       <th
                         key={header}
@@ -1253,11 +1228,16 @@ const ReviewPanel = () => {
                         <td className="border border-green-200 px-4 py-2 font-serif text-sm md:text-base">
                           {review.messages}
                         </td>
+                        <td className="border border-green-200 px-4 py-2 font-serif text-sm md:text-base">
+                          <Link href={`/review-panel69/${review.docId}`}>
+                            <button>page</button>
+                          </Link>
+                        </td>
                       </tr>
                     ))
                   ) : (
                     <tr>
-                      <td colSpan="18" className="text-center py-4">
+                      <td colSpan="21" className="text-center py-4">
                         No data available
                       </td>
                     </tr>
@@ -1283,8 +1263,7 @@ const ReviewPanel = () => {
         )}
       </div>
     </ProtectedRoute>
-  )
-}
+  );
+};
 
-export default ReviewPanel
-
+export default ReviewPanel;
