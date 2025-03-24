@@ -16,6 +16,7 @@ import { AssignmentCell, AssignmentFilter } from "./ReviewUtility";
 import { useAdminAuth } from "../components/providers/AdminAuthProvider";
 import { DashboardSummary, FilterAccordion } from "./UiUtility";
 import { createHighPriorityNotification, createHighPriorityReviewNotification, createReviewAssignmentNotification, createReviewStatusChangeNotification } from "../notifications/Utility";
+import Link from "next/link";
 
 const ReviewPanel = () => {
     const fadeInLeft = {
@@ -1117,6 +1118,7 @@ const ReviewPanel = () => {
                                             "Socials",
                                             "Website",
                                             "Messages",
+                                            "Page",
                                         ].map((header) => (
                                             <th
                                                 key={header}
@@ -1237,7 +1239,13 @@ const ReviewPanel = () => {
                                                 <td className="border border-green-200 px-4 py-2 font-serif text-sm md:text-base">
                                                     {review.messages}
                                                 </td>
-
+                                                <td className="border border-green-200 px-4 py-2 font-serif text-sm md:text-base">
+                                                    <Link href={`/review-panel69/${review.docId}`}>
+                                                        <button>
+                                                            page
+                                                        </button>
+                                                    </Link>
+                                                </td>
                                             </tr>
                                         ))
                                     ) : (
