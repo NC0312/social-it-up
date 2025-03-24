@@ -46,8 +46,9 @@ const AdminChat = () => {
     const [editedText, setEditedText] = useState('');
     const [sidebarOpen, setSidebarOpen] = useState(true);
     const [unreadCounts, setUnreadCounts] = useState({});
-    const [processedMessages, setProcessedMessages] = useState({}); // Track processed message IDs per admin
+    const [processedMessages, setProcessedMessages] = useState({});
     const messagesEndRef = useRef(null);
+    const messagesContainerRef = useRef(null);
 
     // Animation variants
     const containerVariants = {
@@ -183,7 +184,19 @@ const AdminChat = () => {
 
     // Scroll to the bottom of the chat
     const scrollToBottom = () => {
-        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+        if (messagesContainerRef.current) {
+            messagesContainerRef.current.scrollTo({
+                top: messagesContainerRef.current.scrollHeight,
+                behavior: 'smooth',
+            });
+        }
+    };
+
+    // Handle admin selection
+    const handleSelectAdmin = (admin) => {
+        console.log('Selecting admin:', admin); // Debug log
+        setSelectedAdmin(admin);
+        setMessages([]); // Clear messages to avoid showing old conversation
     };
 
     // Send a new message
@@ -319,11 +332,10 @@ const AdminChat = () => {
                         admins.map((admin) => (
                             <motion.div
                                 key={admin.id}
-                                className={`p-4 flex items-center gap-3 cursor-pointer hover:bg-[#F8F2EA] ${
-                                    selectedAdmin?.id === admin.id ? 'bg-[#F8F2EA]' : ''
-                                }`}
-                                onClick={() => setSelectedAdmin(admin)}
-                                whileHover={{ backgroundColor: '#F8F2EA' }}
+                                className={`p-4 flex items-center gap-3 cursor-pointer transition-colors duration-200 ${
+                                    selectedAdmin?.id === admin.id ? 'bg-[#F8F2EA]' : 'bg-white'
+                                } hover:bg-[#F8F2EA]`}
+                                onClick={() => handleSelectAdmin(admin)}
                             >
                                 <div className="h-10 w-10 flex-shrink-0 bg-[#36302A] rounded-full flex items-center justify-center text-white font-medium">
                                     {admin.username?.charAt(0).toUpperCase() || 'A'}
@@ -399,7 +411,11 @@ const AdminChat = () => {
                         </div>
 
                         {/* Messages */}
-                        <div className="flex-1 p-4 overflow-y-auto bg-[#FAF4ED]">
+                        <div
+                            ref={messagesContainerRef}
+                            className="flex-1 p-4 overflow-y-auto bg-[#FAF4ED]"
+                            style={{ maxHeight: 'calc(100vh - 140px)' }}
+                        >
                             <AnimatePresence>
                                 {messages.map((message) => {
                                     const isSender = message.senderId === currentAdmin.id;
