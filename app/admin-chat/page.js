@@ -15,6 +15,7 @@ import {
     addDoc,
     serverTimestamp,
     arrayUnion,
+    deleteDoc,
 } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -34,7 +35,7 @@ import {
     MoreVertical,
     Smile,
 } from 'lucide-react';
-import Picker from 'emoji-picker-react'; // Import emoji picker
+import Picker from 'emoji-picker-react';
 
 const AdminChat = () => {
     const { admin: currentAdmin, isAuthenticated, loading } = useAdminAuth();
@@ -50,8 +51,9 @@ const AdminChat = () => {
     const [sidebarOpen, setSidebarOpen] = useState(true);
     const [unreadCounts, setUnreadCounts] = useState({});
     const [processedMessages, setProcessedMessages] = useState({});
-    const [showEmojiPicker, setShowEmojiPicker] = useState(false); // State for emoji picker
-    const [dropdownMessageId, setDropdownMessageId] = useState(null); // State for dropdown
+    const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+    const [dropdownMessageId, setDropdownMessageId] = useState(null);
+    const [showChatOptions, setShowChatOptions] = useState(false);
     const messagesEndRef = useRef(null);
     const messagesContainerRef = useRef(null);
 
@@ -92,6 +94,11 @@ const AdminChat = () => {
         visible: { opacity: 1, scale: 1, transition: { duration: 0.2 } },
     };
 
+    const chatOptionsVariants = {
+        hidden: { opacity: 0, scale: 0.95 },
+        visible: { opacity: 1, scale: 1, transition: { duration: 0.2 } },
+    };
+
     // Fetch all admins and set up real-time listener
     useEffect(() => {
         if (!isAuthenticated) return;
@@ -119,7 +126,7 @@ const AdminChat = () => {
         return () => unsubscribe();
     }, [isAuthenticated, currentAdmin]);
 
-    // Fetch messages and track unread counts
+    // Fetch messages, track unread counts, and mark messages as read
     useEffect(() => {
         if (!currentAdmin || !admins.length) return;
 
@@ -140,6 +147,26 @@ const AdminChat = () => {
                     if (selectedAdmin?.id === admin.id) {
                         setMessages(messageList);
                         scrollToBottom();
+
+                        // Mark messages as read when the conversation is opened
+                        messageList.forEach(async (message) => {
+                            if (
+                                message.senderId !== currentAdmin.id &&
+                                !message.readBy?.includes(currentAdmin.id)
+                            ) {
+                                const messageRef = doc(
+                                    db,
+                                    'conversations',
+                                    conversationId,
+                                    'messages',
+                                    message.id
+                                );
+                                await updateDoc(messageRef, {
+                                    readBy: arrayUnion(currentAdmin.id),
+                                    readAt: serverTimestamp(),
+                                });
+                            }
+                        });
                     }
 
                     // Process unread messages
@@ -162,7 +189,8 @@ const AdminChat = () => {
                             // Increment unread count if the message is from the other admin and not viewed
                             if (
                                 messageData.senderId !== currentAdmin.id &&
-                                selectedAdmin?.id !== admin.id
+                                selectedAdmin?.id !== admin.id &&
+                                !messageData.readBy?.includes(currentAdmin.id)
                             ) {
                                 setUnreadCounts((prev) => ({
                                     ...prev,
@@ -224,6 +252,8 @@ const AdminChat = () => {
                 timestamp: serverTimestamp(),
                 edited: false,
                 deletedFor: [],
+                readBy: [currentAdmin.id], // Mark as read by sender immediately
+                readAt: serverTimestamp(),
             });
 
             setNewMessage('');
@@ -237,7 +267,7 @@ const AdminChat = () => {
     // Handle emoji selection
     const onEmojiClick = (emojiObject) => {
         setNewMessage((prev) => prev + emojiObject.emoji);
-        setShowEmojiPicker(false); // Close picker after selection
+        setShowEmojiPicker(false);
     };
 
     // Edit a message
@@ -255,7 +285,7 @@ const AdminChat = () => {
             });
             setEditingMessage(null);
             setEditedText('');
-            setDropdownMessageId(null); // Close dropdown
+            setDropdownMessageId(null);
             toast.success('Message updated successfully');
         } catch (error) {
             console.error('Error editing message:', error);
@@ -272,7 +302,7 @@ const AdminChat = () => {
             await updateDoc(messageRef, {
                 deletedFor: arrayUnion(currentAdmin.id),
             });
-            setDropdownMessageId(null); // Close dropdown
+            setDropdownMessageId(null);
             toast.success('Message deleted for you');
         } catch (error) {
             console.error('Error deleting message for me:', error);
@@ -292,11 +322,35 @@ const AdminChat = () => {
                 deletedBy: currentAdmin.id,
                 deletedAt: serverTimestamp(),
             });
-            setDropdownMessageId(null); // Close dropdown
+            setDropdownMessageId(null);
             toast.success('Message deleted for everyone');
         } catch (error) {
             console.error('Error deleting message for everyone:', error);
             toast.error('Failed to delete message');
+        }
+    };
+
+    // Clear the entire chat
+    const handleClearChat = async () => {
+        if (!selectedAdmin) return;
+
+        const conversationId = [currentAdmin.id, selectedAdmin.id].sort().join('_');
+        const messagesRef = collection(db, 'conversations', conversationId, 'messages');
+
+        try {
+            const querySnapshot = await getDocs(messagesRef);
+            const deletePromises = querySnapshot.docs.map((doc) => deleteDoc(doc.ref));
+            await Promise.all(deletePromises);
+
+            const conversationRef = doc(db, 'conversations', conversationId);
+            await deleteDoc(conversationRef);
+
+            setMessages([]);
+            setShowChatOptions(false);
+            toast.success('Chat cleared successfully');
+        } catch (error) {
+            console.error('Error clearing chat:', error);
+            toast.error('Failed to clear chat');
         }
     };
 
@@ -351,9 +405,8 @@ const AdminChat = () => {
                         admins.map((admin) => (
                             <motion.div
                                 key={admin.id}
-                                className={`p-4 flex items-center gap-3 cursor-pointer transition-colors duration-200 ${
-                                    selectedAdmin?.id === admin.id ? 'bg-[#F8F2EA]' : 'bg-white'
-                                } hover:bg-[#F8F2EA]`}
+                                className={`p-4 flex items-center gap-3 cursor-pointer transition-colors duration-200 ${selectedAdmin?.id === admin.id ? 'bg-[#F8F2EA]' : 'bg-white'
+                                    } hover:bg-[#F8F2EA]`}
                                 onClick={() => handleSelectAdmin(admin)}
                             >
                                 <div className="h-10 w-10 flex-shrink-0 bg-[#36302A] rounded-full flex items-center justify-center text-white font-medium">
@@ -364,9 +417,8 @@ const AdminChat = () => {
                                         <div>
                                             <div className="flex items-center gap-2">
                                                 <div
-                                                    className={`h-2 w-2 rounded-full ${
-                                                        admin.isOnline ? 'bg-green-500' : 'bg-gray-300'
-                                                    }`}
+                                                    className={`h-2 w-2 rounded-full ${admin.isOnline ? 'bg-green-500' : 'bg-gray-300'
+                                                        }`}
                                                 ></div>
                                                 <span className="text-sm font-medium text-[#36302A]">
                                                     @{admin.username}
@@ -384,11 +436,7 @@ const AdminChat = () => {
                                                     exit="hidden"
                                                 >
                                                     <Mail size={12} />
-                                                    <span>
-                                                        {unreadCounts[admin.id]}{' '}
-                                                        {unreadCounts[admin.id] === 1
-                                                        }
-                                                    </span>
+                                                    <span>{unreadCounts[admin.id]}</span>
                                                 </motion.div>
                                             )}
                                         </AnimatePresence>
@@ -410,22 +458,58 @@ const AdminChat = () => {
                 {selectedAdmin ? (
                     <>
                         {/* Chat Header */}
-                        <div className="p-4 bg-white border-b border-[#E2D9CE] flex items-center gap-3">
-                            <div className="h-10 w-10 bg-[#36302A] rounded-full flex items-center justify-center text-white font-medium">
-                                {selectedAdmin.username?.charAt(0).toUpperCase() || 'A'}
-                            </div>
-                            <div>
-                                <div className="flex items-center gap-2">
-                                    <div
-                                        className={`h-2 w-2 rounded-full ${
-                                            selectedAdmin.isOnline ? 'bg-green-500' : 'bg-gray-300'
-                                        }`}
-                                    ></div>
-                                    <h3 className="text-lg font-medium text-[#36302A]">
-                                        @{selectedAdmin.username}
-                                    </h3>
+                        <div className="p-4 bg-white border-b border-[#E2D9CE] flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                                <div className="h-10 w-10 bg-[#36302A] rounded-full flex items-center justify-center text-white font-medium">
+                                    {selectedAdmin.username?.charAt(0).toUpperCase() || 'A'}
                                 </div>
-                                <p className="text-sm text-[#86807A]">{selectedAdmin.email} <span className='text-[#36302A]'>({selectedAdmin.role})</span></p>
+                                <div>
+                                    <div className="flex items-center gap-2">
+                                        <div
+                                            className={`h-2 w-2 rounded-full ${selectedAdmin.isOnline ? 'bg-green-500' : 'bg-gray-300'
+                                                }`}
+                                        ></div>
+                                        <h3 className="text-lg font-medium text-[#36302A]">
+                                            @{selectedAdmin.username}
+                                        </h3>
+                                    </div>
+                                    <p className="text-sm text-[#86807A]">
+                                        {selectedAdmin.email}{' '}
+                                        <span className="text-[#36302A]">
+                                            ({selectedAdmin.role})
+                                        </span>
+                                    </p>
+                                </div>
+                            </div>
+                            <div className="relative">
+                                <motion.button
+                                    onClick={() => setShowChatOptions(!showChatOptions)}
+                                    className="p-2 rounded-full hover:bg-[#F8F2EA]"
+                                    whileHover={{ scale: 1.1 }}
+                                    whileTap={{ scale: 0.9 }}
+                                >
+                                    <MoreVertical size={20} />
+                                </motion.button>
+                                <AnimatePresence>
+                                    {showChatOptions && (
+                                        <motion.div
+                                            className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10"
+                                            variants={chatOptionsVariants}
+                                            initial="hidden"
+                                            animate="visible"
+                                            exit="hidden"
+                                        >
+                                            <div className="py-1">
+                                                <button
+                                                    onClick={handleClearChat}
+                                                    className="block w-full text-left px-4 py-2 text-sm text-[#36302A] hover:bg-[#F8F2EA] flex items-center gap-2"
+                                                >
+                                                    <Trash2 size={14} /> Clear Chat
+                                                </button>
+                                            </div>
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
                             </div>
                         </div>
 
@@ -439,24 +523,23 @@ const AdminChat = () => {
                                 {messages.map((message) => {
                                     const isSender = message.senderId === currentAdmin.id;
                                     const isDeletedForMe = message.deletedFor?.includes(currentAdmin.id);
+                                    const isRead = message.readBy?.includes(selectedAdmin.id);
 
                                     return (
                                         !isDeletedForMe && (
                                             <motion.div
                                                 key={message.id}
-                                                className={`flex ${
-                                                    isSender ? 'justify-end' : 'justify-start'
-                                                } mb-4 relative group`} // Added group for hover
+                                                className={`flex ${isSender ? 'justify-end' : 'justify-start'
+                                                    } mb-4 relative group`}
                                                 variants={messageVariants}
                                                 initial="hidden"
                                                 animate="visible"
                                             >
                                                 <div
-                                                    className={`max-w-[70%] p-3 rounded-lg ${
-                                                        isSender
+                                                    className={`max-w-[70%] p-3 rounded-lg ${isSender
                                                             ? 'bg-[#36302A] text-white'
                                                             : 'bg-white text-[#36302A]'
-                                                    }`}
+                                                        }`}
                                                 >
                                                     {editingMessage === message.id ? (
                                                         <div className="flex flex-col gap-2">
@@ -491,9 +574,27 @@ const AdminChat = () => {
                                                     ) : (
                                                         <>
                                                             <p>{message.text}</p>
-                                                            <div className="text-xs mt-1 opacity-75">
+                                                            <div className="text-xs mt-1 opacity-75 flex items-center gap-1">
                                                                 {formatTimestamp(message.timestamp)}
                                                                 {message.edited && ' (Edited)'}
+                                                                {isSender && (
+                                                                    <span className="ml-1 flex items-center">
+                                                                        {isRead ? (
+                                                                            <span className="relative flex items-center">
+                                                                                <Check
+                                                                                    size={12}
+                                                                                    className="inline text-blue-500 animate-glow"
+                                                                                />
+                                                                                <Check
+                                                                                    size={12}
+                                                                                    className="inline -ml-1.5 text-blue-500 animate-glow"
+                                                                                />
+                                                                            </span>
+                                                                        ) : (
+                                                                            <Check size={12} className="inline text-gray-400" />
+                                                                        )}
+                                                                    </span>
+                                                                )}
                                                             </div>
                                                         </>
                                                     )}
