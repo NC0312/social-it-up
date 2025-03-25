@@ -110,7 +110,7 @@ export async function POST(request) {
           <div style="margin-bottom: 30px;">
             <p style="font-size: 16px;">Please log in to the admin panel to review this client's details and follow up as needed.</p>
             <div style="text-align: center; margin-top: 20px;">
-              <a href="${isDev ? "https://social-it-up-test.vercel.app" : "social-it-up-admin-panel-powered-by-nc.vercel.app"}/review-panel69" 
+              <a href="${isDev ? "social-it-up-test.vercel.app" : "social-it-up-admin-panel-powered-by-nc.vercel.app"}/review-panel69" 
                  style="background-color: #48BB78; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold;">
                 Go to Review Panel
               </a>
