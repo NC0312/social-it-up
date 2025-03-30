@@ -112,22 +112,22 @@ const AdminChat = () => {
     if (!confirm("Are you sure you want to delete this group? This action cannot be undone.")) {
       return;
     }
-  
+
     try {
       // First delete all messages in the group
       const messagesRef = collection(db, "groupMessages", groupId, "messages");
       const messagesSnapshot = await getDocs(messagesRef);
       const deleteMessagePromises = messagesSnapshot.docs.map((doc) => deleteDoc(doc.ref));
       await Promise.all(deleteMessagePromises);
-      
+
       // Delete the group document
       const groupRef = doc(db, "groups", groupId);
       await deleteDoc(groupRef);
-      
+
       // Delete the group messages collection if it exists
       const groupMessagesRef = doc(db, "groupMessages", groupId);
       await deleteDoc(groupMessagesRef);
-      
+
       setShowGroupMembers(false);
       setSelectedChat(null);
       toast.success("Group deleted successfully");
@@ -464,9 +464,9 @@ const AdminChat = () => {
       toast.error("Please provide a group name and at least one participant");
       return;
     }
-  
+
     const participants = [currentAdmin.id, ...groupParticipants];
-    
+
     try {
       if (selectedChat?.isGroup && selectedChat.createdBy === currentAdmin.id) {
         // Update existing group
@@ -476,14 +476,14 @@ const AdminChat = () => {
           participants,
           updatedAt: serverTimestamp(),
         });
-        
+
         // Update the selected chat object
         setSelectedChat({
           ...selectedChat,
           name: groupName.trim(),
           participants,
         });
-        
+
         toast.success("Group updated successfully");
       } else {
         // Create new group
@@ -494,7 +494,7 @@ const AdminChat = () => {
           createdAt: serverTimestamp(),
         });
       }
-  
+
       setGroupName("");
       setGroupParticipants([]);
       setShowGroupCreator(false);
@@ -727,11 +727,25 @@ const AdminChat = () => {
                     {selectedChat.isGroup ? selectedChat.name : `@${selectedChat.username}`}
                   </h3>
                   <p className="text-sm text-[#86807A]">
+                    {selectedChat.isGroup ? (
+                      `${selectedChat.participants.length} members`
+                    ) : (
+                      <>
+                        {selectedChat.email} <span className="ml-2 px-2 py-1 text-xs font-semibold text-white bg-[#36302A] rounded-lg">{selectedChat.role}</span>
+                      </>
+                    )}
+                  </p>
+                </div>
+                {/* <div>
+                  <h3 className="text-lg font-medium text-[#36302A]">
+                    {selectedChat.isGroup ? selectedChat.name : `@${selectedChat.username}`}
+                  </h3>
+                  <p className="text-sm text-[#86807A]">
                     {selectedChat.isGroup
                       ? `${selectedChat.participants.length} members`
                       : `${selectedChat.email} (${selectedChat.role})`}
                   </p>
-                </div>
+                </div> */}
               </div>
               <div className="relative">
                 <motion.button
