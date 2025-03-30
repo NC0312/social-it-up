@@ -472,7 +472,7 @@ const AdminChat = () => {
     return (
       <div className="flex items-center justify-center min-h-screen bg-[#FAF4ED]">
         <div className="relative">
-          <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-[#36302A]"></div>
+          <div className="animate-spin rounded-full h-16 w-32 border-t-2 border-b-2 border-[#36302A]"></div>
           <div className="absolute inset-0 flex items-center justify-center text-[#36302A] font-medium">Loading</div>
         </div>
       </div>
@@ -484,8 +484,8 @@ const AdminChat = () => {
       {/* Sidebar */}
       <motion.div
         className={`bg-white shadow-xl h-screen flex flex-col ${sidebarOpen ? "w-72" : "w-16"} transition-all duration-300`}
-        initial={{ width: sidebarOpen ? 288 : 64 }}
-        animate={{ width: sidebarOpen ? 288 : 64 }}
+        initial={{ width: sidebarOpen ? 288 : 88 }}
+        animate={{ width: sidebarOpen ? 288 : 88 }}
       >
         <div className="p-4 border-b border-[#E2D9CE] flex justify-between items-center">
           <h2 className={`text-lg font-bold text-[#36302A] ${!sidebarOpen && "hidden"}`}>Chats</h2>
