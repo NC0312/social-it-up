@@ -30,8 +30,10 @@ import {
   Mail,
   MoreVertical,
   Smile,
+  X,
 } from "lucide-react"
 import Picker from "emoji-picker-react"
+import Avatar from "boring-avatars"
 
 const AdminChat = () => {
   const { admin: currentAdmin, isAuthenticated, loading } = useAdminAuth()
@@ -50,6 +52,19 @@ const AdminChat = () => {
   const [showEmojiPicker, setShowEmojiPicker] = useState(false)
   const [dropdownMessageId, setDropdownMessageId] = useState(null)
   const [showChatOptions, setShowChatOptions] = useState(false)
+  const [showAvatarPicker, setShowAvatarPicker] = useState(false)
+
+  // Avatar options using boring-avatars variants and colors
+  const avatarVariants = ["marble", "beam", "pixel", "sunset", "ring", "bauhaus"]
+  const colorPalettes = [
+    ["#92A1C6", "#146A7C", "#F0AB3D", "#C271B4", "#C20D90"],
+    ["#D6E6F3", "#769ECB", "#9D65C9", "#5D54A4", "#2A3D66"],
+    ["#F4D8CD", "#EFB1B3", "#D77A61", "#2A3D66", "#182335"],
+    ["#FFBE0B", "#FB5607", "#FF006E", "#8338EC", "#3A86FF"],
+    ["#F94144", "#F3722C", "#F8961E", "#F9C74F", "#90BE6D"],
+    ["#FF9F1C", "#FFBF69", "#CBF3F0", "#2EC4B6", "#FFFFFF"],
+  ]
+
   const messagesEndRef = useRef(null)
   const messagesContainerRef = useRef(null)
 
@@ -341,6 +356,29 @@ const AdminChat = () => {
     }
   }
 
+  // Handle avatar selection
+  const handleAvatarSelect = async (avatarConfig) => {
+    if (!currentAdmin) return
+
+    try {
+      const adminRef = doc(db, "admins", currentAdmin.id)
+      await updateDoc(adminRef, {
+        avatar: avatarConfig,
+      })
+
+      // Update the current admin object in memory
+      if (currentAdmin) {
+        currentAdmin.avatar = avatarConfig
+      }
+
+      setShowAvatarPicker(false)
+      toast.success("Avatar updated successfully")
+    } catch (error) {
+      console.error("Error updating avatar:", error)
+      toast.error("Failed to update avatar")
+    }
+  }
+
   // Format timestamp
   const formatTimestamp = (date) => {
     return new Date(date).toLocaleTimeString("en-US", {
@@ -393,8 +431,20 @@ const AdminChat = () => {
                 } hover:bg-[#F8F2EA]`}
                 onClick={() => handleSelectAdmin(admin)}
               >
-                <div className="h-10 w-10 flex-shrink-0 bg-[#36302A] rounded-full flex items-center justify-center text-white font-medium">
-                  {admin.username?.charAt(0).toUpperCase() || "A"}
+                <div className="h-10 w-10 flex-shrink-0 rounded-full overflow-hidden">
+                  {admin.avatar ? (
+                    <Avatar
+                      size={40}
+                      name={admin.username || admin.id}
+                      variant={admin.avatar.variant}
+                      colors={admin.avatar.colors}
+                      square={false}
+                    />
+                  ) : (
+                    <div className="h-10 w-10 flex-shrink-0 bg-[#36302A] rounded-full flex items-center justify-center text-white font-medium">
+                      {admin.username?.charAt(0).toUpperCase() || "A"}
+                    </div>
+                  )}
                 </div>
                 {sidebarOpen && (
                   <div className="flex-1 flex items-center justify-between">
@@ -436,19 +486,62 @@ const AdminChat = () => {
         initial="hidden"
         animate="visible"
       >
+        {/* Top Navigation */}
+        <div className="bg-white p-4 border-b border-[#E2D9CE] flex justify-between items-center">
+          <h2 className="text-lg font-bold text-[#36302A]">Admin Chat</h2>
+          <div className="relative">
+            <motion.div
+              className="cursor-pointer"
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              onClick={() => setShowAvatarPicker(true)}
+            >
+              {currentAdmin?.avatar ? (
+                <div className="h-10 w-10 rounded-full overflow-hidden">
+                  <Avatar
+                    size={40}
+                    name={currentAdmin.username || currentAdmin.id}
+                    variant={currentAdmin.avatar.variant}
+                    colors={currentAdmin.avatar.colors}
+                    square={false}
+                  />
+                </div>
+              ) : (
+                <div className="h-10 w-10 bg-[#36302A] rounded-full flex items-center justify-center text-white font-medium">
+                  {currentAdmin?.username?.charAt(0).toUpperCase() || "A"}
+                </div>
+              )}
+            </motion.div>
+          </div>
+        </div>
         {selectedAdmin ? (
           <>
             {/* Chat Header */}
             <div className="p-4 bg-white border-b border-[#E2D9CE] flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="h-10 w-10 bg-[#36302A] rounded-full flex items-center justify-center text-white font-medium">
-                  {selectedAdmin.username?.charAt(0).toUpperCase() || "A"}
+                <div className="relative">
+                  {selectedAdmin.avatar ? (
+                    <div className="h-10 w-10 rounded-full overflow-hidden">
+                      <Avatar
+                        size={40}
+                        name={selectedAdmin.username || selectedAdmin.id}
+                        variant={selectedAdmin.avatar.variant}
+                        colors={selectedAdmin.avatar.colors}
+                        square={false}
+                      />
+                    </div>
+                  ) : (
+                    <div className="h-10 w-10 bg-[#36302A] rounded-full flex items-center justify-center text-white font-medium">
+                      {selectedAdmin.username?.charAt(0).toUpperCase() || "A"}
+                    </div>
+                  )}
+                  <div
+                    className={`h-2 w-2 rounded-full ${selectedAdmin.isOnline ? "bg-green-500" : "bg-gray-300"}`}
+                    style={{ position: "absolute", bottom: 0, right: 0, border: "1px solid white" }}
+                  ></div>
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
-                    <div
-                      className={`h-2 w-2 rounded-full ${selectedAdmin.isOnline ? "bg-green-500" : "bg-gray-300"}`}
-                    ></div>
                     <h3 className="text-lg font-medium text-[#36302A]">@{selectedAdmin.username}</h3>
                   </div>
                   <p className="text-sm text-[#86807A]">
@@ -499,6 +592,7 @@ const AdminChat = () => {
                   const isSender = message.senderId === currentAdmin.id
                   const isDeletedForMe = message.deletedFor?.includes(currentAdmin.id)
                   const isRead = message.readBy?.includes(selectedAdmin.id)
+                  const messageAdmin = isSender ? currentAdmin : selectedAdmin
 
                   return (
                     !isDeletedForMe && (
@@ -509,6 +603,25 @@ const AdminChat = () => {
                         initial="hidden"
                         animate="visible"
                       >
+                        {!isSender && (
+                          <div className="mr-2">
+                            {selectedAdmin.avatar ? (
+                              <div className="h-8 w-8 rounded-full overflow-hidden">
+                                <Avatar
+                                  size={32}
+                                  name={selectedAdmin.username || selectedAdmin.id}
+                                  variant={selectedAdmin.avatar.variant}
+                                  colors={selectedAdmin.avatar.colors}
+                                  square={false}
+                                />
+                              </div>
+                            ) : (
+                              <div className="h-8 w-8 bg-[#36302A] rounded-full flex items-center justify-center text-white font-medium text-xs">
+                                {selectedAdmin.username?.charAt(0).toUpperCase() || "A"}
+                              </div>
+                            )}
+                          </div>
+                        )}
                         <div
                           className={`max-w-[70%] p-3 rounded-lg ${
                             isSender ? "bg-[#36302A] text-white" : "bg-white text-[#36302A]"
@@ -687,6 +800,48 @@ const AdminChat = () => {
           </div>
         )}
       </motion.div>
+
+      {/* Avatar Picker Modal */}
+      {showAvatarPicker && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <motion.div
+            className="bg-white rounded-lg p-6 w-[90%] max-w-md"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.9 }}
+          >
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-medium text-[#36302A]">Select Avatar</h3>
+              <button onClick={() => setShowAvatarPicker(false)} className="p-1 rounded-full hover:bg-[#F8F2EA]">
+                <X size={20} />
+              </button>
+            </div>
+            <div className="grid grid-cols-5 gap-4 mb-6">
+              {avatarVariants
+                .map((variant, variantIndex) =>
+                  colorPalettes.map((colors, colorIndex) => (
+                    <div
+                      key={`${variant}-${colorIndex}`}
+                      className="cursor-pointer hover:scale-110 transition-transform flex flex-col items-center"
+                      onClick={() => handleAvatarSelect({ variant, colors })}
+                    >
+                      <div className="rounded-full overflow-hidden border-2 border-transparent hover:border-[#36302A] mb-1">
+                        <Avatar
+                          size={60}
+                          name={currentAdmin?.username || currentAdmin?.id || "User"}
+                          variant={variant}
+                          colors={colors}
+                          square={false}
+                        />
+                      </div>
+                    </div>
+                  )),
+                )
+                .slice(0, 18)}
+            </div>
+          </motion.div>
+        </div>
+      )}
     </div>
   )
 }
