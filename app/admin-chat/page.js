@@ -31,6 +31,8 @@ import {
   MoreVertical,
   Smile,
   X,
+  Plus,
+  Users,
 } from "lucide-react"
 import Picker from "emoji-picker-react"
 import Avatar from "boring-avatars"
@@ -40,7 +42,8 @@ const AdminChat = () => {
   const router = useRouter()
 
   const [admins, setAdmins] = useState([])
-  const [selectedAdmin, setSelectedAdmin] = useState(null)
+  const [groups, setGroups] = useState([])
+  const [selectedChat, setSelectedChat] = useState(null) // Can be admin or group
   const [messages, setMessages] = useState([])
   const [newMessage, setNewMessage] = useState("")
   const [isLoading, setIsLoading] = useState(true)
@@ -53,8 +56,10 @@ const AdminChat = () => {
   const [dropdownMessageId, setDropdownMessageId] = useState(null)
   const [showChatOptions, setShowChatOptions] = useState(false)
   const [showAvatarPicker, setShowAvatarPicker] = useState(false)
+  const [showGroupCreator, setShowGroupCreator] = useState(false)
+  const [groupName, setGroupName] = useState("")
+  const [groupParticipants, setGroupParticipants] = useState([])
 
-  // Avatar options using boring-avatars variants and colors
   const avatarVariants = ["marble", "beam", "pixel", "sunset", "ring", "bauhaus"]
   const colorPalettes = [
     ["#92A1C6", "#146A7C", "#F0AB3D", "#C271B4", "#C20D90"],
@@ -68,7 +73,6 @@ const AdminChat = () => {
   const messagesEndRef = useRef(null)
   const messagesContainerRef = useRef(null)
 
-  // Animation variants
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: { opacity: 1, transition: { duration: 0.5 } },
@@ -84,19 +88,11 @@ const AdminChat = () => {
     visible: {
       scale: 1,
       opacity: 1,
-      transition: {
-        type: "spring",
-        stiffness: 300,
-        damping: 20,
-      },
+      transition: { type: "spring", stiffness: 300, damping: 20 },
     },
     pulse: {
       scale: [1, 1.1, 1],
-      transition: {
-        duration: 1.5,
-        repeat: Number.POSITIVE_INFINITY,
-        ease: "easeInOut",
-      },
+      transition: { duration: 1.5, repeat: Infinity, ease: "easeInOut" },
     },
   }
 
@@ -110,12 +106,13 @@ const AdminChat = () => {
     visible: { opacity: 1, scale: 1, transition: { duration: 0.2 } },
   }
 
-  // Fetch all admins and set up real-time listener
+  // Fetch admins and groups
   useEffect(() => {
     if (!isAuthenticated) return
 
+    // Fetch admins
     const adminsRef = collection(db, "admins")
-    const unsubscribe = onSnapshot(
+    const adminsUnsubscribe = onSnapshot(
       query(adminsRef, where("status", "==", "approved")),
       (snapshot) => {
         const adminList = snapshot.docs.map((doc) => ({
@@ -131,21 +128,49 @@ const AdminChat = () => {
         console.error("Error fetching admins:", error)
         toast.error("Failed to load admins")
         setIsLoading(false)
-      },
+      }
     )
 
-    return () => unsubscribe()
+    // Fetch groups
+    const groupsRef = collection(db, "groups")
+    const groupsUnsubscribe = onSnapshot(
+      query(groupsRef, where("participants", "array-contains", currentAdmin.id)),
+      (snapshot) => {
+        const groupList = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }))
+        setGroups(groupList)
+      },
+      (error) => {
+        console.error("Error fetching groups:", error)
+        toast.error("Failed to load groups")
+      }
+    )
+
+    return () => {
+      adminsUnsubscribe()
+      groupsUnsubscribe()
+    }
   }, [isAuthenticated, currentAdmin])
 
-  // Fetch messages, track unread counts, and mark messages as read
+  // Fetch messages for selected chat
   useEffect(() => {
-    if (!currentAdmin || !admins.length) return
+    if (!currentAdmin || (!selectedChat && !admins.length && !groups.length)) return
 
-    const unsubscribes = admins.map((admin) => {
-      const conversationId = [currentAdmin.id, admin.id].sort().join("_")
-      const messagesRef = collection(db, "conversations", conversationId, "messages")
+    let unsubscribe
+    if (selectedChat) {
+      const chatId = selectedChat.isGroup
+        ? selectedChat.id
+        : [currentAdmin.id, selectedChat.id].sort().join("_")
+      const messagesRef = collection(
+        db,
+        selectedChat.isGroup ? "groupMessages" : "conversations",
+        chatId,
+        "messages"
+      )
 
-      return onSnapshot(
+      unsubscribe = onSnapshot(
         query(messagesRef, orderBy("timestamp", "asc")),
         (snapshot) => {
           const messageList = snapshot.docs.map((doc) => ({
@@ -154,49 +179,46 @@ const AdminChat = () => {
             timestamp: doc.data().timestamp?.toDate?.() || new Date(),
           }))
 
-          // Update messages if this admin is selected
-          if (selectedAdmin?.id === admin.id) {
-            setMessages(messageList)
-            scrollToBottom()
+          setMessages(messageList)
+          scrollToBottom()
 
-            // Mark messages as read when the conversation is opened
-            messageList.forEach(async (message) => {
-              if (message.senderId !== currentAdmin.id && !message.readBy?.includes(currentAdmin.id)) {
-                const messageRef = doc(db, "conversations", conversationId, "messages", message.id)
-                await updateDoc(messageRef, {
-                  readBy: arrayUnion(currentAdmin.id),
-                  readAt: serverTimestamp(),
-                })
-              }
-            })
-          }
+          // Mark messages as read
+          messageList.forEach(async (message) => {
+            if (!message.readBy?.includes(currentAdmin.id)) {
+              const messageRef = doc(
+                db,
+                selectedChat.isGroup ? "groupMessages" : "conversations",
+                chatId,
+                "messages",
+                message.id
+              )
+              await updateDoc(messageRef, {
+                readBy: arrayUnion(currentAdmin.id),
+                readAt: serverTimestamp(),
+              })
+            }
+          })
 
-          // Process unread messages
+          // Process unread counts
           snapshot.docChanges().forEach((change) => {
             if (change.type === "added") {
               const messageId = change.doc.id
               const messageData = change.doc.data()
 
-              // Skip if message is already processed
-              if (processedMessages[admin.id]?.includes(messageId)) {
-                return
-              }
+              if (processedMessages[selectedChat.id]?.includes(messageId)) return
 
-              // Add message ID to processed messages
               setProcessedMessages((prev) => ({
                 ...prev,
-                [admin.id]: [...(prev[admin.id] || []), messageId],
+                [selectedChat.id]: [...(prev[selectedChat.id] || []), messageId],
               }))
 
-              // Increment unread count if the message is from the other admin and not viewed
               if (
                 messageData.senderId !== currentAdmin.id &&
-                selectedAdmin?.id !== admin.id &&
                 !messageData.readBy?.includes(currentAdmin.id)
               ) {
                 setUnreadCounts((prev) => ({
                   ...prev,
-                  [admin.id]: (prev[admin.id] || 0) + 1,
+                  [selectedChat.id]: (prev[selectedChat.id] || 0) + 1,
                 }))
               }
             }
@@ -205,24 +227,23 @@ const AdminChat = () => {
         (error) => {
           console.error("Error fetching messages:", error)
           toast.error("Failed to load messages")
-        },
+        }
       )
-    })
+    }
 
-    return () => unsubscribes.forEach((unsubscribe) => unsubscribe())
-  }, [admins, selectedAdmin, currentAdmin])
+    return () => unsubscribe && unsubscribe()
+  }, [selectedChat, currentAdmin, admins, groups])
 
-  // Reset unread count when selecting an admin
+  // Reset unread count when selecting a chat
   useEffect(() => {
-    if (selectedAdmin) {
+    if (selectedChat) {
       setUnreadCounts((prev) => ({
         ...prev,
-        [selectedAdmin.id]: 0,
+        [selectedChat.id]: 0,
       }))
     }
-  }, [selectedAdmin])
+  }, [selectedChat])
 
-  // Scroll to the bottom of the chat
   const scrollToBottom = () => {
     if (messagesContainerRef.current) {
       messagesContainerRef.current.scrollTo({
@@ -232,29 +253,32 @@ const AdminChat = () => {
     }
   }
 
-  // Handle admin selection
-  const handleSelectAdmin = (admin) => {
-    console.log("Selecting admin:", admin)
-    setSelectedAdmin(admin)
+  const handleSelectChat = (chat) => {
+    setSelectedChat(chat)
     setMessages([])
   }
 
-  // Send a new message
   const handleSendMessage = async () => {
-    if (!newMessage.trim() || !selectedAdmin) return
+    if (!newMessage.trim() || !selectedChat) return
 
-    const conversationId = [currentAdmin.id, selectedAdmin.id].sort().join("_")
-    const messagesRef = collection(db, "conversations", conversationId, "messages")
+    const chatId = selectedChat.isGroup
+      ? selectedChat.id
+      : [currentAdmin.id, selectedChat.id].sort().join("_")
+    const messagesRef = collection(
+      db,
+      selectedChat.isGroup ? "groupMessages" : "conversations",
+      chatId,
+      "messages"
+    )
 
     try {
       await addDoc(messagesRef, {
         senderId: currentAdmin.id,
-        receiverId: selectedAdmin.id,
         text: newMessage.trim(),
         timestamp: serverTimestamp(),
         edited: false,
         deletedFor: [],
-        readBy: [currentAdmin.id], // Mark as read by sender immediately
+        readBy: [currentAdmin.id],
         readAt: serverTimestamp(),
       })
 
@@ -266,18 +290,24 @@ const AdminChat = () => {
     }
   }
 
-  // Handle emoji selection
   const onEmojiClick = (emojiObject) => {
     setNewMessage((prev) => prev + emojiObject.emoji)
     setShowEmojiPicker(false)
   }
 
-  // Edit a message
   const handleEditMessage = async (messageId) => {
     if (!editedText.trim()) return
 
-    const conversationId = [currentAdmin.id, selectedAdmin.id].sort().join("_")
-    const messageRef = doc(db, "conversations", conversationId, "messages", messageId)
+    const chatId = selectedChat.isGroup
+      ? selectedChat.id
+      : [currentAdmin.id, selectedChat.id].sort().join("_")
+    const messageRef = doc(
+      db,
+      selectedChat.isGroup ? "groupMessages" : "conversations",
+      chatId,
+      "messages",
+      messageId
+    )
 
     try {
       await updateDoc(messageRef, {
@@ -295,10 +325,17 @@ const AdminChat = () => {
     }
   }
 
-  // Delete a message for me
   const handleDeleteForMe = async (messageId) => {
-    const conversationId = [currentAdmin.id, selectedAdmin.id].sort().join("_")
-    const messageRef = doc(db, "conversations", conversationId, "messages", messageId)
+    const chatId = selectedChat.isGroup
+      ? selectedChat.id
+      : [currentAdmin.id, selectedChat.id].sort().join("_")
+    const messageRef = doc(
+      db,
+      selectedChat.isGroup ? "groupMessages" : "conversations",
+      chatId,
+      "messages",
+      messageId
+    )
 
     try {
       await updateDoc(messageRef, {
@@ -312,15 +349,24 @@ const AdminChat = () => {
     }
   }
 
-  // Delete a message for everyone
   const handleDeleteForEveryone = async (messageId) => {
-    const conversationId = [currentAdmin.id, selectedAdmin.id].sort().join("_")
-    const messageRef = doc(db, "conversations", conversationId, "messages", messageId)
+    const chatId = selectedChat.isGroup
+      ? selectedChat.id
+      : [currentAdmin.id, selectedChat.id].sort().join("_")
+    const messageRef = doc(
+      db,
+      selectedChat.isGroup ? "groupMessages" : "conversations",
+      chatId,
+      "messages",
+      messageId
+    )
 
     try {
       await updateDoc(messageRef, {
         text: "This message was deleted",
-        deletedFor: [currentAdmin.id, selectedAdmin.id],
+        deletedFor: selectedChat.isGroup
+          ? selectedChat.participants
+          : [currentAdmin.id, selectedChat.id],
         deletedBy: currentAdmin.id,
         deletedAt: serverTimestamp(),
       })
@@ -332,20 +378,30 @@ const AdminChat = () => {
     }
   }
 
-  // Clear the entire chat
   const handleClearChat = async () => {
-    if (!selectedAdmin) return
+    if (!selectedChat) return
 
-    const conversationId = [currentAdmin.id, selectedAdmin.id].sort().join("_")
-    const messagesRef = collection(db, "conversations", conversationId, "messages")
+    const chatId = selectedChat.isGroup
+      ? selectedChat.id
+      : [currentAdmin.id, selectedChat.id].sort().join("_")
+    const messagesRef = collection(
+      db,
+      selectedChat.isGroup ? "groupMessages" : "conversations",
+      chatId,
+      "messages"
+    )
 
     try {
       const querySnapshot = await getDocs(messagesRef)
       const deletePromises = querySnapshot.docs.map((doc) => deleteDoc(doc.ref))
       await Promise.all(deletePromises)
 
-      const conversationRef = doc(db, "conversations", conversationId)
-      await deleteDoc(conversationRef)
+      const chatRef = doc(
+        db,
+        selectedChat.isGroup ? "groupMessages" : "conversations",
+        chatId
+      )
+      await deleteDoc(chatRef)
 
       setMessages([])
       setShowChatOptions(false)
@@ -356,21 +412,14 @@ const AdminChat = () => {
     }
   }
 
-  // Handle avatar selection
   const handleAvatarSelect = async (avatarConfig) => {
     if (!currentAdmin) return
 
     try {
       const adminRef = doc(db, "admins", currentAdmin.id)
-      await updateDoc(adminRef, {
-        avatar: avatarConfig,
-      })
+      await updateDoc(adminRef, { avatar: avatarConfig })
 
-      // Update the current admin object in memory
-      if (currentAdmin) {
-        currentAdmin.avatar = avatarConfig
-      }
-
+      currentAdmin.avatar = avatarConfig
       setShowAvatarPicker(false)
       toast.success("Avatar updated successfully")
     } catch (error) {
@@ -379,7 +428,39 @@ const AdminChat = () => {
     }
   }
 
-  // Format timestamp
+  const handleCreateGroup = async () => {
+    if (!groupName.trim() || groupParticipants.length < 1) {
+      toast.error("Please provide a group name and at least one participant")
+      return
+    }
+
+    const participants = [currentAdmin.id, ...groupParticipants]
+    try {
+      const groupRef = await addDoc(collection(db, "groups"), {
+        name: groupName.trim(),
+        participants,
+        createdBy: currentAdmin.id,
+        createdAt: serverTimestamp(),
+      })
+
+      setGroupName("")
+      setGroupParticipants([])
+      setShowGroupCreator(false)
+      toast.success("Group created successfully")
+    } catch (error) {
+      console.error("Error creating group:", error)
+      toast.error("Failed to create group")
+    }
+  }
+
+  const toggleParticipant = (adminId) => {
+    setGroupParticipants((prev) =>
+      prev.includes(adminId)
+        ? prev.filter((id) => id !== adminId)
+        : [...prev, adminId]
+    )
+  }
+
   const formatTimestamp = (date) => {
     return new Date(date).toLocaleTimeString("en-US", {
       hour: "2-digit",
@@ -391,7 +472,7 @@ const AdminChat = () => {
     return (
       <div className="flex items-center justify-center min-h-screen bg-[#FAF4ED]">
         <div className="relative">
-          <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-[#36302A]"></div>
+          <div className="animate-spin rounded-full h-16 w-32 border-t-2 border-b-2 border-[#36302A]"></div>
           <div className="absolute inset-0 flex items-center justify-center text-[#36302A] font-medium">Loading</div>
         </div>
       </div>
@@ -403,78 +484,125 @@ const AdminChat = () => {
       {/* Sidebar */}
       <motion.div
         className={`bg-white shadow-xl h-screen flex flex-col ${sidebarOpen ? "w-72" : "w-16"} transition-all duration-300`}
-        initial={{ width: sidebarOpen ? 288 : 64 }}
-        animate={{ width: sidebarOpen ? 288 : 64 }}
+        initial={{ width: sidebarOpen ? 288 : 88 }}
+        animate={{ width: sidebarOpen ? 288 : 88 }}
       >
         <div className="p-4 border-b border-[#E2D9CE] flex justify-between items-center">
-          <h2 className={`text-lg font-bold text-[#36302A] ${!sidebarOpen && "hidden"}`}>Admins</h2>
-          <motion.button
-            onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="p-2 rounded-full hover:bg-[#F8F2EA]"
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
-          >
-            {sidebarOpen ? <ChevronLeft size={20} /> : <ChevronRight size={20} />}
-          </motion.button>
+          <h2 className={`text-lg font-bold text-[#36302A] ${!sidebarOpen && "hidden"}`}>Chats</h2>
+          <div className="flex gap-2">
+            <motion.button
+              onClick={() => setShowGroupCreator(true)}
+              className="p-2 rounded-full hover:bg-[#F8F2EA]"
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+            >
+              <Plus size={20} />
+            </motion.button>
+            <motion.button
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+              className="p-2 rounded-full hover:bg-[#F8F2EA]"
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+            >
+              {sidebarOpen ? <ChevronLeft size={20} /> : <ChevronRight size={20} />}
+            </motion.button>
+          </div>
         </div>
         <div className="flex-1 overflow-y-auto">
           {isLoading ? (
-            <div className="p-4 text-center text-[#86807A]">Loading admins...</div>
-          ) : admins.length === 0 ? (
-            <div className="p-4 text-center text-[#86807A]">No admins available</div>
+            <div className="p-4 text-center text-[#86807A]">Loading chats...</div>
           ) : (
-            admins.map((admin) => (
-              <motion.div
-                key={admin.id}
-                className={`p-4 flex items-center gap-3 cursor-pointer transition-colors duration-200 ${
-                  selectedAdmin?.id === admin.id ? "bg-[#F8F2EA]" : "bg-white"
-                } hover:bg-[#F8F2EA]`}
-                onClick={() => handleSelectAdmin(admin)}
-              >
-                <div className="h-10 w-10 flex-shrink-0 rounded-full overflow-hidden">
-                  {admin.avatar ? (
-                    <Avatar
-                      size={40}
-                      name={admin.username || admin.id}
-                      variant={admin.avatar.variant}
-                      colors={admin.avatar.colors}
-                      square={false}
-                    />
-                  ) : (
-                    <div className="h-10 w-10 flex-shrink-0 bg-[#36302A] rounded-full flex items-center justify-center text-white font-medium">
-                      {admin.username?.charAt(0).toUpperCase() || "A"}
+            <>
+              {/* Groups */}
+              {groups.map((group) => (
+                <motion.div
+                  key={group.id}
+                  className={`p-4 flex items-center gap-3 cursor-pointer transition-colors duration-200 ${
+                    selectedChat?.id === group.id ? "bg-[#F8F2EA]" : "bg-white"
+                  } hover:bg-[#F8F2EA]`}
+                  onClick={() => handleSelectChat({ ...group, isGroup: true })}
+                >
+                  <div className="h-10 w-10 flex-shrink-0 bg-[#36302A] rounded-full flex items-center justify-center text-white font-medium">
+                    <Users size={20} />
+                  </div>
+                  {sidebarOpen && (
+                    <div className="flex-1 flex items-center justify-between">
+                      <div>
+                        <span className="text-sm font-medium text-[#36302A]">{group.name}</span>
+                        <p className="text-xs text-[#86807A]">{group.participants.length} members</p>
+                      </div>
+                      <AnimatePresence>
+                        {unreadCounts[group.id] > 0 && (
+                          <motion.div
+                            className="flex items-center gap-1 bg-gradient-to-r from-red-500 to-pink-500 text-white text-xs px-2 py-1 rounded-full shadow-md"
+                            variants={notificationVariants}
+                            initial="hidden"
+                            animate={["visible", "pulse"]}
+                            exit="hidden"
+                          >
+                            <Mail size={12} />
+                            <span>{unreadCounts[group.id]}</span>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
                     </div>
                   )}
-                </div>
-                {sidebarOpen && (
-                  <div className="flex-1 flex items-center justify-between">
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <div
-                          className={`h-2 w-2 rounded-full ${admin.isOnline ? "bg-green-500" : "bg-gray-300"}`}
-                        ></div>
-                        <span className="text-sm font-medium text-[#36302A]">@{admin.username}</span>
+                </motion.div>
+              ))}
+              {/* Admins */}
+              {admins.map((admin) => (
+                <motion.div
+                  key={admin.id}
+                  className={`p-4 flex items-center gap-3 cursor-pointer transition-colors duration-200 ${
+                    selectedChat?.id === admin.id && !selectedChat?.isGroup ? "bg-[#F8F2EA]" : "bg-white"
+                  } hover:bg-[#F8F2EA]`}
+                  onClick={() => handleSelectChat({ ...admin, isGroup: false })}
+                >
+                  <div className="h-10 w-10 flex-shrink-0 rounded-full overflow-hidden">
+                    {admin.avatar ? (
+                      <Avatar
+                        size={40}
+                        name={admin.username || admin.id}
+                        variant={admin.avatar.variant}
+                        colors={admin.avatar.colors}
+                        square={false}
+                      />
+                    ) : (
+                      <div className="h-10 w-10 bg-[#36302A] rounded-full flex items-center justify-center text-white font-medium">
+                        {admin.username?.charAt(0).toUpperCase() || "A"}
                       </div>
-                      <p className="text-xs text-[#86807A]">{admin.email}</p>
-                    </div>
-                    <AnimatePresence>
-                      {unreadCounts[admin.id] > 0 && (
-                        <motion.div
-                          className="flex items-center gap-1 bg-gradient-to-r from-red-500 to-pink-500 text-white text-xs px-2 py-1 rounded-full shadow-md"
-                          variants={notificationVariants}
-                          initial="hidden"
-                          animate={["visible", "pulse"]}
-                          exit="hidden"
-                        >
-                          <Mail size={12} />
-                          <span>{unreadCounts[admin.id]}</span>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
+                    )}
                   </div>
-                )}
-              </motion.div>
-            ))
+                  {sidebarOpen && (
+                    <div className="flex-1 flex items-center justify-between">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <div
+                            className={`h-2 w-2 rounded-full ${admin.isOnline ? "bg-green-500" : "bg-gray-300"}`}
+                          ></div>
+                          <span className="text-sm font-medium text-[#36302A]">@{admin.username}</span>
+                        </div>
+                        <p className="text-xs text-[#86807A]">{admin.email}</p>
+                      </div>
+                      <AnimatePresence>
+                        {unreadCounts[admin.id] > 0 && (
+                          <motion.div
+                            className="flex items-center gap-1 bg-gradient-to-r from-red-500 to-pink-500 text-white text-xs px-2 py-1 rounded-full shadow-md"
+                            variants={notificationVariants}
+                            initial="hidden"
+                            animate={["visible", "pulse"]}
+                            exit="hidden"
+                          >
+                            <Mail size={12} />
+                            <span>{unreadCounts[admin.id]}</span>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
+                  )}
+                </motion.div>
+              ))}
+            </>
           )}
         </div>
       </motion.div>
@@ -486,66 +614,70 @@ const AdminChat = () => {
         initial="hidden"
         animate="visible"
       >
-        {/* Top Navigation */}
         <div className="bg-white p-4 border-b border-[#E2D9CE] flex justify-between items-center">
           <h2 className="text-lg font-bold text-[#36302A]">Admin Chat</h2>
-          <div className="relative">
-            <motion.div
-              className="cursor-pointer"
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-              onClick={() => setShowAvatarPicker(true)}
-            >
-              {currentAdmin?.avatar ? (
-                <div className="h-10 w-10 rounded-full overflow-hidden">
-                  <Avatar
-                    size={40}
-                    name={currentAdmin.username || currentAdmin.id}
-                    variant={currentAdmin.avatar.variant}
-                    colors={currentAdmin.avatar.colors}
-                    square={false}
-                  />
-                </div>
-              ) : (
-                <div className="h-10 w-10 bg-[#36302A] rounded-full flex items-center justify-center text-white font-medium">
-                  {currentAdmin?.username?.charAt(0).toUpperCase() || "A"}
-                </div>
-              )}
-            </motion.div>
-          </div>
+          <motion.div
+            className="cursor-pointer"
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+            onClick={() => setShowAvatarPicker(true)}
+          >
+            {currentAdmin?.avatar ? (
+              <div className="h-10 w-10 rounded-full overflow-hidden">
+                <Avatar
+                  size={40}
+                  name={currentAdmin.username || currentAdmin.id}
+                  variant={currentAdmin.avatar.variant}
+                  colors={currentAdmin.avatar.colors}
+                  square={false}
+                />
+              </div>
+            ) : (
+              <div className="h-10 w-10 bg-[#36302A] rounded-full flex items-center justify-center text-white font-medium">
+                {currentAdmin?.username?.charAt(0).toUpperCase() || "A"}
+              </div>
+            )}
+          </motion.div>
         </div>
-        {selectedAdmin ? (
+        {selectedChat ? (
           <>
-            {/* Chat Header */}
             <div className="p-4 bg-white border-b border-[#E2D9CE] flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="relative">
-                  {selectedAdmin.avatar ? (
-                    <div className="h-10 w-10 rounded-full overflow-hidden">
-                      <Avatar
-                        size={40}
-                        name={selectedAdmin.username || selectedAdmin.id}
-                        variant={selectedAdmin.avatar.variant}
-                        colors={selectedAdmin.avatar.colors}
-                        square={false}
-                      />
-                    </div>
-                  ) : (
-                    <div className="h-10 w-10 bg-[#36302A] rounded-full flex items-center justify-center text-white font-medium">
-                      {selectedAdmin.username?.charAt(0).toUpperCase() || "A"}
-                    </div>
-                  )}
-                  <div
-                    className={`h-2 w-2 rounded-full ${selectedAdmin.isOnline ? "bg-green-500" : "bg-gray-300"}`}
-                    style={{ position: "absolute", bottom: 0, right: 0, border: "1px solid white" }}
-                  ></div>
-                </div>
-                <div>
-                  <div className="flex items-center gap-2">
-                    <h3 className="text-lg font-medium text-[#36302A]">@{selectedAdmin.username}</h3>
+                {selectedChat.isGroup ? (
+                  <div className="h-10 w-10 bg-[#36302A] rounded-full flex items-center justify-center text-white font-medium">
+                    <Users size={20} />
                   </div>
+                ) : (
+                  <div className="relative">
+                    {selectedChat.avatar ? (
+                      <div className="h-10 w-10 rounded-full overflow-hidden">
+                        <Avatar
+                          size={40}
+                          name={selectedChat.username || selectedChat.id}
+                          variant={selectedChat.avatar.variant}
+                          colors={selectedChat.avatar.colors}
+                          square={false}
+                        />
+                      </div>
+                    ) : (
+                      <div className="h-10 w-10 bg-[#36302A] rounded-full flex items-center justify-center text-white font-medium">
+                        {selectedChat.username?.charAt(0).toUpperCase() || "A"}
+                      </div>
+                    )}
+                    <div
+                      className={`h-2 w-2 rounded-full ${selectedChat.isOnline ? "bg-green-500" : "bg-gray-300"}`}
+                      style={{ position: "absolute", bottom: 0, right: 0, border: "1px solid white" }}
+                    ></div>
+                  </div>
+                )}
+                <div>
+                  <h3 className="text-lg font-medium text-[#36302A]">
+                    {selectedChat.isGroup ? selectedChat.name : `@${selectedChat.username}`}
+                  </h3>
                   <p className="text-sm text-[#86807A]">
-                    {selectedAdmin.email} <span className="text-[#36302A]">({selectedAdmin.role})</span>
+                    {selectedChat.isGroup
+                      ? `${selectedChat.participants.length} members`
+                      : `${selectedChat.email} (${selectedChat.role})`}
                   </p>
                 </div>
               </div>
@@ -581,7 +713,6 @@ const AdminChat = () => {
               </div>
             </div>
 
-            {/* Messages */}
             <div
               ref={messagesContainerRef}
               className="flex-1 p-4 overflow-y-auto bg-[#FAF4ED]"
@@ -591,8 +722,8 @@ const AdminChat = () => {
                 {messages.map((message) => {
                   const isSender = message.senderId === currentAdmin.id
                   const isDeletedForMe = message.deletedFor?.includes(currentAdmin.id)
-                  const isRead = message.readBy?.includes(selectedAdmin.id)
-                  const messageAdmin = isSender ? currentAdmin : selectedAdmin
+                  const isRead = message.readBy?.includes(selectedChat.isGroup ? currentAdmin.id : selectedChat.id)
+                  const messageAdmin = admins.find((a) => a.id === message.senderId) || currentAdmin
 
                   return (
                     !isDeletedForMe && (
@@ -605,19 +736,19 @@ const AdminChat = () => {
                       >
                         {!isSender && (
                           <div className="mr-2">
-                            {selectedAdmin.avatar ? (
+                            {messageAdmin.avatar ? (
                               <div className="h-8 w-8 rounded-full overflow-hidden">
                                 <Avatar
                                   size={32}
-                                  name={selectedAdmin.username || selectedAdmin.id}
-                                  variant={selectedAdmin.avatar.variant}
-                                  colors={selectedAdmin.avatar.colors}
+                                  name={messageAdmin.username || messageAdmin.id}
+                                  variant={messageAdmin.avatar.variant}
+                                  colors={messageAdmin.avatar.colors}
                                   square={false}
                                 />
                               </div>
                             ) : (
                               <div className="h-8 w-8 bg-[#36302A] rounded-full flex items-center justify-center text-white font-medium text-xs">
-                                {selectedAdmin.username?.charAt(0).toUpperCase() || "A"}
+                                {messageAdmin.username?.charAt(0).toUpperCase() || "A"}
                               </div>
                             )}
                           </div>
@@ -655,9 +786,13 @@ const AdminChat = () => {
                             </div>
                           ) : (
                             <>
+                              {selectedChat.isGroup && !isSender && (
+                                <p className="text-xs font-medium text-[#86807A] mb-1">
+                                  @{messageAdmin.username}
+                                </p>
+                              )}
                               <p>
                                 {message.text.split(/\b(https?:\/\/\S+)/g).map((part, index) => {
-                                  // Check if the part is a URL
                                   if (/^https?:\/\/\S+$/.test(part)) {
                                     return (
                                       <a
@@ -672,7 +807,6 @@ const AdminChat = () => {
                                       </a>
                                     )
                                   }
-                                  // Return regular text
                                   return <span key={index}>{part}</span>
                                 })}
                               </p>
@@ -750,7 +884,6 @@ const AdminChat = () => {
               <div ref={messagesEndRef} />
             </div>
 
-            {/* Message Input */}
             <div className="p-4 bg-white border-t border-[#E2D9CE] flex items-center gap-3 sticky bottom-0 relative">
               <input
                 type="text"
@@ -794,8 +927,8 @@ const AdminChat = () => {
               <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-[#EFE7DD] text-[#86807A] mb-4">
                 <MessageSquare size={24} />
               </div>
-              <h3 className="text-xl font-medium text-[#36302A]">Select an Admin to Chat</h3>
-              <p className="text-[#86807A] mt-2">Choose an admin from the sidebar to start a conversation.</p>
+              <h3 className="text-xl font-medium text-[#36302A]">Select a Chat</h3>
+              <p className="text-[#86807A] mt-2">Choose an admin or group from the sidebar to start a conversation.</p>
             </motion.div>
           </div>
         )}
@@ -835,10 +968,76 @@ const AdminChat = () => {
                         />
                       </div>
                     </div>
-                  )),
+                  ))
                 )
                 .slice(0, 18)}
             </div>
+          </motion.div>
+        </div>
+      )}
+
+      {/* Group Creator Modal */}
+      {showGroupCreator && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <motion.div
+            className="bg-white rounded-lg p-6 w-[90%] max-w-md"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.9 }}
+          >
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-medium text-[#36302A]">Create Group</h3>
+              <button onClick={() => setShowGroupCreator(false)} className="p-1 rounded-full hover:bg-[#F8F2EA]">
+                <X size={20} />
+              </button>
+            </div>
+            <div className="mb-4">
+              <input
+                type="text"
+                value={groupName}
+                onChange={(e) => setGroupName(e.target.value)}
+                placeholder="Group Name"
+                className="w-full p-2 rounded border border-[#E2D9CE] focus:outline-none focus:ring-2 focus:ring-[#36302A]"
+              />
+            </div>
+            <div className="mb-4 max-h-64 overflow-y-auto">
+              {admins.map((admin) => (
+                <div
+                  key={admin.id}
+                  className="flex items-center gap-3 p-2 hover:bg-[#F8F2EA] cursor-pointer"
+                  onClick={() => toggleParticipant(admin.id)}
+                >
+                  <input
+                    type="checkbox"
+                    checked={groupParticipants.includes(admin.id)}
+                    onChange={() => {}}
+                    className="h-4 w-4"
+                  />
+                  <div className="h-8 w-8 rounded-full overflow-hidden">
+                    {admin.avatar ? (
+                      <Avatar
+                        size={32}
+                        name={admin.username || admin.id}
+                        variant={admin.avatar.variant}
+                        colors={admin.avatar.colors}
+                        square={false}
+                      />
+                    ) : (
+                      <div className="h-8 w-8 bg-[#36302A] rounded-full flex items-center justify-center text-white font-medium text-xs">
+                        {admin.username?.charAt(0).toUpperCase() || "A"}
+                      </div>
+                    )}
+                  </div>
+                  <span className="text-sm text-[#36302A]">@{admin.username}</span>
+                </div>
+              ))}
+            </div>
+            <button
+              onClick={handleCreateGroup}
+              className="w-full bg-[#36302A] text-white p-2 rounded hover:bg-[#4A4035]"
+            >
+              Create Group
+            </button>
           </motion.div>
         </div>
       )}
@@ -847,4 +1046,3 @@ const AdminChat = () => {
 }
 
 export default AdminChat
-
