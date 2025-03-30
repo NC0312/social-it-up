@@ -54,6 +54,7 @@ const AdminChat = () => {
   const [processedMessages, setProcessedMessages] = useState({})
   const [showEmojiPicker, setShowEmojiPicker] = useState(false)
   const [dropdownMessageId, setDropdownMessageId] = useState(null)
+  const [showGroupMembers, setShowGroupMembers] = useState(false);
   const [showChatOptions, setShowChatOptions] = useState(false)
   const [showAvatarPicker, setShowAvatarPicker] = useState(false)
   const [showGroupCreator, setShowGroupCreator] = useState(false)
@@ -105,6 +106,36 @@ const AdminChat = () => {
     hidden: { opacity: 0, scale: 0.95 },
     visible: { opacity: 1, scale: 1, transition: { duration: 0.2 } },
   }
+
+
+  const handleDeleteGroup = async (groupId) => {
+    if (!confirm("Are you sure you want to delete this group? This action cannot be undone.")) {
+      return;
+    }
+  
+    try {
+      // First delete all messages in the group
+      const messagesRef = collection(db, "groupMessages", groupId, "messages");
+      const messagesSnapshot = await getDocs(messagesRef);
+      const deleteMessagePromises = messagesSnapshot.docs.map((doc) => deleteDoc(doc.ref));
+      await Promise.all(deleteMessagePromises);
+      
+      // Delete the group document
+      const groupRef = doc(db, "groups", groupId);
+      await deleteDoc(groupRef);
+      
+      // Delete the group messages collection if it exists
+      const groupMessagesRef = doc(db, "groupMessages", groupId);
+      await deleteDoc(groupMessagesRef);
+      
+      setShowGroupMembers(false);
+      setSelectedChat(null);
+      toast.success("Group deleted successfully");
+    } catch (error) {
+      console.error("Error deleting group:", error);
+      toast.error("Failed to delete group");
+    }
+  };
 
   // Fetch admins and groups
   useEffect(() => {
@@ -430,28 +461,48 @@ const AdminChat = () => {
 
   const handleCreateGroup = async () => {
     if (!groupName.trim() || groupParticipants.length < 1) {
-      toast.error("Please provide a group name and at least one participant")
-      return
+      toast.error("Please provide a group name and at least one participant");
+      return;
     }
-
-    const participants = [currentAdmin.id, ...groupParticipants]
+  
+    const participants = [currentAdmin.id, ...groupParticipants];
+    
     try {
-      const groupRef = await addDoc(collection(db, "groups"), {
-        name: groupName.trim(),
-        participants,
-        createdBy: currentAdmin.id,
-        createdAt: serverTimestamp(),
-      })
-
-      setGroupName("")
-      setGroupParticipants([])
-      setShowGroupCreator(false)
-      toast.success("Group created successfully")
+      if (selectedChat?.isGroup && selectedChat.createdBy === currentAdmin.id) {
+        // Update existing group
+        const groupRef = doc(db, "groups", selectedChat.id);
+        await updateDoc(groupRef, {
+          name: groupName.trim(),
+          participants,
+          updatedAt: serverTimestamp(),
+        });
+        
+        // Update the selected chat object
+        setSelectedChat({
+          ...selectedChat,
+          name: groupName.trim(),
+          participants,
+        });
+        
+        toast.success("Group updated successfully");
+      } else {
+        // Create new group
+        const groupRef = await addDoc(collection(db, "groups"), {
+          name: groupName.trim(),
+          participants,
+          createdBy: currentAdmin.id,
+          createdAt: serverTimestamp(),
+        });
+      }
+  
+      setGroupName("");
+      setGroupParticipants([]);
+      setShowGroupCreator(false);
     } catch (error) {
-      console.error("Error creating group:", error)
-      toast.error("Failed to create group")
+      console.error("Error with group:", error);
+      toast.error("Operation failed");
     }
-  }
+  };
 
   const toggleParticipant = (adminId) => {
     setGroupParticipants((prev) =>
@@ -517,9 +568,8 @@ const AdminChat = () => {
               {groups.map((group) => (
                 <motion.div
                   key={group.id}
-                  className={`p-4 flex items-center gap-3 cursor-pointer transition-colors duration-200 ${
-                    selectedChat?.id === group.id ? "bg-[#F8F2EA]" : "bg-white"
-                  } hover:bg-[#F8F2EA]`}
+                  className={`p-4 flex items-center gap-3 cursor-pointer transition-colors duration-200 ${selectedChat?.id === group.id ? "bg-[#F8F2EA]" : "bg-white"
+                    } hover:bg-[#F8F2EA]`}
                   onClick={() => handleSelectChat({ ...group, isGroup: true })}
                 >
                   <div className="h-10 w-10 flex-shrink-0 bg-[#36302A] rounded-full flex items-center justify-center text-white font-medium">
@@ -553,9 +603,8 @@ const AdminChat = () => {
               {admins.map((admin) => (
                 <motion.div
                   key={admin.id}
-                  className={`p-4 flex items-center gap-3 cursor-pointer transition-colors duration-200 ${
-                    selectedChat?.id === admin.id && !selectedChat?.isGroup ? "bg-[#F8F2EA]" : "bg-white"
-                  } hover:bg-[#F8F2EA]`}
+                  className={`p-4 flex items-center gap-3 cursor-pointer transition-colors duration-200 ${selectedChat?.id === admin.id && !selectedChat?.isGroup ? "bg-[#F8F2EA]" : "bg-white"
+                    } hover:bg-[#F8F2EA]`}
                   onClick={() => handleSelectChat({ ...admin, isGroup: false })}
                 >
                   <div className="h-10 w-10 flex-shrink-0 rounded-full overflow-hidden">
@@ -644,7 +693,10 @@ const AdminChat = () => {
             <div className="p-4 bg-white border-b border-[#E2D9CE] flex items-center justify-between">
               <div className="flex items-center gap-3">
                 {selectedChat.isGroup ? (
-                  <div className="h-10 w-10 bg-[#36302A] rounded-full flex items-center justify-center text-white font-medium">
+                  <div
+                    className="h-10 w-10 bg-[#36302A] rounded-full flex items-center justify-center text-white font-medium cursor-pointer"
+                    onClick={() => setShowGroupMembers(true)}
+                  >
                     <Users size={20} />
                   </div>
                 ) : (
@@ -754,9 +806,8 @@ const AdminChat = () => {
                           </div>
                         )}
                         <div
-                          className={`max-w-[70%] p-3 rounded-lg ${
-                            isSender ? "bg-[#36302A] text-white" : "bg-white text-[#36302A]"
-                          }`}
+                          className={`max-w-[70%] p-3 rounded-lg ${isSender ? "bg-[#36302A] text-white" : "bg-white text-[#36302A]"
+                            }`}
                         >
                           {editingMessage === message.id ? (
                             <div className="flex flex-col gap-2">
@@ -1010,7 +1061,7 @@ const AdminChat = () => {
                   <input
                     type="checkbox"
                     checked={groupParticipants.includes(admin.id)}
-                    onChange={() => {}}
+                    onChange={() => { }}
                     className="h-4 w-4"
                   />
                   <div className="h-8 w-8 rounded-full overflow-hidden">
@@ -1038,6 +1089,75 @@ const AdminChat = () => {
             >
               Create Group
             </button>
+          </motion.div>
+        </div>
+      )}
+
+      {/* Group Members Modal */}
+      {showGroupMembers && selectedChat?.isGroup && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <motion.div
+            className="bg-white rounded-lg p-6 w-[90%] max-w-md"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.9 }}
+          >
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-medium text-[#36302A]">Group Members</h3>
+              <button onClick={() => setShowGroupMembers(false)} className="p-1 rounded-full hover:bg-[#F8F2EA]">
+                <X size={20} />
+              </button>
+            </div>
+            <div className="mb-4 max-h-64 overflow-y-auto">
+              {selectedChat.participants.map((participantId) => {
+                const member = admins.find(a => a.id === participantId) ||
+                  (participantId === currentAdmin.id ? currentAdmin : { username: 'Unknown', id: participantId });
+                return (
+                  <div key={participantId} className="flex items-center gap-3 p-2">
+                    <div className="h-8 w-8 rounded-full overflow-hidden">
+                      {member.avatar ? (
+                        <Avatar
+                          size={32}
+                          name={member.username || member.id}
+                          variant={member.avatar.variant}
+                          colors={member.avatar.colors}
+                          square={false}
+                        />
+                      ) : (
+                        <div className="h-8 w-8 bg-[#36302A] rounded-full flex items-center justify-center text-white font-medium text-xs">
+                          {member.username?.charAt(0).toUpperCase() || "U"}
+                        </div>
+                      )}
+                    </div>
+                    <span className="text-sm text-[#36302A]">
+                      @{member.username} {participantId === selectedChat.createdBy && "(Creator)"}
+                      {participantId === currentAdmin.id && " (You)"}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+            {selectedChat.createdBy === currentAdmin.id && (
+              <button
+                onClick={() => {
+                  setShowGroupMembers(false);
+                  setShowGroupCreator(true);
+                  setGroupName(selectedChat.name);
+                  setGroupParticipants(selectedChat.participants.filter(id => id !== currentAdmin.id));
+                }}
+                className="w-full flex items-center justify-center gap-2 bg-[#36302A] text-white p-2 rounded hover:bg-[#4A4035] mb-3"
+              >
+                <Plus size={16} /> Add Members
+              </button>
+            )}
+            {selectedChat.createdBy === currentAdmin.id && (
+              <button
+                onClick={() => handleDeleteGroup(selectedChat.id)}
+                className="w-full flex items-center justify-center gap-2 bg-red-500 text-white p-2 rounded hover:bg-red-600"
+              >
+                <Trash2 size={16} /> Delete Group
+              </button>
+            )}
           </motion.div>
         </div>
       )}
