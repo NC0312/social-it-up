@@ -417,9 +417,9 @@ const AdminManagement = () => {
             const adminRef = doc(db, "admins", adminId);
 
             // For approved admins, clear their presence in realtime DB first
-            if (adminType === 'approved') {
-                await set(ref(rtdb, `status/${adminId}`), null);
-            }
+            // if (adminType === 'approved') {
+            //     await set(ref(rtdb, `status/${adminId}`), null);
+            // }
 
             // Delete admin document
             await deleteDoc(adminRef);
