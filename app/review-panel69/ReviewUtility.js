@@ -149,7 +149,7 @@ export const AssignmentCell = ({ review, admins, onAssign, isAssigning, isSuperA
 
             {/* Dropdown Menu */}
             {isOpen && (
-                <div className="absolute z-20 mt-1 w-full bg-white border border-green-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                <div className="">
                     {/* Unassigned Option */}
                     <button
                         onClick={() => handleAssignment("", "Unassigned")}
@@ -219,7 +219,7 @@ export const AssignmentFilter = ({ value, onChange, admins, isSuperAdmin }) => {
                 id="assignment-filter"
                 value={value}
                 onChange={onChange}
-                className="w-full border border-gray-200 rounded-lg p-2 focus:ring-1 focus:ring-green-500 bg-white"
+                className=""
             >
                 <option value="">All Assignments</option>
                 <option value="unassigned">Unassigned</option>

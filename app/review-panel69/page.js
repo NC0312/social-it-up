@@ -966,7 +966,7 @@ const ReviewPanel = () => {
                     id="client-status-filter"
                     value={selectedClientStatus}
                     onChange={handleClientStatusChange}
-                    className="w-full border border-gray-200 rounded-lg p-2 focus:ring-1 focus:ring-green-500 bg-white"
+                    className=""
                   >
                     <option value="">All Statuses</option>
                     <option value="Pending">Pending</option>
