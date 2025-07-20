@@ -832,7 +832,7 @@ const ReviewPanel = () => {
         </button>
 
         {isOpen && (
-          <div className="absolute z-30 mt-1 right-0 bg-white border border-gray-200 rounded-lg shadow-lg w-40">
+          <div className="">
             {availableStatuses.map((newStatus) => (
               <button
                 key={newStatus}
