@@ -17,6 +17,7 @@ export async function POST(req) {
       console.error('RECAPTCHA_SECRET_KEY is not set in environment variables');
       return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
+    //Dummy
 
     const verificationURL = `https://www.google.com/recaptcha/api/siteverify?secret=${secretKey}&response=${recaptchaValue}`;
 
